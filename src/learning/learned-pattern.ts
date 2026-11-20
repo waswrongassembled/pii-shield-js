@@ -519,10 +519,19 @@ export class LearnedPattern {
     }
   }
 
-  /** `preg_match('~(?<![\p{L}\p{N}])(?:…)(?![\p{L}\p{N}])~u', $text)` within the budget. */
-  searchesWithin(text: string, limit: number): boolean {
+  /**
+   * `preg_match('~(?<![\p{L}\p{N}])(?:…)(?![\p{L}\p{N}])~u', $text)` within the budget: `limit` per start
+   * position like PCRE, and optionally a `total` shared across calls (see runsInBoundedTime()).
+   */
+  searchesWithin(text: string, limit: number, total?: { steps: number; readonly max: number }): boolean {
     try {
-      this.#exec(new Subject(text), 0, { whole: false, anchored: false, notEmptyAtStart: false, limit });
+      this.#exec(new Subject(text), 0, {
+        whole: false,
+        anchored: false,
+        notEmptyAtStart: false,
+        limit,
+        ...(total === undefined ? {} : { total }),
+      });
 
       return true;
     } catch (e) {

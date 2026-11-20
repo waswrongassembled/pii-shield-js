@@ -177,6 +177,9 @@ function checkPattern(
  * the backtracking budget. Our engine counts like PCRE without its start-up optimisations, so it can be
  * stricter than PHP (docs/DEVIATIONS.md).
  */
+/** Steps the bounded-time check may spend in total, across all adversarial inputs. */
+const VALIDATION_BUDGET = 10_000_000;
+
 function runsInBoundedTime(pattern: LearnedPattern, examples: readonly string[]): boolean {
   const inputs = [
     `${'a'.repeat(5000)}!`,
@@ -190,5 +193,11 @@ function runsInBoundedTime(pattern: LearnedPattern, examples: readonly string[])
     inputs.push(`${example.repeat(times)}!`, `${Array.from(example).slice(0, -1).join('').repeat(times)}!`);
   }
 
-  return inputs.every((input) => pattern.searchesWithin(input, BACKTRACK_LIMIT));
+  // PHP limits each start position only, so a check can take 5000 × BACKTRACK_LIMIT steps per input (16 s
+  // for `.{0,45}.{0,45}.{0,45}X`). PHP spends that time in a request worker; Node would block its event loop,
+  // i.e. every request of an HTTP or MCP server. One budget across all inputs caps the check at well under a
+  // second; patterns that need more are rejected (docs/DEVIATIONS.md).
+  const total = { steps: 0, max: VALIDATION_BUDGET };
+
+  return inputs.every((input) => pattern.searchesWithin(input, BACKTRACK_LIMIT, total));
 }

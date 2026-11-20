@@ -55,3 +55,7 @@ PHP checks whether PCRE compiles a pattern before it checks the grammar. For pat
 ## Key-value store format and locking
 
 `KeyValueCustomEntityStore` (PHP: `CacheCustomEntityStore` over PSR-6) stores the list as JSON under `pii_shield.learned_types`, not in PHP's PSR-6 serialisation, so PHP and Node cannot share that key. `JsonFileCustomEntityStore` locks writes by default with a lock file (`<path>.lock`, exclusive create, stale after 10 s); PHP's file store does not lock unless wrapped in `LockingCustomEntityStore` (symfony/lock), and the two locks do not exclude each other. The file itself is byte-identical.
+
+## The bounded-time check of learned patterns has an overall budget
+
+PHP's `runsInBoundedTime()` limits each start position (`pcre.backtrack_limit`), so checking one pattern can take many seconds (e.g. 16 s for `.{0,45}.{0,45}.{0,45}X`). A PHP worker survives that; in Node it blocks the event loop and with it every request of an HTTP or MCP server. The port shares one budget of 10 million steps across all adversarial inputs (about 0.3 s at most). Patterns that need more are rejected with PHP's message "it takes too long on adversarial input", including some PHP accepts, mostly broad unbounded runs before literals (`\S+@x\.at` with several examples). The bounded form (`\S{1,64}@x\.at`) is accepted.
