@@ -1,7 +1,7 @@
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 import { describe, expect, it } from 'vitest';
 
-import { codePointSlice, FIXTURE_NAMES, loadFixture } from './support/fixtures.js';
+import { codePointSlice, FIXTURE_NAMES, loadFixture, toUtf16Offset } from './support/fixtures.js';
 
 describe('fixtures', () => {
   it.each(FIXTURE_NAMES)('%s.json comes from a clean PHP checkout', (name) => {
@@ -15,7 +15,7 @@ describe('fixtures', () => {
     expect(loadFixture('letters').letters.length).toBeGreaterThan(0);
   });
 
-  it('reports offsets and lengths in code points', () => {
+  it('reports code point offsets that convert to UTF-16 indices', () => {
     const spans = [
       ...loadFixture('detectors').cases.map((c) => ({ text: c.text, entities: c.entities })),
       ...loadFixture('redaction').cases.map((c) => ({ text: c.text, entities: c.redaction.entities })),
@@ -26,6 +26,8 @@ describe('fixtures', () => {
     for (const { text, entities } of spans) {
       for (const e of entities) {
         expect(codePointSlice(text, e.offset, e.length)).toBe(e.value);
+        const start = toUtf16Offset(text, e.offset);
+        expect(text.slice(start, start + e.value.length)).toBe(e.value);
       }
     }
   });

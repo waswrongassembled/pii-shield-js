@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 
 /**
  * Typed access to fixtures/*.json, written by compat/export-fixtures.php from the PHP package.
- * Offsets and lengths are code points, as in PHP.
+ * Offsets and lengths are code points, as PHP counts them; Node uses UTF-16 indices (docs/DEVIATIONS.md).
+ * Compare with toUtf16Offset().
  */
 
 export interface FixtureEntity {
@@ -161,4 +162,9 @@ export function loadFixture<K extends keyof FixtureFiles>(name: K): FixtureFiles
 /** Substring by code point offset and length, the way PHP's mb_substr() counts. */
 export function codePointSlice(text: string, offset: number, length: number): string {
   return [...text].slice(offset, offset + length).join('');
+}
+
+/** PHP's code point offset converted to the UTF-16 index that the TypeScript port reports. */
+export function toUtf16Offset(text: string, codePointOffset: number): number {
+  return [...text].slice(0, codePointOffset).join('').length;
 }

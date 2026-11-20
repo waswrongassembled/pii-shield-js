@@ -7,7 +7,7 @@ TypeScript port of [`clarifile/pii-shield`](https://github.com/massiveart/clarif
 
 ## Development
 
-Requires Node >= 20.19.
+Requires Node >= 22.12.
 
 ```sh
 npm ci
