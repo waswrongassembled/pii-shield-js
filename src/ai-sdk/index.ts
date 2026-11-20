@@ -35,3 +35,11 @@ export function detectionModel(model: LanguageModel, settings: DetectionModelSet
     },
   };
 }
+
+export {
+  piiShieldMiddleware,
+  type PiiShieldMiddlewareOptions,
+  type RedactEvent,
+  type RestoreEvent,
+  UnsupportedContentError,
+} from './middleware.js';

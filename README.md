@@ -3,7 +3,31 @@
 Reversible PII redaction for LLM applications, with DACH recognizers (AT SVNR, IBAN, tax numbers) and checksum validation.
 TypeScript port of [`clarifile/pii-shield`](https://github.com/massiveart/clarifile/tree/main/packages/pii-shield), wire-compatible with the PHP package.
 
-**Status:** work in progress, see [docs/PLAN.md](docs/PLAN.md). Detection (validators, detectors, `EntityExtractor`), redaction/restore (`PiiShield`), masking (`PiiMasker`), the vault (`redactToVault`/`restoreFromVault`, `EncryptedVault`, Redis storage in `@waswrongassembled/pii-shield/vault-redis`), learning (`EntityLearner`, `learnPattern`, `CustomEntityDetector`, JSON file / key-value / in-memory stores) and model-based detection (`ModelDetector` with `redactAsync()`, AI SDK adapter in `@waswrongassembled/pii-shield/ai-sdk`) are ported; the bridges follow.
+**Status:** work in progress, see [docs/PLAN.md](docs/PLAN.md). Detection (validators, detectors, `EntityExtractor`), redaction/restore (`PiiShield`), masking (`PiiMasker`), the vault (`redactToVault`/`restoreFromVault`, `EncryptedVault`, Redis storage in `@waswrongassembled/pii-shield/vault-redis`), learning (`EntityLearner`, `learnPattern`, `CustomEntityDetector`, JSON file / key-value / in-memory stores) and model-based detection (`ModelDetector` with `redactAsync()`, AI SDK adapter in `@waswrongassembled/pii-shield/ai-sdk`) and the Vercel AI SDK middleware (`piiShieldMiddleware`) are ported; the MCP server and HTTP service follow.
+
+## Vercel AI SDK
+
+Needs `ai@^7` (optional peer dependency). The provider only sees placeholders; answers, streams, tool call inputs and structured output come back with the original values.
+
+```ts
+import { generateText, wrapLanguageModel } from 'ai';
+import { PiiShield } from '@waswrongassembled/pii-shield';
+import { piiShieldMiddleware } from '@waswrongassembled/pii-shield/ai-sdk';
+
+const model = wrapLanguageModel({
+  model: yourModel,
+  middleware: piiShieldMiddleware(new PiiShield(), {
+    // placeholders the model invented (no personal data)
+    onRestore: ({ unknownPlaceholders }) => {
+      if (unknownPlaceholders.length > 0) console.warn('Unknown placeholders', unknownPlaceholders);
+    },
+  }),
+});
+
+const { text } = await generateText({ model, prompt: 'Herrn\nJohann Beispielmann\n…' }); // works with streamText() too
+```
+
+Every model call (every step of a tool loop) redacts the whole prompt with one mapping. Files in user or tool messages throw `UnsupportedContentError`: extract their text locally first. Differences to PHP's `PiiShieldProcessor` are listed in [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
 
 ## Development
 

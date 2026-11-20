@@ -96,6 +96,12 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
   - Windows count code points (chunks, the 30 characters before a birth date), the postcode lookahead counts 120 UTF-8 _bytes_ and finds nothing when the cut splits a character. `\d` is UCP in the date and citation checks but ASCII in the file number digit check.
   - The prompt's learned-type JSON uses `JSON_HEX_*` escapes (`\u0027`, `\u0022`, `\u0026`, upper-case hex), escapes `/` and U+2028/U+2029; `src/model/prompt.ts` builds the escapes from code points because the tool layer mangles `\u` literals.
   - Detectors see the normalized text (`\r\n` → ` \n`), so the model gets it too, as in PHP.
+- **AI SDK middleware** (found in phase 9):
+  - The mapping travels from `transformParams` to `wrapGenerate`/`wrapStream` in a `WeakMap` keyed by the returned params object (`wrapLanguageModel` hands that same object on), like PHP's `WeakMap` on the `MessageBag`; it never enters the call options.
+  - A tool loop calls the model once per step with the whole history, so the history must be redacted again each time: restored tool call inputs, restored reasoning and tool results would otherwise go back in clear text (PHP redacts only once per `Agent::call()`).
+  - Restored values in JSON (tool inputs, JSON mode) must be JSON-escaped: an address contains `\n`. Tool inputs are parsed and only string values restored (keys stay, PHP's `StructuredRestorer`); unparsable JSON and JSON-mode text are restored textually with escaped values.
+  - Streams: hold a possible placeholder (`[`, `[[`, `⟦`, `⟦TAX\`) until complete or impossible; the automaton next to `TOLERANT` (`stepPlaceholderPrefix()`) must accept exactly its prefixes (property tests against `restore()` of the whole text). Keep a split surrogate pair together (astral `\p{Nd}` digits), keep the held state incremental (rescanning the held text per chunk was quadratic), and give up a candidate after 1024 units.
+  - `@ai-sdk/provider` is not a dependency of ours: derive the V4 types from `LanguageModelMiddleware` (exported by `ai`); import `ai` only as a type in the middleware.
 - **Async validation:** vault methods are `async`, so a bad TTL rejects the Promise instead of throwing synchronously (PHP throws). Constructor arguments (`key`, `vaultTtl`) still throw synchronously.
 - **Secrets:** wipe buffers after use (`buf.fill(0)`) instead of `sodium_memzero`. Keep the key out of logs and errors.
 - **Error messages:** never contain PII values (PHP names positions, not values). Keep the wording of client-facing messages (see "Idiomatic TypeScript").
@@ -123,9 +129,10 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
    - Same prompt, same JSON parsing, same context checks (`fixtures/model.json`: PHP's prompts, chunks and parse results over a fake platform).
    - Same guard: `location` (`local` | `on_premise` | `external`) is required, an external provider needs `acknowledgeExternalTransfer: true` (PHP's parameter name, ADR 0006).
    - `ModelDetector` is an `AsyncDetector` (`async: true`); `extractAsync()`, `redactAsync()`, `redactToVault()` and `maskAsync()` run it, the sync APIs throw a `TypeError` before anything is sent. `DetectionError` (`DETECTION_MODEL_UNREACHABLE`, `DETECTION_INVALID_ANSWER`, `DETECTION_TEXT_TOO_LONG`), `AbortSignal` and an optional `timeout`.
-9. **AI SDK middleware** (replaces `PiiShieldProcessor` + `StructuredRestorer`):
-   - `wrapLanguageModel({ middleware: piiShieldMiddleware(shield) })`;
-   - redacts the prompt, restores text, stream deltas (placeholders that span chunk boundaries) and structured output.
+9. **AI SDK middleware** (done; replaces `PiiShieldProcessor` + `StructuredRestorer`):
+   - `wrapLanguageModel({ middleware: piiShieldMiddleware(shield) })` from `.../ai-sdk`, peer `ai@^7` (LanguageModelV4 middleware; v6 speaks V3 and is not supported);
+   - redacts the whole prompt of every model call in one pass (one mapping), restores text, reasoning, tool call inputs, stream deltas (placeholders that span chunk boundaries) and structured output;
+   - `onRestore` reports invented placeholders, `onRedact` the placeholders (and with `vault: true` the vault id); files in user/tool messages throw `UnsupportedContentError`.
 10. **MCP server:** same tools as `demo/src/Mcp/PiiShieldTools.php`: `redact_text`, `restore_text`, `mask_text`, `learn_entity_type`, `list_entity_types`. STDIO + Streamable HTTP.
 11. **HTTP service:** same endpoints as `docs/openapi.yaml` (`/v1/...`), plain `node:http` or Hono; `npx @waswrongassembled/pii-shield serve`.
 12. **Release:**
