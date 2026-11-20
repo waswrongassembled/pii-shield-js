@@ -6,8 +6,15 @@ import { isAuthorityContact, isMobileNumber } from './authority-context.js';
 import type { ContactDetectorOptions } from './email.js';
 
 const D = DIGIT;
+/*
+ * Same language as PHP's pattern, with one change against catastrophic backtracking: each digit group
+ * must run to the end of its digit run ((?!\d)). In PHP's form "(?:[ /-]?\d{2,}){1,5}" a long digit run
+ * can be split into groups in O(n^4) ways before the final lookahead fails (PHP throws "Backtrack limit
+ * exhausted" there; JavaScript has no limit and hangs). A match can only end where a digit run ends, and
+ * splitting a run only uses up groups, so forbidding the split never changes which text matches.
+ */
 const PATTERN = new RegExp(
-  String.raw`(?<![${WORD_CHARS}+\/])(?:(?:\+|00)${D}{1,3}|0${D}{1,4})(?:[ \/\-]?${D}{2,}){1,5}(?![${WORD_CHARS}\/])`,
+  String.raw`(?<![${WORD_CHARS}+\/])(?:(?:\+|00)${D}{1,3}|0${D}{1,4})(?:[ \/\-]?${D}{2,}(?!${D})){1,5}(?![${WORD_CHARS}\/])`,
   'gu',
 );
 const MIN_DIGITS = 7;
