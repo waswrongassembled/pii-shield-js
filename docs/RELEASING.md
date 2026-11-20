@@ -12,7 +12,7 @@ Releases are published to npm as `@waswrongassembled/pii-shield` by `.github/wor
    - workflow filename: `release.yml`
    - environment: `npm`
 
-   If npmjs.com only offers these settings for a package that already exists, publish 0.1.0 once by hand from a clean checkout of the tagged commit (`npm ci && npm run check && npm publish --access public`, logged in as `waswrongassembled`), then configure the trusted publisher; every later release goes through the workflow. Check the current npm documentation on trusted publishing for this.
+   If npmjs.com only offers these settings for a package that already exists, publish 0.1.0 once by hand from a clean checkout of the tagged commit (`npm ci && npm run check && npm publish --access public`, logged in as `waswrongassembled`), then configure the trusted publisher; every later release goes through the workflow. The workflow skips publishing a version that is already on npm, so the tag of a hand-published version still runs green (0.1.0 was published this way). Check the current npm documentation on trusted publishing for this.
 
 4. **GitHub environment `npm`.** Created on the first run; under Settings → Environments add yourself as required reviewer and limit it to tags `v*`, so a publish needs an approval.
 5. Optional, after the first trusted release: in the npm package settings require two-factor authentication and disallow tokens, so only the workflow can publish.
