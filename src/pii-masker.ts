@@ -1,3 +1,4 @@
+import type { DetectOptions } from './detector.js';
 import { type Entity, typeName } from './entity.js';
 import { EntityExtractor, type EntityExtractorOptions } from './entity-extractor.js';
 import { EntityType } from './entity-type.js';
@@ -48,8 +49,18 @@ export class PiiMasker implements Masker {
     this.#fallback = toFunction(fallback);
   }
 
+  /**
+   * @throws TypeError when an async detector (e.g. ModelDetector) is configured; use maskAsync()
+   */
   mask(text: string): string {
     return replaceSpans(text, this.#extractor.extract(text), (entity) => this.#strategyFor(entity)(entity));
+  }
+
+  /** Like mask(), and works with async detectors such as ModelDetector. */
+  async maskAsync(text: string, options: DetectOptions = {}): Promise<string> {
+    const entities = await this.#extractor.extractAsync(text, options);
+
+    return replaceSpans(text, entities, (entity) => this.#strategyFor(entity)(entity));
   }
 
   #strategyFor(entity: Entity): MaskingFunction {

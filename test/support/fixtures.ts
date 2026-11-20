@@ -137,6 +137,24 @@ export interface VaultFixture extends FixtureMeta {
   ttl: Outcome<never>;
 }
 
+export interface ModelFixture extends FixtureMeta {
+  note: string;
+  prompts: { case: string; learned: CustomEntityTypeData[]; system: string }[];
+  detect: ({
+    case: string;
+    text: string;
+    /** Answers of the fake model in call order ("!throw": the call fails), then '{"entities":[]}'. */
+    answers: string[];
+    learned: CustomEntityTypeData[];
+    chunkSize: number;
+    keepAuthorityContacts: boolean;
+    /** User message of every call. */
+    sent: string[];
+    systems: string[];
+  } & Outcome<FixtureEntity[]>)[];
+  constructor: Record<string, Outcome<never>>;
+}
+
 interface FixtureFiles {
   validators: ValidatorsFixture;
   detectors: DetectorsFixture;
@@ -145,6 +163,7 @@ interface FixtureFiles {
   masking: MaskingFixture;
   learning: LearningFixture;
   vault: VaultFixture;
+  model: ModelFixture;
 }
 
 export const FIXTURE_NAMES = [
@@ -155,6 +174,7 @@ export const FIXTURE_NAMES = [
   'masking',
   'learning',
   'vault',
+  'model',
 ] as const satisfies readonly (keyof FixtureFiles)[];
 
 export function loadFixture<K extends keyof FixtureFiles>(name: K): FixtureFiles[K] {

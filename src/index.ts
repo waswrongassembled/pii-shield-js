@@ -3,7 +3,14 @@
  *
  * The public API is ported phase by phase, see docs/PLAN.md.
  */
-export type { Detector, DetectorFunction, Validator } from './detector.js';
+export {
+  type AsyncDetector,
+  type DetectOptions,
+  type Detector,
+  type DetectorFunction,
+  isAsyncDetector,
+  type Validator,
+} from './detector.js';
 export { AtSvnrDetector } from './detectors/at-svnr.js';
 export { BirthDateDetector } from './detectors/birth-date.js';
 export { EmailDetector, type ContactDetectorOptions } from './detectors/email.js';
@@ -17,7 +24,15 @@ export { TaxNumberDetector } from './detectors/tax-number.js';
 export { createEntity, typeName, type Entity } from './entity.js';
 export { defaultDetectors, EntityExtractor, surname, type EntityExtractorOptions } from './entity-extractor.js';
 export { ENTITY_TYPES, EntityType, isEntityType } from './entity-type.js';
-export { LearningError, type LearningErrorCode, PiiShieldError, VaultError, type VaultErrorCode } from './errors.js';
+export {
+  DetectionError,
+  type DetectionErrorCode,
+  LearningError,
+  type LearningErrorCode,
+  PiiShieldError,
+  VaultError,
+  type VaultErrorCode,
+} from './errors.js';
 export { CustomEntityDetector, LearnedTypesDetector } from './learning/custom-entity-detector.js';
 export {
   CUSTOM_ENTITY_TYPE_LIMITS,
@@ -37,6 +52,15 @@ export {
   type KeyValueCustomEntityStoreOptions,
   type KeyValueStore,
 } from './learning/store.js';
+export {
+  type DetectionModel,
+  type ModelCallOptions,
+  ModelDetector,
+  type ModelDetectorOptions,
+  type ModelFunction,
+  ModelLocation,
+  type ModelPrompt,
+} from './model/model-detector.js';
 export { PartialMask, type PartialMaskOptions } from './masking/partial-mask.js';
 export type { Masker, MaskingFunction, MaskingStrategy } from './masking/strategy.js';
 export { TypeLabelMask, type TypeLabelMaskOptions } from './masking/type-label-mask.js';

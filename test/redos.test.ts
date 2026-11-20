@@ -5,11 +5,14 @@ import {
   defaultDetectors,
   defineCustomEntityType,
   EntityExtractor,
+  ModelDetector,
   PhoneDetector,
   PiiShieldError,
 } from '../src/index.js';
 import { DIGIT, WORD_CHARS } from '../src/internal/pcre.js';
+import { FILE_NUMBER_KEYWORDS } from '../src/detectors/file-number.js';
 import { LearnedPattern } from '../src/learning/learned-pattern.js';
+import { isAfterCitation, isAfterFileNumberKeyword } from '../src/model/model-detector.js';
 
 /**
  * Detectors run on every text, so none may backtrack catastrophically. PHP is protected by
@@ -180,5 +183,97 @@ describe('validating a learned pattern has a bounded cost', () => {
     expect(() =>
       defineCustomEntityType({ name: 'SOME_NUMBER', description: 'x', examples, pattern: String.raw`\S{1,64}@x\.at` }),
     ).not.toThrow();
+  });
+});
+
+describe('model detector checks run in bounded time', () => {
+  const run = async (text: string, answer: string, options: { keepAuthorityContacts?: boolean } = {}) => {
+    const detector = new ModelDetector({
+      model: () => Promise.resolve(answer),
+      location: 'local',
+      chunkSize: 20_000,
+      ...options,
+    });
+    const start = performance.now();
+    await detector.detect(text);
+
+    return performance.now() - start;
+  };
+  const other = (value: string): string => JSON.stringify({ entities: [{ type: 'OTHER', value }] });
+
+  it.each([
+    ['citation keywords that split two ways', `§ 1${' Ziff'.repeat(3000)} StVO`, other('StVO')],
+    ['citation without an end', `§ 1${' Abs. 2'.repeat(2000)}x StVO`, other('StVO')],
+    ['many paragraph signs', `${'§ 1 '.repeat(4000)}StVO`, other('StVO')],
+    [
+      'file number keyword before blanks',
+      `${'Zahl '.repeat(2000)}${' '.repeat(5000)}: A-1`,
+      JSON.stringify({ entities: [{ type: 'FILE_NUMBER', value: 'A-1' }] }),
+    ],
+    ['unclosed reasoning', 'Jan Novák', `${'<think>'.repeat(20_000)}{"entities":[]}`],
+    ['trailing punctuation', 'Jan Novák', other(`Jan${'.'.repeat(20_000)}x`)],
+    ['salutations', 'Jan Novák', other(`${'Herr '.repeat(5000)}x`)],
+    ['law abbreviation lookahead', `§ 1 ${'Ab'.repeat(5000)}`, other('Ab'.repeat(5000))],
+    ['many occurrences', 'Jan Novák, '.repeat(1500), other('Jan Novák')],
+    ['value of many words', 'a, '.repeat(5000), other('a, '.repeat(3000))],
+    [
+      'many addresses and e-mails',
+      `Magistrat Musterhausen\n${'Lindenweg 12, x@musterhausen.example '.repeat(400)}`,
+      JSON.stringify({
+        entities: [
+          { type: 'ADDRESS', value: 'Lindenweg 12' },
+          { type: 'EMAIL', value: 'x@musterhausen.example' },
+        ],
+      }),
+    ],
+  ])('%s', async (_, text, answer) => {
+    expect(await run(text, answer)).toBeLessThan(LIMIT_MS);
+  });
+
+  // PHP's patterns, safe on short inputs only.
+  const citation = new RegExp(
+    String.raw`§§?[ \t]*\p{Nd}+[a-z]?(?:[ \t]+(?:Abs|lit|Z|Ziff|Satz|Nr|Art)\.?[ \t]*[${WORD_CHARS}]+\)?)*[ \t]+$`,
+    'u',
+  );
+  const keyword = new RegExp(String.raw`(?<![${WORD_CHARS}])${FILE_NUMBER_KEYWORDS}[ \t]*:?[ \t]*$`, 'u');
+  let seed = 11;
+  const random = (max: number): number => {
+    seed = (seed * 1103515245 + 12345) % 2 ** 31;
+    return seed % max;
+  };
+
+  it('the citation check equals PHP’s pattern', () => {
+    const tokens = [
+      '§',
+      '§§',
+      ' ',
+      '\t',
+      '1',
+      '٣',
+      '2a',
+      'Abs',
+      'Ziff',
+      'Z',
+      'iff',
+      'lit',
+      '.',
+      ')',
+      'x',
+      'StVO',
+      ',',
+      'ä',
+    ];
+    for (let i = 0; i < 20_000; i++) {
+      const text = Array.from({ length: 1 + random(10) }, () => tokens[random(tokens.length)]).join('');
+      expect(isAfterCitation(text), JSON.stringify(text)).toBe(citation.test(text));
+    }
+  });
+
+  it('the file number keyword check equals PHP’s pattern', () => {
+    const tokens = ['Zahl', 'GZ', 'Gz.', 'Az.', 'Kunden-Nr', '.', ':', ' ', '\t', 'x', 'ä', 'Aktenzeichen'];
+    for (let i = 0; i < 20_000; i++) {
+      const text = Array.from({ length: 1 + random(6) }, () => tokens[random(tokens.length)]).join('');
+      expect(isAfterFileNumberKeyword(text), JSON.stringify(text)).toBe(keyword.test(text));
+    }
   });
 });
