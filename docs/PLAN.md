@@ -3,7 +3,7 @@
 Port of `clarifile/pii-shield` (PHP, MIT, github.com/massiveart/clarifile, `packages/pii-shield`) to TypeScript.
 Goal: same behaviour, same wire formats, so PHP and Node can redact and restore each other's data.
 
-Source of truth: the PHP package. Local copy: `/Users/andre.schade/devel/briefklar/packages/pii-shield` (read-only, frozen; never edit it from here).
+Source of truth: the PHP package. Local copy: path in `CLAUDE.local.md` (read-only; never edit it from here).
 
 ## Decisions
 
