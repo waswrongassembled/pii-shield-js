@@ -154,3 +154,31 @@ describe('learned pattern engine matches a backtracking regex engine', () => {
     }
   });
 });
+
+describe('validating a learned pattern has a bounded cost', () => {
+  // PHP limits each start position only: these took up to 16 s each and would block Node's event loop.
+  const cases: [string, string[]][] = [
+    ['.{0,45}.{0,45}.{0,45}X', ['aX']],
+    ['.{0,99}.{0,99}X', ['aX']],
+    [String.raw`\S+@x\.at`, Array.from({ length: 20 }, (_, i) => `${'a'.repeat(i + 1)}@x.at`)],
+    [String.raw`\w{0,100}\w{0,100}X`, Array.from({ length: 20 }, (_, i) => `${'a'.repeat(i + 1)}X`)],
+  ];
+
+  it.each(cases)('%s finishes within 1.5 s, accepted or rejected', (pattern, examples) => {
+    const start = performance.now();
+    try {
+      defineCustomEntityType({ name: 'SOME_NUMBER', description: 'x', examples, pattern });
+    } catch {
+      // rejected as too slow is fine
+    }
+    expect(performance.now() - start).toBeLessThan(1500);
+  });
+
+  it('accepts the bounded form of a broad pattern', () => {
+    const examples = Array.from({ length: 20 }, (_, i) => `${'a'.repeat(i + 1)}@x.at`);
+
+    expect(() =>
+      defineCustomEntityType({ name: 'SOME_NUMBER', description: 'x', examples, pattern: String.raw`\S{1,64}@x\.at` }),
+    ).not.toThrow();
+  });
+});
