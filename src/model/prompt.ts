@@ -1,5 +1,5 @@
 import { ENTITY_TYPES, EntityType, isEntityType } from '../entity-type.js';
-import { codePointLength, phpTrim, SPACE } from '../internal/pcre.js';
+import { codePointLength, phpTrim, SPACE, SPACE_CHARS } from '../internal/pcre.js';
 import type { CustomEntityType } from '../learning/custom-entity-type.js';
 
 /**
@@ -162,8 +162,12 @@ export function withoutReasoning(answer: string): string {
   }
 }
 
-/** Characters trimmed from both ends of a value (PHP trims their bytes, see docs/DEVIATIONS.md). */
-const QUOTES = new Set([' ', '\t', '\n', '\r', '\0', '\v', '"', "'", '„', '“', '”', '‚', '‘', '’', '«', '»']);
+/**
+ * A character trimmed from both ends of a value. PHP (after clarifile PR #95):
+ * preg_replace('/^[\s\0"\'„“”‚‘’«»]+|[\s\0"\'„“”‚‘’«»]+$/u', '', $value). Tested per character here, as the
+ * regex would be quadratic on long inner whitespace runs in JavaScript.
+ */
+const TRIMMED = new RegExp(String.raw`^[${SPACE_CHARS}\0"'„“”‚‘’«»]$`, 'u');
 const SALUTATIONS = new RegExp(
   String.raw`^(?:(?:Herrn?|Frau|Mr|Mrs|Ms|Miss|Monsieur|Madame|Signora?|Señora?|pan|paní|pani)\.?${SPACE}+)+`,
   'iu',
@@ -174,10 +178,10 @@ function clean(value: string): string {
   const chars = Array.from(value);
   let from = 0;
   let to = chars.length;
-  while (from < to && QUOTES.has(chars[from] ?? '')) {
+  while (from < to && TRIMMED.test(chars[from] ?? '')) {
     from++;
   }
-  while (to > from && QUOTES.has(chars[to - 1] ?? '')) {
+  while (to > from && TRIMMED.test(chars[to - 1] ?? '')) {
     to--;
   }
 

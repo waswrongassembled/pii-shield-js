@@ -464,13 +464,22 @@ describe('piiShieldMiddleware: prompt', () => {
     }
   });
 
-  it('fails when a text contains the internal separator', async () => {
+  // PHP's PiiShieldProcessor throws a LogicException here (docs/DEVIATIONS.md).
+  it('redacts texts that contain the internal separator', async () => {
+    const sep = `\n${'\u{2063}'.repeat(3)}\n`;
     const { mock, model } = setup([text('ok')]);
 
-    await expect(generateText({ model, maxRetries: 0, prompt: `a\n\u{2063}\u{2063}\u{2063}\nb` })).rejects.toThrow(
-      'Redaction changed the message structure.',
-    );
-    expect(mock.doGenerateCalls).toEqual([]);
+    await generateText({
+      model,
+      maxRetries: 0,
+      instructions: `Sehr geehrter Herr Johann Beispielmann${sep}\u{2063}`,
+      prompt: `${sep}IBAN AT61 1904 3002 3457 3201${sep}\n\u{2063}\u{2063}\u{2063}`,
+    });
+
+    const payload = sent(mock);
+    expect(payload).not.toContain('Johann Beispielmann');
+    expect(payload).not.toContain('AT61 1904 3002 3457 3201');
+    expect(payload).toContain(JSON.stringify(sep).slice(1, -1));
   });
 
   it('runs async detectors with the call’s abort signal', async () => {

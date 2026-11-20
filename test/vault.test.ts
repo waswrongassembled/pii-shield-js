@@ -318,6 +318,19 @@ describe('EncryptedVault', () => {
     await expect(fetch).rejects.toThrow(new VaultError('Vault entry is corrupt.', 'VAULT_CORRUPT'));
   });
 
+  // PHP chains the JsonException as previous (docs/UPSTREAM.md #20); V8's JSON.parse() message quotes the input.
+  it('does not leak the decrypted mapping through a JSON error', async () => {
+    const { storage } = setup();
+    await storage.put('id-1', encryptWith(KEY, 'id-1', '{"⟦PERSON_1⟧":"Maria Musterfrau",'), 60);
+
+    const error: unknown = await new EncryptedVault({ storage, key: KEY }).fetch('id-1').catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(VaultError);
+    expect((error as VaultError).cause).toBeUndefined();
+    expect((error as VaultError).message).toBe('Vault entry is corrupt.');
+    expect(JSON.stringify(error, Object.getOwnPropertyNames(error))).not.toContain('Musterfrau');
+  });
+
   it('accepts integer-like keys outside the PHP int range (PHP keeps them as strings)', async () => {
     const { storage } = setup();
     await storage.put('id-1', encryptWith(KEY, 'id-1', '{"01":"a","-0":"c","9223372036854775808":"b"}'), 60);

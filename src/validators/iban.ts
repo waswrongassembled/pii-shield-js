@@ -1,9 +1,14 @@
+import { asciiDigits } from '../internal/pcre.js';
+
 /**
- * IBAN according to ISO 13616 (mod 97 check). ASCII whitespace is ignored, ASCII letters are case-insensitive.
+ * IBAN according to ISO 13616 (mod 97 check). ASCII whitespace is ignored, ASCII letters are case-insensitive,
+ * any decimal digit (\p{Nd}) counts (PHP: ASCII only).
  */
 export function isValidIban(candidate: string): boolean {
   // PHP's strtoupper() only maps a-z.
-  const iban = candidate.replace(/[\t\n\v\f\r ]/g, '').replace(/[a-z]/g, (c) => c.toUpperCase());
+  const iban = asciiDigits(candidate)
+    .replace(/[\t\n\v\f\r ]/g, '')
+    .replace(/[a-z]/g, (c) => c.toUpperCase());
   if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(iban)) {
     return false;
   }

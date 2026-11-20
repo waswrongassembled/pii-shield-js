@@ -30,6 +30,27 @@ export const LINE_START = String.raw`(?<![^\n])`;
 /** PCRE $ with /m (see LINE_START). */
 export const LINE_END = String.raw`(?![^\n])`;
 
+const ND = /\p{Nd}/u;
+const NON_ASCII_ND = /(?![0-9])\p{Nd}/gu;
+
+/**
+ * Replaces every decimal digit (\p{Nd}: fullwidth, Arabic-Indic, Devanagari, ...) with its ASCII digit.
+ * Detectors match such digits via \d under PHP's /u; PHP's validators then count ASCII digits only and
+ * reject the match (docs/DEVIATIONS.md). Unicode assigns \p{Nd} in contiguous runs of whole 0-9 blocks,
+ * so a digit's value is its distance from the start of its run, modulo 10.
+ */
+export function asciiDigits(text: string): string {
+  return text.replace(NON_ASCII_ND, (digit) => {
+    const codePoint = digit.codePointAt(0) ?? 0;
+    let start = codePoint;
+    while (ND.test(String.fromCodePoint(start - 1))) {
+      start--;
+    }
+
+    return String((codePoint - start) % 10);
+  });
+}
+
 /** A regex match of a whole pattern or a named group, with its UTF-16 offset. */
 export interface RegexMatch {
   readonly value: string;

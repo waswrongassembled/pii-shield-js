@@ -1,12 +1,14 @@
+import { asciiDigits } from '../internal/pcre.js';
+
 /**
  * German tax identification number (Steuerliche Identifikationsnummer, 11 digits).
  *
  * Structure: no leading zero; within the first 10 digits exactly one digit occurs
  * two or three times, all others at most once. Check digit: ISO 7064 MOD 11,10.
- * Spaces are ignored. Like PHP's "$", a single trailing "\n" is accepted.
+ * Spaces are ignored, any decimal digit (\p{Nd}) counts (PHP: ASCII only). Like PHP's "$", a single trailing "\n" is accepted.
  */
 export function isValidDeTaxId(candidate: string): boolean {
-  const digits = candidate.replaceAll(' ', '');
+  const digits = asciiDigits(candidate).replaceAll(' ', '');
   if (!/^[1-9][0-9]{10}\n?$/.test(digits)) {
     return false;
   }

@@ -1,4 +1,4 @@
-import { LINE_START, SPACE, WORD, WORD_END, WORD_START } from '../internal/pcre.js';
+import { asciiDigits, LINE_START, SPACE, WORD, WORD_END, WORD_START } from '../internal/pcre.js';
 
 /**
  * Heuristic: is a contact detail (e-mail, phone) the sender authority's own contact?
@@ -109,7 +109,7 @@ export function isAuthorityContact(text: string, offset: number): boolean {
  * next to authority keywords: "Ihren Einspruch haben wir unter 0664 ... notiert".
  */
 export function isMobileNumber(phone: string): boolean {
-  const digits = phone
+  const digits = asciiDigits(phone)
     .replace(/[^0-9+]/g, '')
     // "+43 0664 ..." / "+43 (0)664 ...": the trunk zero after the country code is not part of the number
     .replace(/^((?:\+|00)[0-9]{2})0/, '$1');

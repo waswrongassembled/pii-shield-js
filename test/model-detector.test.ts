@@ -60,7 +60,10 @@ function makeDetector(
 const TEXT = 'Vážený pan Jan Novák,\nčíslo pasu CZ1234567, Lindenweg 12\n6900 Bregenz. Jan Novák zahlt 110,00 Euro.';
 const fixture = loadFixture('model');
 
-/** PHP trims the bytes of „“”‚‘’«», not the characters, and then drops the broken value (docs/DEVIATIONS.md). */
+/**
+ * PHP before clarifile PR #95 trims the bytes of „“”‚‘’«», not the characters, and drops the broken value; the
+ * fixtures hold that result. The port trims like PR #95 (docs/DEVIATIONS.md).
+ */
 const BYTE_TRIM: Record<string, string[]> = {
   'value ending in ř (byte trim)': ['Jan Kovář'],
   'value ending in р (byte trim)': ['Александр'],
@@ -156,6 +159,19 @@ describe('ModelDetector (ModelDetectorTest)', () => {
       expect(e.detector).toBe('model');
       expect(e.confidence).toBe(0.85);
     }
+  });
+
+  // clarifile PR #95: preg_replace('/^[\s\0"\'„“”‚‘’«»]+|[\s\0"\'„“”‚‘’«»]+$/u', '', $value)
+  it('trims Unicode whitespace, NUL and quotes from both ends of a value by character', async () => {
+    const answer = JSON.stringify({
+      entities: [
+        { type: 'PERSON', value: '\u{A0}„Jan Novák“\u{2003}\0' },
+        { type: 'PERSON', value: '\u{3000}»Jan Kovář«\u{A0}' },
+      ],
+    });
+    const entities = await makeDetector(answer).detector.detect('Jan Novák und Jan Kovář zahlen.');
+
+    expect(entities.map((e) => e.value)).toEqual(['Jan Novák', 'Jan Kovář']);
   });
 
   it('keeps provider errors out of the message', async () => {
