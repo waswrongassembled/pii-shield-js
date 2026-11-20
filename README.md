@@ -58,7 +58,7 @@ npm run fixtures -- <path-to>/packages/pii-shield
 # or: PII_SHIELD_PHP_DIR=<path-to>/packages/pii-shield npm run fixtures
 ```
 
-Re-exporting from the same PHP commit produces identical files. Intended deviations from PHP are listed in [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
+Re-exporting from the same PHP commit produces identical files. Intended deviations from PHP are listed in [docs/DEVIATIONS.md](docs/DEVIATIONS.md), findings for the PHP package in [docs/UPSTREAM.md](docs/UPSTREAM.md).
 All fixture data is synthetic.
 
 ### Vault interop with PHP
