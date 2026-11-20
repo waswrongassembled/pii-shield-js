@@ -11,6 +11,7 @@ import {
 } from '../src/index.js';
 import { DIGIT, WORD_CHARS } from '../src/internal/pcre.js';
 import { FILE_NUMBER_KEYWORDS } from '../src/detectors/file-number.js';
+import { PlaceholderStreamRestorer } from '../src/internal/placeholder-stream.js';
 import { LearnedPattern } from '../src/learning/learned-pattern.js';
 import { isAfterCitation, isAfterFileNumberKeyword } from '../src/model/model-detector.js';
 
@@ -275,5 +276,31 @@ describe('model detector checks run in bounded time', () => {
       const text = Array.from({ length: 1 + random(6) }, () => tokens[random(tokens.length)]).join('');
       expect(isAfterFileNumberKeyword(text), JSON.stringify(text)).toBe(keyword.test(text));
     }
+  });
+});
+
+describe('streaming restore runs in bounded time', () => {
+  const big = 100_000;
+  const inputs: Record<string, string> = {
+    'unclosed placeholders': '[[A 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 '.repeat(big / 40),
+    'long unclosed placeholders': `[[A${' 1'.repeat(500)}`.repeat(big / 1000),
+    'brackets only': '['.repeat(big),
+    'brackets before an opener': `${'['.repeat(big)}⟦`,
+    'opener and spaces': `⟦${' '.repeat(big)}`,
+    'escaped underscores': `⟦A${'\\_A'.repeat(big / 3)}`,
+    'complete placeholders': '⟦PERSON_1⟧'.repeat(big / 10),
+  };
+
+  it.each(Object.entries(inputs))('%s, in one chunk and in chunks of 3', (_, text) => {
+    const start = performance.now();
+    const whole = new PlaceholderStreamRestorer((t) => t);
+    expect(whole.push(text) + whole.flush()).toBe(text);
+    const chunked = new PlaceholderStreamRestorer((t) => t);
+    let out = '';
+    for (let i = 0; i < text.length; i += 3) {
+      out += chunked.push(text.slice(i, i + 3));
+    }
+    expect(out + chunked.flush()).toBe(text);
+    expect(performance.now() - start).toBeLessThan(LIMIT_MS * 2);
   });
 });
