@@ -17,7 +17,17 @@ declare(strict_types=1);
  * All data is synthetic. Never add real letters, names or numbers.
  */
 
+use Clarifile\PiiShield\Detector\AtSvnrDetector;
+use Clarifile\PiiShield\Detector\BirthDateDetector;
 use Clarifile\PiiShield\Detector\DetectorInterface;
+use Clarifile\PiiShield\Detector\EmailDetector;
+use Clarifile\PiiShield\Detector\FileNumberDetector;
+use Clarifile\PiiShield\Detector\IbanDetector;
+use Clarifile\PiiShield\Detector\LicensePlateDetector;
+use Clarifile\PiiShield\Detector\PhoneDetector;
+use Clarifile\PiiShield\Detector\PostalAddressDetector;
+use Clarifile\PiiShield\Detector\SalutationPersonDetector;
+use Clarifile\PiiShield\Detector\TaxNumberDetector;
 use Clarifile\PiiShield\Entity;
 use Clarifile\PiiShield\EntityExtractor;
 use Clarifile\PiiShield\Learning\CustomEntityDetector;
@@ -169,9 +179,9 @@ if (!is_dir($outDir)) {
 // ---------------------------------------------------------------------------------------------
 
 $validators = [
-    'AtSvnrValidator' => [new AtSvnrValidator(), AtSvnrValidatorTest::class, ['1237-010180', ' 1237 010180', "1237\n010180", '１２３７０１０１８０']],
-    'IbanValidator' => [new IbanValidator(), IbanValidatorTest::class, ['AT61  1904 3002 3457 3201', "AT61\n1904 3002 3457 3201", 'GB82 WEST 1234 5698 7654 32', 'NO93 8601 1117 947', 'MT84 MALT 0110 0001 2345 MTLC AST0 01S']],
-    'DeTaxIdValidator' => [new DeTaxIdValidator(), DeTaxIdValidatorTest::class, ['86 0957 42719', '86-095-742-719', '11111111111']],
+    'AtSvnrValidator' => [new AtSvnrValidator(), AtSvnrValidatorTest::class, ['1237-010180', ' 1237 010180', "1237\n010180", '１２３７０１０１８０', '١٢٣٧٠١٠١٨٠', "1237\t\v010180", "1237\u{00A0}010180"]],
+    'IbanValidator' => [new IbanValidator(), IbanValidatorTest::class, ['AT61  1904 3002 3457 3201', "AT61\n1904 3002 3457 3201", 'GB82 WEST 1234 5698 7654 32', 'NO93 8601 1117 947', 'MT84 MALT 0110 0001 2345 MTLC AST0 01S', "AT61\u{00A0}1904 3002 3457 3201", "AT61\f1904 3002 3457 3201", 'at61 1904 3002 3457 3201 ı']],
+    'DeTaxIdValidator' => [new DeTaxIdValidator(), DeTaxIdValidatorTest::class, ['86 0957 42719', '86-095-742-719', '11111111111', "86095742719\n", "86095742719\n\n", "86\t095742719"]],
 ];
 $out = [];
 foreach ($validators as $name => [$validator, $test, $extra]) {
@@ -200,6 +210,99 @@ $astral = "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail
 foreach (EntityExtractor::defaultDetectors() as $detector) {
     $detectorCases[] = ['case' => 'code point offsets', 'detector' => describe($detector), 'text' => $astral, 'entities' => entities($detector->detect($astral))];
 }
+// PCRE semantics the port must reproduce: with /u, PHP also sets UCP (\d, \w, \b and \s are Unicode-aware);
+// ^ and $ with /m only see "\n"; some checks run without /u, on bytes. Window and letterhead limits count bytes.
+$letterhead = 'Bezirkshauptmannschaft Musterstadt';
+$authorityMail = 'verkehr@bh-musterstadt.gv.at';
+$pcreCases = [
+    'Unicode digit before SVNR' => [new AtSvnrDetector(), 'SVNR ١4568 150392'],
+    'Unicode digit after SVNR' => [new AtSvnrDetector(), 'SVNR 4568 150392١'],
+    'fullwidth SVNR' => [new AtSvnrDetector(), 'SVNR ４５６８ １５０３９２'],
+    'phone with some Unicode digits' => [new PhoneDetector(), 'Privat +43 6641 23٤٥٦٧'],
+    'phone with Unicode digits only' => [new PhoneDetector(), 'Privat +٤٣ ٦٦٤ ١٢٣٤٥٦٧'],
+    'Unicode digit before phone' => [new PhoneDetector(), 'Privat ١0664 1234567'],
+    'AT tax number with Unicode digits' => [new TaxNumberDetector(), 'Steuernummer 46 ١٢٣/4567'],
+    'fullwidth tax id' => [new TaxNumberDetector(), 'Steuer-ID ８６０９５７４２７１９'],
+    'house number with Unicode digits' => [new PostalAddressDetector(), "Lindenweg ١٢\n6900 Bregenz"],
+    'plate with Unicode digits' => [new LicensePlateDetector(), 'Kennzeichen B-١٢٣AB'],
+    'birth day with Unicode digits' => [new BirthDateDetector(), 'geb. ١٥.03.1992'],
+    'birth year with Unicode digits' => [new BirthDateDetector(), 'geb. 15.03.١٩٩٢'],
+    'file number before a Unicode digit' => [new FileNumberDetector(), 'Zahl: ABCD-١'],
+    'IBAN with a Unicode digit' => [new IbanDetector(), 'IBAN AT٦1 1904 3002 3457 3201'],
+    'e-mail before a letter' => [new EmailDetector(), 'Privat: maria@example.orgä'],
+    'e-mail after a letter' => [new EmailDetector(), 'Privat: ämaria@example.org'],
+    'e-mail before a combining mark' => [new EmailDetector(), "Privat: maria@example.org\u{0301}"],
+    'e-mail before an underscore' => [new EmailDetector(), 'Privat: maria@example.org_'],
+    'IBAN after a letter' => [new IbanDetector(), 'ÄAT61 1904 3002 3457 3201'],
+    'IBAN before a letter' => [new IbanDetector(), 'AT61 1904 3002 3457 3201é'],
+    'salutation after a letter' => [new SalutationPersonDetector(), 'éHerr Beispielmann'],
+    'birth keyword after a letter' => [new BirthDateDetector(), 'Rügeb. 15.03.1992'],
+    'file number keyword after a letter' => [new FileNumberDetector(), 'ÜZahl: BHMS-VK-2026/48213'],
+    'plate before a letter' => [new LicensePlateDetector(), 'Kennzeichen B-123ABé'],
+    'phone after a letter' => [new PhoneDetector(), 'Privat é0664 1234567'],
+    'phone before a letter' => [new PhoneDetector(), 'Privat 0664 1234567é'],
+    'authority keyword before a letter' => [new PhoneDetector(), 'Erreichen Sie unsé unter 05572 12345'],
+    'authority keyword with umlaut' => [new PhoneDetector(), 'Erreichen Sie Ämtern unter 05572 12345'],
+    'authority keyword with long s' => [new PhoneDetector(), 'Erreichen Sie unſ unter 05572 12345'],
+    'authority keyword in capitals' => [new PhoneDetector(), 'Erreichen Sie UNS unter 05572 12345'],
+    'authority keyword with Kelvin sign' => [new PhoneDetector(), "Erreichen Sie das AMT\u{212A} unter 05572 12345"],
+    'NEL is whitespace' => [new BirthDateDetector(), "geb.\u{0085}15.03.1992"],
+    'BOM is no whitespace' => [new BirthDateDetector(), "geb.\u{FEFF}15.03.1992"],
+    'Mongolian vowel separator is whitespace' => [new BirthDateDetector(), "geb.\u{180E}15.03.1992"],
+    'line separator and no-break space in a birth date' => [new BirthDateDetector(), "geboren\u{2028}am 15.\u{00A0}03.1992"],
+    'tab in a birth date' => [new BirthDateDetector(), "geb. 15.\t03.1992"],
+    'sentence ends at NEL' => [new PhoneDetector(), "Bei Fragen erreichen Sie uns.\u{0085}Privat 05572 12345"],
+    'sentence does not end at BOM' => [new PhoneDetector(), "Bei Fragen erreichen Sie uns.\u{FEFF}Privat 05572 12345"],
+    'recipient phone after NEL' => [new PhoneDetector(), "Wir haben notiert: Ihre\u{0085}Telefonnummer 05572 12345"],
+    'recipient phone after BOM' => [new PhoneDetector(), "Wir haben notiert: Ihre\u{FEFF}Telefonnummer 05572 12345"],
+    'address line ends at line separator' => [new PostalAddressDetector(), "Lindenweg 12\n6900 Bregenz\u{2028}x"],
+    'address line starts after line separator' => [new PostalAddressDetector(), "x\u{2028}Lindenweg 12\n6900 Bregenz"],
+    'address line starts after CR' => [new PostalAddressDetector(), "x\rLindenweg 12\n6900 Bregenz"],
+    'salutation line starts after paragraph separator' => [new SalutationPersonDetector(), "x\u{2029}Frau\nMaria Musterfrau\n"],
+    'name line ends at CR' => [new SalutationPersonDetector(), "Frau\nMaria Musterfrau\rx"],
+    'abbreviation z.B.' => [new PhoneDetector(), 'Bitte an uns wenden, z.B. Tel. 05572 12345'],
+    'abbreviation after a sentence' => [new PhoneDetector(), 'Bitte an uns wenden. Mag. Muster, Tel. 05572 12345'],
+    'initial after a sentence' => [new PhoneDetector(), 'Bitte an uns wenden. M. Muster, Tel. 05572 12345'],
+    'non-ASCII initial after a sentence' => [new PhoneDetector(), 'Bitte an uns wenden. É. Muster, Tel. 05572 12345'],
+    'exclamation mark ends a sentence' => [new PhoneDetector(), 'Bitte an uns wenden! Muster, Tel. 05572 12345'],
+    'sentence starts with an umlaut' => [new PhoneDetector(), 'Bitte an uns wenden. Ämter, Tel. 05572 12345'],
+    'sentence starts with an emoji' => [new PhoneDetector(), 'Bitte an uns wenden. 😀 Muster, Tel. 05572 12345'],
+    'letterhead' => [new EmailDetector(), "{$letterhead}\nVerkehrsamt\n\nSie erreichen mich unter {$authorityMail}."],
+    'letterhead line with byte 0x85 (Å)' => [new EmailDetector(), "{$letterhead} Å\nVerkehrsamt\n\nSie erreichen mich unter {$authorityMail}."],
+    'letterhead second line after byte 0x85 (Å)' => [new EmailDetector(), "Verkehrsamt Å\n{$letterhead}\n\nSie erreichen mich unter {$authorityMail}."],
+    'letterhead second line after NEL' => [new EmailDetector(), "Verkehrsamt\u{0085}x\n{$letterhead}\n\nSie erreichen mich unter {$authorityMail}."],
+    'letterhead second line after line separator' => [new EmailDetector(), "Verkehrsamt\u{2028}{$letterhead}\n\nSie erreichen mich unter {$authorityMail}."],
+    'letterhead limit cuts a character' => [new EmailDetector(), "{$letterhead}\nA\nB\nC\nD\n\n„x {$authorityMail}"],
+    'letterhead limit before ASCII' => [new EmailDetector(), "{$letterhead}\nA\nB\nC\nD\n\n\"x {$authorityMail}"],
+    'letterhead limit before a 2-byte character' => [new EmailDetector(), "{$letterhead}\nA\nB\nC\nD\n\nÄx {$authorityMail}"],
+    'letterhead too long' => [new EmailDetector(), "{$letterhead}\nA\nB\nC\nD\nE\n\nx {$authorityMail}"],
+    'letterhead with CRLF' => [new EmailDetector(), "{$letterhead}\r\nA\r\n\r\nx {$authorityMail}"],
+    'letterhead with CRLF and blank' => [new EmailDetector(), "{$letterhead}\nA\r\n \r\nx {$authorityMail}"],
+    'letterhead ends at salutation' => [new EmailDetector(), "{$letterhead}\nA\nHerrn Muster\nx {$authorityMail}"],
+    'letterhead "Anna" is no salutation' => [new EmailDetector(), "{$letterhead}\nAnna\nx {$authorityMail}"],
+    'authority domains' => [new EmailDetector(), "{$letterhead}\nA\n\nx verkehr@musterstadt.at verkehr@musterstadt-fitness.at verkehr@xy-musterstadt.at verkehr@MUSTERSTADT.AT"],
+    'letterhead after 2-byte characters' => [new EmailDetector(), str_repeat('ä', 990)." {$letterhead}\n\nx {$authorityMail}"],
+    'letterhead on line 2 after 2-byte characters' => [new EmailDetector(), str_repeat('ä', 999)."\n{$letterhead}\n\nx {$authorityMail}"],
+    'letterhead after 2000 bytes' => [new EmailDetector(), str_repeat('a', 1999)."\n{$letterhead}\n\nx {$authorityMail}"],
+    'letterhead after 3-byte characters' => [new EmailDetector(), str_repeat('€', 700)."\n{$letterhead}\n\nx {$authorityMail}"],
+    'letterhead with 4-byte characters' => [new EmailDetector(), "{$letterhead} ".str_repeat('😀', 600)."\n\nx {$authorityMail}"],
+];
+// The sentence window is 400 bytes on each side: multi-byte characters shrink it.
+foreach ([190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200] as $n) {
+    $pcreCases["window before, {$n} 2-byte characters"] = [new PhoneDetector(), 'Erreichen Sie uns '.str_repeat('ä', $n).' Tel. 05572 12345'];
+}
+foreach ([95, 96, 97, 98, 99, 100, 101] as $n) {
+    $pcreCases["window before, {$n} 4-byte characters"] = [new PhoneDetector(), 'Erreichen Sie uns '.str_repeat('😀', $n).' Tel. 05572 12345'];
+}
+foreach ([380, 385, 390, 395, 400] as $n) {
+    $pcreCases["window after, {$n} 1-byte characters"] = [new PhoneDetector(), 'Tel. 05572 12345 '.str_repeat('a', $n).' uns'];
+}
+foreach ([190, 195, 196, 197, 200] as $n) {
+    $pcreCases["window after, {$n} 2-byte characters"] = [new PhoneDetector(), 'Tel. 05572 12345 '.str_repeat('ö', $n).' uns'];
+}
+foreach ($pcreCases as $case => [$detector, $text]) {
+    $detectorCases[] = ['case' => 'pcre: '.$case, 'detector' => describe($detector), 'text' => $text, 'entities' => entities($detector->detect($text))];
+}
 write($outDir, 'detectors.json', ['cases' => $detectorCases], $commit);
 
 // ---------------------------------------------------------------------------------------------
@@ -221,6 +324,13 @@ $extraTexts = [
     'existing placeholders in input' => 'Text mit ⟦PERSON_1⟧ und [[iban 2]] bleibt, SVNR 4568 150392.',
     'empty' => '',
     'no PII' => 'Betrag 110,00 Euro bis 15.11.2026, § 99 Abs. 3 lit. a StVO.',
+    'normalization keeps original characters' => "😀\r\nFrau\r\nMaria\u{00A0}Musterfrau\r\nTel. 0664\u{2009}1234567",
+    'name line ends at NEL' => "Frau\nMaria Musterfrau\u{0085}\nMusterfrau",
+    'propagation needs word boundaries' => "Frau\nMaria Musterfrau\n\nAn Musterfrau_ und Musterfrau\u{0301} und 1Musterfrau und Musterfrau",
+    'propagation of file number at boundaries' => "Zahl: BHMS-VK-2026/48213\nBHMS-VK-2026/48213x BHMS-VK-2026/48213 /BHMS-VK-2026/48213",
+    'propagation of nested values' => "Kundennummer 4711\nKundennummer 4711-0815 und 4711 und 4711-0815",
+    'propagation of astral names' => "Frau\n𝐀𝐁 Musterfrau\n\n𝐀𝐁 Musterfrau",
+    'propagation of hyphenated surname' => "Herrn\nJohann Beispielmann-Muster\n\nBeispielmann-Muster und Muster",
 ];
 foreach ($extraTexts as $case => $text) {
     $texts[$text] = 'extra: '.$case;

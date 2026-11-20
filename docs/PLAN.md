@@ -72,6 +72,12 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
   - `/u` → `u` flag (`\p{L}`, `\p{N}` work); `\G` + offset → sticky `y` with `lastIndex`.
   - Named groups `(?<n>)` are fine; atomic or possessive groups were not found (re-check per file).
   - `preg_split` / `preg_replace` semantics (limits, empty matches, `PREG_SPLIT_*` flags) must be replicated exactly.
+- **PHP's /u sets PCRE2_UCP** (found in phase 1–3): `\d`, `\w`, `\b` and `\s` are Unicode-aware in every `/u` pattern, not ASCII.
+  - Use the classes in `src/internal/pcre.ts` (`DIGIT` = `\p{Nd}`, `WORD` = `[\p{L}\p{N}\p{Mn}\p{Pc}]`, `SPACE`, `WORD_START`/`WORD_END` for `\b`); they were compared code point by code point with PHP 8.5 / PCRE2 10.49.
+  - JS `\w`/`\b` with the `i` flag also match `ſ` and `K` (U+212A); the explicit `WORD` class avoids that difference.
+  - `^`/`$` with `/m` only see `"\n"` in PHP; JS also breaks at `\r`, U+2028, U+2029 → `LINE_START`/`LINE_END`.
+- **Patterns without /u run on bytes:** `\d`/`\s`/`\w` are ASCII, `\R` also matches the byte 0x85 (inside UTF-8 characters like `Å`), and `$` matches before a final `"\n"` (`DeTaxIdValidator` accepts `"86095742719\n"`). `AuthorityContext` counts its sentence window and letterhead limit in UTF-8 bytes and can cut a character; the port reproduces this on encoded bytes. Edge cases are exported as `pcre: …` cases in `fixtures/detectors.json`.
+- **Ranking by length** (`EntityExtractor` overlaps) counts code points, not UTF-16 units, or values with astral characters rank differently.
 - **PatternGrammar** checks user patterns (safe subset, at most one unbounded quantifier, length limit) and compiles them to PCRE `~(?:…)~u`. In TS they become `new RegExp('(?:…)', 'u')`. The grammar must reject everything that behaves differently in PCRE and JS, so the same pattern means the same thing on both sides. This is a safety and parity risk: test it most thoroughly.
 - **PCRE vs. JS character classes** (seen in `fixtures/learning.json`, grammar probes): with `/u`, PCRE `\s` matches U+00A0 and U+2028 but not U+FEFF, JS `\s` matches all three; PCRE `.` matches U+2028, JS `.` does not. `[]a]` is a valid class in PCRE and a syntax error in JS. Learned patterns must translate these, or the grammar must reject them.
 - **String functions:** offsets are UTF-16, but length limits and masking that PHP counts with `mb_*` (e.g. `MAX_EXAMPLE_LENGTH`, `PartialMask`) must count code points (`[...s]`) to reject and mask exactly what PHP does. `strtoupper` is ASCII-only in PHP; `toUpperCase()` is not, so for type names use an ASCII-only helper.
@@ -82,11 +88,11 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
 ## Phases (each phase: tests green, lint green, own PR)
 
 0. **Scaffold** (done): repo, tsconfig, tsc build, vitest, eslint, CI (GitHub Actions on Node 22/24/26), LICENSE, README skeleton. Write `compat/export-fixtures.php` and generate fixtures.
-1. **Validators:** `AtSvnrValidator`, `IbanValidator`, `DeTaxIdValidator`.
-2. **Detectors:**
+1. **Validators** (done): `AtSvnrValidator`, `IbanValidator`, `DeTaxIdValidator`.
+2. **Detectors** (done):
    - `RegexMatcher`, `AuthorityContext`;
    - Email, Phone, Iban, AtSvnr, TaxNumber, FileNumber, BirthDate, LicensePlate, PostalAddress, SalutationPerson.
-3. **Extraction:** `Entity`, `EntityType`, `TextSpans`, `EntityExtractor` (overlaps, word boundaries, priority).
+3. **Extraction** (done): `Entity`, `EntityType`, `EntityExtractor` (overlaps, word boundaries, priority). `TextSpans` moves to phase 4 (with UTF-16 offsets it is a plain slice loop).
 4. **Redaction:** `Placeholder`, `RedactionResult`, `RestoreResult`, `PiiShield.redact/restore`, `NullPiiShield`.
 5. **Masking:** `PiiMasker`, `TypeLabelMask`, `PartialMask`.
 6. **Vault:**

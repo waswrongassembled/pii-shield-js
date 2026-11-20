@@ -72,6 +72,21 @@
                 "case": "extra 4",
                 "input": "１２３７０１０１８０",
                 "valid": false
+            },
+            {
+                "case": "extra 5",
+                "input": "١٢٣٧٠١٠١٨٠",
+                "valid": false
+            },
+            {
+                "case": "extra 6",
+                "input": "1237\t\u000b010180",
+                "valid": true
+            },
+            {
+                "case": "extra 7",
+                "input": "1237 010180",
+                "valid": false
             }
         ],
         "IbanValidator": [
@@ -164,6 +179,21 @@
                 "case": "extra 5",
                 "input": "MT84 MALT 0110 0001 2345 MTLC AST0 01S",
                 "valid": true
+            },
+            {
+                "case": "extra 6",
+                "input": "AT61 1904 3002 3457 3201",
+                "valid": false
+            },
+            {
+                "case": "extra 7",
+                "input": "AT61\f1904 3002 3457 3201",
+                "valid": true
+            },
+            {
+                "case": "extra 8",
+                "input": "at61 1904 3002 3457 3201 ı",
+                "valid": false
             }
         ],
         "DeTaxIdValidator": [
@@ -245,6 +275,21 @@
             {
                 "case": "extra 3",
                 "input": "11111111111",
+                "valid": false
+            },
+            {
+                "case": "extra 4",
+                "input": "86095742719\n",
+                "valid": true
+            },
+            {
+                "case": "extra 5",
+                "input": "86095742719\n\n",
+                "valid": false
+            },
+            {
+                "case": "extra 6",
+                "input": "86\t095742719",
                 "valid": false
             }
         ]
