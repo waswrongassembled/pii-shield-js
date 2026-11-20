@@ -1,8 +1,12 @@
 {
   "name": "@waswrongassembled/pii-shield",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Reversible PII redaction for LLM applications with DACH recognizers (AT SVNR, IBAN, tax numbers) and checksum validation. Wire-compatible port of clarifile/pii-shield.",
   "license": "MIT",
+  "author": {
+    "name": "waswrongassembled",
+    "url": "https://github.com/waswrongassembled"
+  },
   "type": "module",
   "keywords": [
     "pii",
@@ -10,11 +14,21 @@
     "dsgvo",
     "redaction",
     "anonymization",
-    "llm"
+    "pseudonymization",
+    "privacy",
+    "llm",
+    "ai-sdk",
+    "mcp",
+    "iban",
+    "dach"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/waswrongassembled/pii-shield-js.git"
+  },
+  "homepage": "https://github.com/waswrongassembled/pii-shield-js#readme",
+  "bugs": {
+    "url": "https://github.com/waswrongassembled/pii-shield-js/issues"
   },
   "engines": {
     "node": ">=22.12"
@@ -22,45 +36,55 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     },
     "./vault-redis": {
       "types": "./dist/vault-redis/index.d.ts",
-      "import": "./dist/vault-redis/index.js"
+      "default": "./dist/vault-redis/index.js"
     },
     "./ai-sdk": {
       "types": "./dist/ai-sdk/index.d.ts",
-      "import": "./dist/ai-sdk/index.js"
+      "default": "./dist/ai-sdk/index.js"
     },
     "./server": {
       "types": "./dist/server/index.d.ts",
-      "import": "./dist/server/index.js"
+      "default": "./dist/server/index.js"
     },
     "./mcp": {
       "types": "./dist/mcp/index.d.ts",
-      "import": "./dist/mcp/index.js"
-    }
+      "default": "./dist/mcp/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "bin": {
     "pii-shield": "dist/bin.js"
   },
   "files": [
     "dist",
-    "docs/openapi.yaml"
+    "docs/openapi.yaml",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && node -e \"fs.chmodSync('dist/bin.js', 0o755)\"",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check:package": "npm run build && publint --strict && attw --pack . --profile esm-only",
+    "test:package": "npm run build && node scripts/test-package.js",
     "fixtures": "php compat/export-fixtures.php",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build",
-    "compat:vault": "npm run build && node compat/export-node-payloads.js"
+    "compat:vault": "npm run build && node compat/export-node-payloads.js",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^10.0.1",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@types/node": "^22.20.5",
@@ -72,6 +96,7 @@
     "globals": "^17.14.0",
     "ioredis": "^6.0.0",
     "prettier": "^3.10.1",
+    "publint": "^0.3.25",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.73.0",
     "vitest": "^5.1.1",

@@ -45,6 +45,21 @@ MCP clients: `claude mcp add pii-shield -- npx @waswrongassembled/pii-shield mcp
 
 Configuration errors stop the CLI at start (exit code 1) with a message that names the variable.
 
+## Docker
+
+The repository's `Dockerfile` builds the package and runs `pii-shield serve` on `node:24-alpine` as the `node` user, with only production dependencies plus the optional peers for `/mcp` and Redis. It listens on `0.0.0.0:8088` inside the container.
+
+```sh
+docker build -t pii-shield .
+# Port bound to the host's 127.0.0.1 only, the host counts as a local peer:
+docker run --rm -p 127.0.0.1:8088:8088 -e PII_LOCAL_PEERS=gateway pii-shield
+# Anything else: a token, a fixed vault key, and the host names clients use:
+docker run --rm -p 8088:8088 -e PII_SERVICE_TOKEN=... -e PII_SERVICE_ONLY=1 \
+  -e PII_SERVICE_VAULT_KEY=... -e PII_SERVICE_ALLOWED_HOSTS=pii.example.internal pii-shield
+```
+
+Arguments after the image name replace `serve` (e.g. `mcp --http`). Learned types in a file need a volume (`-v pii-data:/data -e PII_SERVICE_LEARNED_TYPES=/data/learned-types.json`; `/data` belongs to the `node` user).
+
 ## Programmatic use
 
 ```ts

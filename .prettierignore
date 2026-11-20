@@ -4,3 +4,4 @@ fixtures/
 package-lock.json
 .remember/
 docs/openapi.yaml
+.readme-examples-*/

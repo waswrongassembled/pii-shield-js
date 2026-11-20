@@ -5,3 +5,4 @@ coverage/
 .env*
 CLAUDE.local.md
 .claude/
+.readme-examples-*/
