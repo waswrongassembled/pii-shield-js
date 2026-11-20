@@ -1,3 +1,4 @@
+import type { DetectOptions } from './detector.js';
 import { type Entity, typeName } from './entity.js';
 import { EntityExtractor, type EntityExtractorOptions, surname } from './entity-extractor.js';
 import { EntityType } from './entity-type.js';
@@ -49,25 +50,25 @@ export class PiiShield implements VaultRedactor {
     });
   }
 
+  /**
+   * @throws TypeError when an async detector (e.g. ModelDetector) is configured; use redactAsync()
+   */
   redact(text: string): RedactionResult {
-    const entities = this.#extractor.extract(text);
-    if (entities.length === 0) {
-      return createRedactionResult(text, {}, entities);
-    }
+    return redactEntities(text, this.#extractor.extract(text));
+  }
 
-    const { mapping, byValue } = assignPlaceholders(entities);
-    const redacted = replaceSpans(text, entities, (e) => byValue.get(typeName(e))?.get(e.value) ?? e.value);
-
-    return createRedactionResult(redacted, mapping, entities);
+  /** Like redact(), and works with async detectors such as ModelDetector. */
+  async redactAsync(text: string, options: DetectOptions = {}): Promise<RedactionResult> {
+    return redactEntities(text, await this.#extractor.extractAsync(text, options));
   }
 
   restore(text: string, source: RedactionResult | PlaceholderMapping): RestoreResult {
     return restorePlaceholders(text, source);
   }
 
-  async redactToVault(text: string): Promise<VaultRedactionResult> {
+  async redactToVault(text: string, options: DetectOptions = {}): Promise<VaultRedactionResult> {
     const vault = this.#requireVault();
-    const result = this.redact(text);
+    const result = await this.redactAsync(text, options);
     const vaultId = Buffer.from(globalThis.crypto.getRandomValues(new Uint8Array(16))).toString('hex');
     await vault.store(vaultId, result.mapping, this.#vaultTtl);
 
@@ -105,6 +106,11 @@ export class NullPiiShield implements Redactor {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- same signature as Redactor
+  redactAsync(text: string, options?: DetectOptions): Promise<RedactionResult> {
+    return Promise.resolve(this.redact(text));
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- same signature as Redactor
   restore(text: string, source?: RedactionResult | PlaceholderMapping): RestoreResult {
     return Object.freeze({
       text,
@@ -113,6 +119,17 @@ export class NullPiiShield implements Redactor {
       isClean: true,
     });
   }
+}
+
+function redactEntities(text: string, entities: Entity[]): RedactionResult {
+  if (entities.length === 0) {
+    return createRedactionResult(text, {}, entities);
+  }
+
+  const { mapping, byValue } = assignPlaceholders(entities);
+  const redacted = replaceSpans(text, entities, (e) => byValue.get(typeName(e))?.get(e.value) ?? e.value);
+
+  return createRedactionResult(redacted, mapping, entities);
 }
 
 /**

@@ -41,3 +41,30 @@ export class LearningError extends PiiShieldError {
     super(message, code, options);
   }
 }
+
+export type DetectionErrorCode = 'DETECTION_MODEL_UNREACHABLE' | 'DETECTION_INVALID_ANSWER' | 'DETECTION_TEXT_TOO_LONG';
+
+/**
+ * Model-based detection failed and must not continue: going on without the model's findings could let
+ * personal data through unredacted (PHP's DetectionFailedException). The message never contains the text.
+ *
+ * - `DETECTION_MODEL_UNREACHABLE`: the model call failed or timed out. The error is the `cause`; keep it
+ *   to server logs, providers may echo the request (the unredacted text) in their messages.
+ * - `DETECTION_INVALID_ANSWER`: the model's answer was unusable twice; `modelAnswer` holds it.
+ * - `DETECTION_TEXT_TOO_LONG`: the text needs more chunks than the model detector sends.
+ */
+export class DetectionError extends PiiShieldError {
+  declare readonly code: DetectionErrorCode;
+  /**
+   * The model's answer, for debugging only: it may contain personal data. Not enumerable, so
+   * `console.log(error)` and `JSON.stringify(error)` leave it out.
+   */
+  declare readonly modelAnswer?: string;
+
+  constructor(message: string, code: DetectionErrorCode, options?: ErrorOptions & { modelAnswer?: string }) {
+    super(message, code, options);
+    if (options?.modelAnswer !== undefined) {
+      Object.defineProperty(this, 'modelAnswer', { value: options.modelAnswer, enumerable: false });
+    }
+  }
+}

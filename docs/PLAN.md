@@ -90,6 +90,12 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
 - **Learned patterns** (found in phase 7): they are not translated to a JavaScript `RegExp` but run on a small backtracking matcher for the grammar subset (`src/learning/learned-pattern.ts`) with PCRE semantics: UCP `\d \w \s`, `.` = everything but `"\n"`, `[]a]`, `[a-b-c]`, an unescaped `~` is invalid (it ends PHP's delimiters), `$` also before a final `"\n"`, and after an empty match `preg_match_all()` retries non-empty at the same place (`x{0}|VN-\d+` finds `VN-12`). It counts choice points and backtracks per start position like PCRE2's JIT does with `pcre.backtrack_limit` (calibrated: `.{0,45}` three times passes, `.{0,46}` does not; 15 `(?:a|a)` pass, 16 do not), skips choice points for runs that cannot give characters back (auto-possessification) and adds a budget linear in the text per `matchAll()`, so detection never hangs. A differential test against `RegExp` checks the backtracking order.
 - **PatternLearner** tokenizes with `ctype_digit()` (ASCII) and `trim()` (ASCII), so Arabic digits and a no-break space become literals; it escapes `= ! < > :`, which the grammar then rejects (`fixtures/learning.json` → `learnerEscapes`).
 - **Learned-type JSON:** `json_encode()` with `JSON_UNESCAPED_UNICODE` still escapes U+2028/U+2029; otherwise `JSON.stringify(…, null, 4)` is byte-identical.
+- **Model detector** (found in phase 8):
+  - PHP's `trim($value, "…„“”‚‘’«»")` trims _bytes_, so a value ending in `ř`, `р` or `ę` (or starting with `€`) loses a byte, becomes invalid UTF-8 and is dropped; the port trims characters (docs/DEVIATIONS.md).
+  - `CITATION_BEFORE` backtracks exponentially in JavaScript (`Ziff` is `Z` + `iff` or a keyword); it is decided by a linear right-to-left pass, and the file number keyword check strips its trailing `[ \t]*:?[ \t]*` first. Differential tests against PHP's patterns in `test/redos.test.ts`. `<think>…</think>` is removed by `indexOf`, not a lazy regex.
+  - Windows count code points (chunks, the 30 characters before a birth date), the postcode lookahead counts 120 UTF-8 _bytes_ and finds nothing when the cut splits a character. `\d` is UCP in the date and citation checks but ASCII in the file number digit check.
+  - The prompt's learned-type JSON uses `JSON_HEX_*` escapes (`\u0027`, `\u0022`, `\u0026`, upper-case hex), escapes `/` and U+2028/U+2029; `src/model/prompt.ts` builds the escapes from code points because the tool layer mangles `\u` literals.
+  - Detectors see the normalized text (`\r\n` → ` \n`), so the model gets it too, as in PHP.
 - **Async validation:** vault methods are `async`, so a bad TTL rejects the Promise instead of throwing synchronously (PHP throws). Constructor arguments (`key`, `vaultTtl`) still throw synchronously.
 - **Secrets:** wipe buffers after use (`buf.fill(0)`) instead of `sodium_memzero`. Keep the key out of logs and errors.
 - **Error messages:** never contain PII values (PHP names positions, not values). Keep the wording of client-facing messages (see "Idiomatic TypeScript").
@@ -112,10 +118,11 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
    - `CustomEntityType`, `PatternGrammar`, `PatternLearner`, `EntityLearner` (learn/preview/forget/types);
    - stores: JSON file (with file locking), in-memory, and a cache store via a small KV interface;
    - `LearnedTypesDetector`, `CustomEntityDetector`.
-8. **Model detector:** port of `ModelDetector` + `ModelLocation`.
-   - Provider-agnostic via an injected function `(prompt) => Promise<string>`, or an AI SDK `LanguageModel`.
-   - Same prompt, same JSON parsing.
-   - Same guard: an external provider only with explicit `acknowledgeExternalProvider: true` (ADR 0006).
+8. **Model detector** (done): port of `ModelDetector` + `ModelLocation`.
+   - Provider-agnostic: `model` is a function `({ system, user }, { signal }) => Promise<string>` or `{ name, generate }`; `detectionModel(languageModel, settings)` from the `ai-sdk` subpath adapts an AI SDK `LanguageModel` (peer `ai`, the core stays dependency-free).
+   - Same prompt, same JSON parsing, same context checks (`fixtures/model.json`: PHP's prompts, chunks and parse results over a fake platform).
+   - Same guard: `location` (`local` | `on_premise` | `external`) is required, an external provider needs `acknowledgeExternalTransfer: true` (PHP's parameter name, ADR 0006).
+   - `ModelDetector` is an `AsyncDetector` (`async: true`); `extractAsync()`, `redactAsync()`, `redactToVault()` and `maskAsync()` run it, the sync APIs throw a `TypeError` before anything is sent. `DetectionError` (`DETECTION_MODEL_UNREACHABLE`, `DETECTION_INVALID_ANSWER`, `DETECTION_TEXT_TOO_LONG`), `AbortSignal` and an optional `timeout`.
 9. **AI SDK middleware** (replaces `PiiShieldProcessor` + `StructuredRestorer`):
    - `wrapLanguageModel({ middleware: piiShieldMiddleware(shield) })`;
    - redacts the prompt, restores text, stream deltas (placeholders that span chunk boundaries) and structured output.

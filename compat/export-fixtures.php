@@ -17,6 +17,8 @@ declare(strict_types=1);
  * All data is synthetic. Never add real letters, names or numbers.
  */
 
+use Clarifile\PiiShield\Bridge\SymfonyAi\ModelDetector;
+use Clarifile\PiiShield\Bridge\SymfonyAi\ModelLocation;
 use Clarifile\PiiShield\Detector\AtSvnrDetector;
 use Clarifile\PiiShield\Detector\BirthDateDetector;
 use Clarifile\PiiShield\Detector\DetectorInterface;
@@ -30,6 +32,7 @@ use Clarifile\PiiShield\Detector\SalutationPersonDetector;
 use Clarifile\PiiShield\Detector\TaxNumberDetector;
 use Clarifile\PiiShield\Entity;
 use Clarifile\PiiShield\EntityExtractor;
+use Clarifile\PiiShield\Learning\CacheCustomEntityStore;
 use Clarifile\PiiShield\Learning\CustomEntityDetector;
 use Clarifile\PiiShield\Learning\CustomEntityType;
 use Clarifile\PiiShield\Learning\EntityLearner;
@@ -43,6 +46,7 @@ use Clarifile\PiiShield\PiiMasker;
 use Clarifile\PiiShield\PiiShield;
 use Clarifile\PiiShield\Placeholder;
 use Clarifile\PiiShield\RedactionResult;
+use Clarifile\PiiShield\Tests\Bridge\SymfonyAi\ModelDetectorTest;
 use Clarifile\PiiShield\Tests\Detector\DetectorTest;
 use Clarifile\PiiShield\Tests\Learning\CustomEntityTest;
 use Clarifile\PiiShield\Tests\Learning\PatternLearnerTest;
@@ -55,6 +59,13 @@ use Clarifile\PiiShield\Validator\DeTaxIdValidator;
 use Clarifile\PiiShield\Validator\IbanValidator;
 use Clarifile\PiiShield\Vault\EncryptedVault;
 use Clarifile\PiiShield\Vault\Storage\VaultStorageInterface;
+use Symfony\AI\Platform\ModelCatalog\FallbackModelCatalog;
+use Symfony\AI\Platform\ModelRouter\CatalogBasedModelRouter;
+use Symfony\AI\Platform\Platform;
+use Symfony\AI\Platform\Provider;
+use Symfony\AI\Platform\Test\MockModelClient;
+use Symfony\AI\Platform\Test\MockResultConverter;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 $packageDir = $argv[1] ?? getenv('PII_SHIELD_PHP_DIR') ?: null;
 if (null === $packageDir || !is_file($packageDir.'/vendor/autoload.php')) {
@@ -772,4 +783,173 @@ write($outDir, 'vault.json', [
     'failures' => $failureCases,
     'keyLength' => attempt(static fn () => new EncryptedVault($storage, 'short')),
     'ttl' => attempt(static fn () => $vault->store('x', [], 0)),
+], $commit);
+
+// ---------------------------------------------------------------------------------------------
+// Model detector: prompts, chunks and how answers become entities (fake platform, no network)
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * Runs ModelDetector over a mock platform. Answers are given in call order (then '{"entities":[]}');
+ * an answer "!throw" makes the platform fail. Records the system prompt and the user message of every call.
+ *
+ * @param list<string>           $answers
+ * @param list<CustomEntityType> $learned
+ *
+ * @return array<string, mixed>
+ */
+function modelRun(string $text, array $answers, array $learned = [], int $chunkSize = ModelDetector::DEFAULT_CHUNK_SIZE, bool $keepAuthorityContacts = true): array
+{
+    $client = new MockModelClient(static function () use (&$answers): string {
+        $answer = array_shift($answers) ?? '{"entities":[]}';
+        if ('!throw' === $answer) {
+            throw new RuntimeException('400 Bad Request: input "Johann Beispielmann" is invalid');
+        }
+
+        return $answer;
+    });
+    $platform = new Platform([new Provider('mock', [$client], [new MockResultConverter()], new FallbackModelCatalog())], new CatalogBasedModelRouter());
+    $store = new CacheCustomEntityStore(new ArrayAdapter());
+    foreach ($learned as $type) {
+        $store->save($type);
+    }
+    $outcome = attempt(static fn () => entities((new ModelDetector($platform, 'test-model', ModelLocation::Local, learnedTypes: $store, chunkSize: $chunkSize, keepAuthorityContacts: $keepAuthorityContacts))->detect($text)));
+    $sent = array_map(static fn (array $call): string => $call['payload']['messages'][1]['content'], $client->getCalls());
+    $systems = array_values(array_unique(array_map(static fn (array $call): string => $call['payload']['messages'][0]['content'], $client->getCalls())));
+
+    return ['sent' => $sent, 'systems' => $systems] + $outcome;
+}
+
+$modelTestClass = new ReflectionClass(ModelDetectorTest::class);
+$modelText = $modelTestClass->getConstant('TEXT');
+$letter03 = $modelTestClass->getConstant('LETTER_03');
+$petName = new CustomEntityType('PET_NAME', 'Name eines Haustiers', ['Bello', 'Minka'], ['Hund']);
+
+$modelCases = [
+    // ModelDetectorTest
+    'grounded with offsets' => [$modelText, ['{"entities":[{"type":"PERSON","value":"Jan Novák"},{"type":"ID_NUMBER","value":"CZ1234567"}]}']],
+    'different whitespace or commas' => [$modelText, ['{"entities":[{"type":"ADDRESS","value":"Lindenweg 12, 6900 Bregenz"}]}']],
+    'salutation and punctuation removed' => [$modelText, ['{"entities":[{"type":"PERSON","value":"Herr Jan Novák,"},{"type":"ADDRESS","value":"Lindenweg 12, 6900 Bregenz."}]}']],
+    'birth dates need a keyword' => ['Login am 03.11.2026. Geboren am 02.05.1981, narozen 7. 3. 1990.', ['{"entities":[{"type":"BIRTH_DATE","value":"03.11.2026"},{"type":"BIRTH_DATE","value":"02.05.1981"},{"type":"BIRTH_DATE","value":"7. 3. 1990"}]}']],
+    'invented values dropped' => [$modelText, ['{"entities":[{"type":"PERSON","value":"Maria Musterfrau"}]}']],
+    'no match inside longer words' => ['Januar und Jana', ['{"entities":[{"type":"PERSON","value":"Jan"}]}']],
+    'unknown types mapped' => [$modelText, ['{"entities":[{"type":"passport","value":"CZ1234567"},{"type":"favourite colour","value":"Bregenz"}]}']],
+    'code fences and prose' => [$modelText, ["Hier die Funde:\n```json\n{\"entities\":[{\"type\":\"PERSON\",\"value\":\"Jan Novák\"}]}\n```"]],
+    'reasoning ignored' => [$modelText, ["<think>The user wants {entities}. {\"entities\":[{\"type\":\"PERSON\",\"value\":\"Maria\"}]} maybe?</think>\n{\"entities\":[{\"type\":\"ID_NUMBER\",\"value\":\"CZ1234567\"}]}"]],
+    'invalid answer fails closed' => [$modelText, ['Ich kann dabei nicht helfen.', 'Ich kann dabei nicht helfen.']],
+    'provider error' => [$modelText, ['!throw']],
+    'learned type taught and reported' => ['Unser Hund Rex bellt.', ['{"entities":[{"type":"PET_NAME","value":"Rex"}]}'], [$petName]],
+    'empty text not sent' => ["  \n", []],
+    'letter 03 answer of qwen3:8b' => [$letter03, ['{"entities":[{"type":"PERSON","value":"Lukas Testmann"},{"type":"ADDRESS","value":"Gartengasse 5"},{"type":"ADDRESS","value":"Rathausplatz 2, 8999 Musterhausen"},{"type":"FILE_NUMBER","value":"ANONYMVERFÜGUNG"},{"type":"OTHER","value":"27.10.2026"},{"type":"OTHER","value":"14:10"},{"type":"OTHER","value":"MusterParkG"},{"type":"EMAIL","value":"parken@musterhausen.example"}]}']],
+    'unusable answer asked once more' => [$modelText, ['{"entities":[{"type":"PERSON","value":"Jan', '{"entities":[{"type":"PERSON","value":"Jan Novák"}]}']],
+    'unusable twice fails closed' => [$modelText, ['{"entities":[{"type":"PERSON"', '{"entities":[{"type":"PERSON"']],
+    // Answer parsing
+    'unclosed think' => [$modelText, ['<think>{"entities":[{"type":"PERSON","value":"Jan Novák"}]}']],
+    'two think blocks' => [$modelText, ['<think>a</think>{"entities":[{"type":"ID_NUMBER","value":"CZ1234567"}]}<think>{"entities":[]}</think>']],
+    'closing brace before opening' => [$modelText, ['} nichts {', '} nichts {']],
+    'entities is null' => [$modelText, ['{"entities":null}', '{"entities":null}']],
+    'top-level list' => [$modelText, ['[{"entities":[]}]', '[{"entities":[]}]']],
+    'entities as an object' => [$modelText, ['{"entities":{"a":{"type":"PERSON","value":"Jan Novák"},"b":{"type":"ID_NUMBER","value":"CZ1234567"}}}']],
+    'non-string type or value skipped' => [$modelText, ['{"entities":[{"type":1,"value":"Jan Novák"},{"type":"PERSON","value":["Jan Novák"]},"PERSON",{"value":"CZ1234567"},{"type":"ID_NUMBER","value":"CZ1234567"}]}']],
+    'one-character value skipped' => ['A und B', ['{"entities":[{"type":"PERSON","value":"A"},{"type":"PERSON","value":"B."}]}']],
+    'duplicate findings once' => [$modelText, ['{"entities":[{"type":"PERSON","value":"Jan Novák"},{"type":"PERSON","value":"Jan Novák"},{"type":"OTHER","value":"Jan Novák"}]}']],
+    'type aliases' => ['Max Muster, Tel 05572 12345, max@example.org, IP 10.0.0.1, Karte 4111 1111 1111 1111, Diagnose Diabetes', ['{"entities":[{"type":"full name","value":"Max Muster"},{"type":"phone-number","value":"05572 12345"},{"type":"Email Address","value":"max@example.org"},{"type":"ip","value":"10.0.0.1"},{"type":"card_number","value":"4111 1111 1111 1111"},{"type":"diagnosis","value":"Diabetes"}]}']],
+    'type with tabs and newline' => ['Max Muster zahlt.', ["{\"entities\":[{\"type\":\" full\\tname\\n\",\"value\":\"Max Muster\"}]}"]],
+    'learned name normalised' => ['Unser Hund Rex bellt.', ['{"entities":[{"type":"pet name","value":"Rex"}]}'], [$petName]],
+    'learned name with non-ASCII case' => ['Unser Hund Rex bellt.', ['{"entities":[{"type":"pet_nаme","value":"Rex"}]}'], [$petName]],
+    // Cleaning values
+    'quotes trimmed' => ['Herr Jan Novák und „Maria Musterfrau“ und «Lukas Testmann»', ['{"entities":[{"type":"PERSON","value":"„Jan Novák“"},{"type":"PERSON","value":"‚Maria Musterfrau‘"},{"type":"PERSON","value":"«Lukas Testmann»"}]}']],
+    'several salutations' => ['Mrs. Ana Kovač und SEÑORA Ana Kovač', ['{"entities":[{"type":"PERSON","value":"Mr. Mrs.  Ana Kovač"},{"type":"PERSON","value":"señora Ana Kovač"}]}']],
+    'salutation only' => ['Herr Muster', ['{"entities":[{"type":"PERSON","value":"Herrn "}]}']],
+    'value ending in ř (byte trim)' => ['Jan Kovář zahlt.', ['{"entities":[{"type":"PERSON","value":"Jan Kovář"}]}']],
+    'value ending in р (byte trim)' => ['Александр zahlt.', ['{"entities":[{"type":"PERSON","value":"Александр"}]}']],
+    'value starting with € (byte trim)' => ['Betrag €12 offen.', ['{"entities":[{"type":"OTHER","value":"€12"}]}']],
+    'value ending in ę (byte trim)' => ['Pani Mię zahlt.', ['{"entities":[{"type":"PERSON","value":"Mię"}]}']],
+    'no-break spaces kept' => ["A\u{00A0}\u{00A0}B", ["{\"entities\":[{\"type\":\"OTHER\",\"value\":\"\u{00A0}\u{00A0}\"}]}"]],
+    // Grounding
+    'regex characters in a value' => ['Code a+b (c) [d] {e} ^f$ g|h \\i/ und mehr', ['{"entities":[{"type":"OTHER","value":"a+b (c) [d] {e} ^f$ g|h \\\\i/"}]}']],
+    'separators differ' => ["Lindenweg 12,\n 6900 Bregenz", ['{"entities":[{"type":"OTHER","value":"Lindenweg  12 , 6900,Bregenz"}]}']],
+    'digits next to a value' => ['Nr 1234 und 123 und 12', ['{"entities":[{"type":"ID_NUMBER","value":"123"}]}']],
+    'offsets after astral characters' => ['😀 Jan Novák 😀 Jan Novák', ['{"entities":[{"type":"PERSON","value":"Jan Novák"}]}']],
+    'birth keyword window counts code points' => ['geb. 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 01.02.1990 und geb.'.str_repeat('x', 26).' 02.03.1991 und geb.'.str_repeat('x', 27).' 03.04.1992', ['{"entities":[{"type":"BIRTH_DATE","value":"01.02.1990"},{"type":"BIRTH_DATE","value":"02.03.1991"},{"type":"BIRTH_DATE","value":"03.04.1992"}]}']],
+    'birth keywords in other languages' => ['née 1.2.1990, NATA 2.3.1991, f. d. 3.4.1992, Születés 4.5.1993, DOB 5.6.1994, ſzületéſ 6.7.1995', ['{"entities":[{"type":"BIRTH_DATE","value":"1.2.1990"},{"type":"BIRTH_DATE","value":"2.3.1991"},{"type":"BIRTH_DATE","value":"3.4.1992"},{"type":"BIRTH_DATE","value":"4.5.1993"},{"type":"BIRTH_DATE","value":"5.6.1994"},{"type":"BIRTH_DATE","value":"6.7.1995"}]}']],
+    'dates and times as OTHER' => ['am 27.10.2026, 14:10 Uhr und 1.1.26 und 14:10Uhr und 27.10.2026 14:10 und 2026-10-27', ['{"entities":[{"type":"OTHER","value":"27.10.2026, 14:10 Uhr"},{"type":"OTHER","value":"1.1.26"},{"type":"OTHER","value":"14:10Uhr"},{"type":"OTHER","value":"27.10.2026 14:10"},{"type":"OTHER","value":"2026-10-27"}]}']],
+    'Unicode digits in a date' => ['am ١.١.٢٠٢٦ fällig', ['{"entities":[{"type":"OTHER","value":"١.١.٢٠٢٦"}]}']],
+    'file number keywords' => ["Zahl:    X-1 und GZ 12/2026 und xZahl: 3/4 und Aktenzeichen\t:\t A-1 und Az. 7/8 und Kunden-Nr. K-9", ['{"entities":[{"type":"FILE_NUMBER","value":"X-1"},{"type":"FILE_NUMBER","value":"12/2026"},{"type":"FILE_NUMBER","value":"3/4"},{"type":"FILE_NUMBER","value":"A-1"},{"type":"FILE_NUMBER","value":"7/8"},{"type":"FILE_NUMBER","value":"K-9"}]}']],
+    'file number with Unicode digits only' => ['Zahl: AB-١', ['{"entities":[{"type":"FILE_NUMBER","value":"AB-١"}]}']],
+    'file number on the next line after keyword' => ["Zahl:\nX-1", ['{"entities":[{"type":"FILE_NUMBER","value":"X-1"}]}']],
+    'law abbreviations' => ['§ 4 StVO, §§ 5 Abs. 2 Z 3 ABC und § 6 Ab und §§ 5 und 6 StVO und § 7 Abs. 1) KFG und §8a VwGVG', ['{"entities":[{"type":"OTHER","value":"StVO"},{"type":"OTHER","value":"ABC"},{"type":"OTHER","value":"Ab"},{"type":"OTHER","value":"KFG"},{"type":"OTHER","value":"VwGVG"}]}']],
+    'long law abbreviation' => ['§ 4 ABCDEFGHIJKLMNOPQRSTUVWXYZ und § 5 ABCDEFGHIJKLMNOPQRSTUVWXY', ['{"entities":[{"type":"OTHER","value":"ABCDEFGHIJKLMNOPQRSTUVWXYZ"},{"type":"OTHER","value":"ABCDEFGHIJKLMNOPQRSTUVWXY"}]}']],
+    // Addresses
+    'postcode with country prefix' => ['wohnhaft Lindenweg 12, A-6900 Bregenz am Bodensee und Hauptstraße 1, D-12345 Sankt Augustin-Nord.', ['{"entities":[{"type":"ADDRESS","value":"Lindenweg 12"},{"type":"ADDRESS","value":"Hauptstraße 1"}]}']],
+    'postcode after three blank lines' => ["Lindenweg 12\n\n\n\n6900 Bregenz und Gartengasse 5\n \n\t\n6900 Bregenz", ['{"entities":[{"type":"ADDRESS","value":"Lindenweg 12"},{"type":"ADDRESS","value":"Gartengasse 5"}]}']],
+    'town cut at 120 bytes inside a character' => ['Lindenweg 12, 6900 '.str_repeat('Ä', 60), ['{"entities":[{"type":"ADDRESS","value":"Lindenweg 12"}]}']],
+    'town cut at 120 bytes between characters' => ['Lindenweg 12, 6900 A'.str_repeat('Ä', 60), ['{"entities":[{"type":"ADDRESS","value":"Lindenweg 12"}]}']],
+    'postcode with CRLF' => ["Lindenweg 12\r\n6900 Bregenz", ['{"entities":[{"type":"ADDRESS","value":"Lindenweg 12"}]}']],
+    // Authority contacts
+    'authority contacts redacted when configured' => ['Bei Fragen wenden Sie sich an uns: parken@musterhausen.example oder 05572 12345.', ['{"entities":[{"type":"EMAIL","value":"parken@musterhausen.example"},{"type":"PHONE","value":"05572 12345"}]}'], [], ModelDetector::DEFAULT_CHUNK_SIZE, false],
+    'authority contacts kept by default' => ['Bei Fragen wenden Sie sich an uns: parken@musterhausen.example oder 05572 12345.', ['{"entities":[{"type":"EMAIL","value":"parken@musterhausen.example"},{"type":"PHONE","value":"05572 12345"}]}']],
+    'mobile number in an authority sentence' => ['Erreichen Sie uns unter +43 664 1234567.', ['{"entities":[{"type":"PHONE","value":"+43 664 1234567"}]}']],
+];
+foreach (cases(ModelDetectorTest::findingsInContext()) as [$case, [$finding, $text]]) {
+    $modelCases['in context: '.$case] = [$text, ['{"entities":['.$finding.']}']];
+}
+
+// Chunking (code points; cut at paragraphs, lines, spaces; overlap; limits).
+$paragraphs = implode("\n\n", array_map(static fn (int $i): string => "Absatz {$i}: ".str_repeat('Text ', 30), range(1, 12)));
+$lines = implode("\n", array_map(static fn (int $i): string => "Zeile {$i} ".str_repeat('Wort ', 20), range(1, 30)));
+$modelCases += [
+    'chunks along paragraphs' => [$paragraphs, [], [], 500],
+    'chunks along lines and spaces' => [$lines, [], [], 300],
+    'chunks of text without spaces' => [str_repeat('x', 2_000), [], [], 300],
+    'chunks with astral characters' => [str_repeat('😀 ab ', 120), [], [], 200],
+    'chunks with tabs' => [str_repeat("Wort\t", 100), [], [], 100],
+    'findings of one chunk in the whole text' => ["Frau Maria Musterfrau ist Antragstellerin.\n\n".str_repeat("Weiterer Absatz ohne Daten.\n\n", 40).'Gezeichnet: Maria Musterfrau', ['{"entities":[{"type":"PERSON","value":"Maria Musterfrau"}]}'], [], 400],
+    'name at a cut' => [implode(' ', [...array_fill(0, 49, 'Wort'), 'Maria Musterfrau', ...array_fill(0, 151, 'Wort')]), [], [], 300],
+    'one answer of a batch unusable' => [$paragraphs, ['{"entities":[]}', '{"entities":[]}', 'kaputt', '{"entities":[]}', '{"entities":[]}', '{"entities":[]}', '{"entities":[{"type":"OTHER","value":"Absatz 3"}]}'], [], 500],
+    'too many chunks' => [str_repeat('Wort ', 20 * ModelDetector::MAX_CHUNKS), [], [], 100],
+    'too many chunks after splitting' => [str_repeat("Wort\n", 1_000), [], [], 100],
+    'at the chunk limit' => [str_repeat('x', 50 * 100), [], [], 100],
+    'just over the chunk limit' => [str_repeat('x', 50 * 100 + 1), [], [], 100],
+];
+
+$modelDetect = [];
+foreach ($modelCases as $case => $args) {
+    [$text, $answers] = $args;
+    $learnedTypes = $args[2] ?? [];
+    $modelDetect[] = [
+        'case' => $case,
+        'text' => $text,
+        'answers' => $answers,
+        'learned' => array_map(static fn (CustomEntityType $t): array => $t->toArray(), $learnedTypes),
+        'chunkSize' => $args[3] ?? ModelDetector::DEFAULT_CHUNK_SIZE,
+        'keepAuthorityContacts' => $args[4] ?? true,
+    ] + modelRun(...$args);
+}
+
+// The system prompt with learned types: JSON data with HTML-safe escapes, Unicode unescaped except U+2028/U+2029.
+$promptTypes = [
+    'no learned types' => [],
+    'learned types' => [
+        $petName,
+        new CustomEntityType('INSURANCE_NUMBER', 'Versichertennummer', ['VN-2026-000417'], [], 'VN-\d{4}-\d{6}'),
+        new CustomEntityType('ODD_TEXT', "Tom's \"pet\" & co / back\\slash \u{2028} \u{2029} ä 😀 \u{0080}", ['a/b', "it's"], ['x&y']),
+    ],
+];
+$modelPrompts = [];
+foreach ($promptTypes as $case => $types) {
+    $run = modelRun('Jan Novák', [], $types);
+    $modelPrompts[] = ['case' => $case, 'learned' => array_map(static fn (CustomEntityType $t): array => $t->toArray(), $types), 'system' => $run['systems'][0]];
+}
+
+$noPlatform = new Platform([new Provider('mock', [new MockModelClient('{}')], [new MockResultConverter()], new FallbackModelCatalog())], new CatalogBasedModelRouter());
+write($outDir, 'model.json', [
+    'note' => 'Answers of a fake model platform; no provider was called.',
+    'prompts' => $modelPrompts,
+    'detect' => $modelDetect,
+    'constructor' => [
+        'chunk size too small' => attempt(static fn () => new ModelDetector($noPlatform, 'm', ModelLocation::Local, chunkSize: 99)),
+        'empty model name' => attempt(static fn () => new ModelDetector($noPlatform, ' ', ModelLocation::Local)),
+        'external without acknowledgement' => attempt(static fn () => new ModelDetector($noPlatform, 'm', ModelLocation::External)),
+    ],
 ], $commit);

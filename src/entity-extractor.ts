@@ -1,4 +1,10 @@
-import type { Detector, DetectorFunction } from './detector.js';
+import {
+  type AsyncDetector,
+  type DetectOptions,
+  type Detector,
+  type DetectorFunction,
+  isAsyncDetector,
+} from './detector.js';
 import { AtSvnrDetector } from './detectors/at-svnr.js';
 import { BirthDateDetector } from './detectors/birth-date.js';
 import { EmailDetector } from './detectors/email.js';
@@ -22,8 +28,11 @@ const MIN_PROPAGATION_LENGTH = 3;
 const SURNAME_PROPAGATION_MIN_CONFIDENCE = 0.8;
 
 export interface EntityExtractorOptions {
-  /** Detectors to run; defaults to defaultDetectors(). */
-  detectors?: Iterable<Detector | DetectorFunction>;
+  /**
+   * Detectors to run; defaults to defaultDetectors(). Async detectors (e.g. ModelDetector) only work
+   * with the async APIs (extractAsync(), redactAsync(), redactToVault(), maskAsync()).
+   */
+  detectors?: Iterable<Detector | DetectorFunction | AsyncDetector>;
   /** Values that are never treated as PII (exact match). */
   allowlist?: Iterable<string>;
 }
@@ -74,7 +83,7 @@ const NOT_BEFORE_WORD = /(?![\p{L}\p{N}])/uy;
  *   original text and restore gives back the original characters.
  */
 export class EntityExtractor {
-  readonly #detectors: readonly (Detector | DetectorFunction)[];
+  readonly #detectors: readonly (Detector | DetectorFunction | AsyncDetector)[];
   readonly #allowlist: ReadonlySet<string>;
 
   constructor(options: EntityExtractorOptions = {}) {
@@ -82,16 +91,73 @@ export class EntityExtractor {
     this.#allowlist = new Set(options.allowlist);
   }
 
-  /** Non-overlapping entities, sorted by offset. */
+  /** Whether a detector needs the async APIs. */
+  get isAsync(): boolean {
+    return this.#detectors.some(isAsyncDetector);
+  }
+
+  /**
+   * Non-overlapping entities, sorted by offset.
+   *
+   * @throws TypeError when an async detector is configured (nothing is sent then); use extractAsync()
+   */
   extract(text: string): Entity[] {
+    const asyncDetector = this.#detectors.find(isAsyncDetector);
+    if (asyncDetector !== undefined) {
+      throw new TypeError(
+        `The detector "${asyncDetector.name ?? 'async'}" is async. Use extractAsync(), redactAsync(), redactToVault() or maskAsync().`,
+      );
+    }
     const normalized = normalize(text);
     const detected: Entity[] = [];
-    for (const detector of this.#detectors) {
-      for (const entity of typeof detector === 'function' ? detector(normalized) : detector.detect(normalized)) {
+    for (const detector of this.#detectors as readonly (Detector | DetectorFunction)[]) {
+      const found = typeof detector === 'function' ? detector(normalized) : detector.detect(normalized);
+      if (isPromiseLike(found)) {
+        // A function returning a Promise cannot be told apart up front; its findings would be lost.
+        Promise.resolve(found).catch(() => undefined);
+        throw new TypeError(
+          'A detector returned a Promise. Implement AsyncDetector (async: true) and use extractAsync().',
+        );
+      }
+      for (const entity of found) {
         detected.push(entity);
       }
     }
 
+    return this.#resolve(text, normalized, detected);
+  }
+
+  /**
+   * Like extract(), with async detectors: they run concurrently, after the synchronous ones. Results are
+   * the same as extract() for the same findings.
+   */
+  async extractAsync(text: string, options: DetectOptions = {}): Promise<Entity[]> {
+    options.signal?.throwIfAborted();
+    const normalized = normalize(text);
+    // Synchronous detectors first: if one throws, nothing has been sent to an async one yet.
+    const results: Promise<readonly Entity[]>[] = this.#detectors.map((detector) => {
+      if (isAsyncDetector(detector)) {
+        return Promise.resolve([]);
+      }
+
+      return Promise.resolve(typeof detector === 'function' ? detector(normalized) : detector.detect(normalized));
+    });
+    this.#detectors.forEach((detector, i) => {
+      if (isAsyncDetector(detector)) {
+        results[i] = detector.detect(normalized, options);
+      }
+    });
+    const detected: Entity[] = [];
+    for (const found of await Promise.all(results)) {
+      for (const entity of found) {
+        detected.push(entity);
+      }
+    }
+
+    return this.#resolve(text, normalized, detected);
+  }
+
+  #resolve(text: string, normalized: string, detected: Entity[]): Entity[] {
     // Filter before propagation (an allowed value must not seed surnames) and after it.
     let entities = resolveOverlaps(this.#withoutAllowed(detected));
     entities = resolveOverlaps(this.#withoutAllowed([...entities, ...propagate(normalized, entities)]));
@@ -224,6 +290,10 @@ function isWordBoundary(text: string, start: number, end: number): boolean {
   NOT_BEFORE_WORD.lastIndex = end;
 
   return NOT_AFTER_WORD.test(text) && NOT_BEFORE_WORD.test(text);
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return typeof (value as { then?: unknown } | null)?.then === 'function';
 }
 
 function getOrSet<K, V>(map: Map<K, V>, key: K, create: () => V): V {

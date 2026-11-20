@@ -59,3 +59,28 @@ PHP checks whether PCRE compiles a pattern before it checks the grammar. For pat
 ## The bounded-time check of learned patterns has an overall budget
 
 PHP's `runsInBoundedTime()` limits each start position (`pcre.backtrack_limit`), so checking one pattern can take many seconds (e.g. 16 s for `.{0,45}.{0,45}.{0,45}X`). A PHP worker survives that; in Node it blocks the event loop and with it every request of an HTTP or MCP server. The port shares one budget of 10 million steps across all adversarial inputs (about 0.3 s at most). Patterns that need more are rejected with PHP's message "it takes too long on adversarial input", including some PHP accepts, mostly broad unbounded runs before literals (`\S+@x\.at` with several examples). The bounded form (`\S{1,64}@x\.at`) is accepted.
+
+## Model-based detection is async
+
+PHP's `ModelDetector` is a synchronous `DetectorInterface`. Model calls are async in Node, so `ModelDetector` is an `AsyncDetector` (`async: true`, `detect(text, { signal })` returns a Promise). `EntityExtractor.extractAsync()`, `PiiShield.redactAsync()`, `PiiShield.redactToVault()` and `PiiMasker.maskAsync()` run it next to the synchronous detectors (same results for the same findings); `extract()`, `redact()` and `mask()` throw a `TypeError` when an async detector is configured, before anything is sent. `redactToVault()` uses the async extraction for every detector set.
+
+## Model detector: model, location and errors
+
+- Instead of a Symfony AI platform, a model name and platform options, `model` is a function `({ system, user }, { signal }) => Promise<string>` or `{ name, generate }`; `detectionModel()` in `@waswrongassembled/pii-shield/ai-sdk` wraps an AI SDK `LanguageModel` (with `generateText()` settings such as `temperature`). Error messages name `name`, else the function's name, else "model".
+- "could not be reached (…)" names the JavaScript error's `name` (`Error`, `TypeError`, `TimeoutError`) where PHP names the exception class (`RuntimeException`). A model function that resolves to a non-string fails the same way (`TypeError`).
+- Constructor errors are a `RangeError` (chunk size) or `TypeError` (empty name, unknown location, external without acknowledgement) with PHP's messages; the acknowledgement message names the option `acknowledgeExternalTransfer` without PHP's `$`. Only the boolean `true` acknowledges.
+- New: `timeout` (milliseconds for a whole `detect()`, then `DETECTION_MODEL_UNREACHABLE`) and `AbortSignal`. When the caller aborts, the Promise rejects with the signal's reason, not a `DetectionError`. When one call of a batch fails, the other calls of the batch are aborted.
+- `DetectionError.modelAnswer` (PHP: `DetectionFailedException::$modelAnswer`) is not enumerable, so logging the error does not print the answer.
+- Learned types: a `CustomEntityStore` is read at every `detect()` (as in PHP), an `EntityLearner` gives its snapshot (see "Learned types: snapshot"), a plain list is used in its own order (stores sort by name).
+
+## Model answers: values are trimmed by character
+
+PHP cleans a value with `trim($value, " …\"'„“”‚‘’«»")`, which trims _bytes_: a value whose last byte is one of the quotes' bytes (`ř`, `ę`, Cyrillic `р`, `À`, …) or whose first byte is `E2` or `C2` (`€`, …) is cut inside a character, the following `preg_replace()` fails on the invalid UTF-8, and the value is dropped. "Jan Kovář", "Александр" and "€12" are therefore never redacted by PHP's model detector. The port trims the characters, so it finds them (cases "… (byte trim)" in `fixtures/model.json`). Values that do not end or start with such a character give the same result.
+
+## Model answers: JSON parsing
+
+`JSON.parse()` accepts escaped lone surrogates (`"\ud800"`) and nesting deeper than 512 levels, where PHP's `json_decode()` returns null and the answer counts as unusable. When `entities` is a JSON object instead of a list, its integer-like keys come first in JavaScript (PHP keeps the written order); the findings are the same, only equal-offset ties may be ordered differently before overlap resolution.
+
+## Citation and file number checks of model findings
+
+PHP decides whether a finding follows a legal citation with a regex that can backtrack exponentially (" Ziff Ziff Ziff …": `Ziff` is a keyword or `Z` + `iff`); on such a line PHP hits `pcre.backtrack_limit`, `preg_match()` returns false and the finding is redacted. The port decides the same pattern in linear time (differential test against PHP's pattern in `test/redos.test.ts`), so on such adversarial lines it keeps a law abbreviation that follows a real citation. The file number keyword check (`[ \t]*:?[ \t]*$`, quadratic in PHP) and the removal of `<think>` blocks (quadratic for many unclosed ones) are linear too, with PHP's results.

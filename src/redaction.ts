@@ -1,3 +1,4 @@
+import type { DetectOptions } from './detector.js';
 import type { Entity } from './entity.js';
 import type { EntityType } from './entity-type.js';
 import { replacePlaceholders } from './placeholder.js';
@@ -44,6 +45,8 @@ export interface RestoreResult {
 export interface Redactor {
   /** Replaces detected personal data with consistent, typed placeholders. */
   redact(text: string): RedactionResult;
+  /** Like redact(), also with async detectors (model-based detection). */
+  redactAsync(text: string, options?: DetectOptions): Promise<RedactionResult>;
   /** Replaces placeholders in a (model-generated) text with the original values. */
   restore(text: string, source: RedactionResult | PlaceholderMapping): RestoreResult;
 }
@@ -53,8 +56,8 @@ export interface Redactor {
  * request restores by id.
  */
 export interface VaultRedactor extends Redactor {
-  /** Redacts like redact() and stores the mapping in the vault under a new random id. */
-  redactToVault(text: string): Promise<VaultRedactionResult>;
+  /** Redacts like redactAsync() and stores the mapping in the vault under a new random id. */
+  redactToVault(text: string, options?: DetectOptions): Promise<VaultRedactionResult>;
   /**
    * @throws VaultError if the id is unknown or expired, or the entry cannot be read
    * @throws Error if no vault is configured
