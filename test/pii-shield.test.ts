@@ -306,7 +306,7 @@ describe('PHP parity (fixtures/redaction.json)', () => {
     expectRedaction(text, shield.redact(text), redaction);
   });
 
-  // The custom-type case needs learned types (phase 7).
+  // Custom types: test/learning-fixtures.test.ts.
   it.each(fixture.configured.filter((c) => c.customTypes.length === 0))('configured: $case', (c) => {
     expectRedaction(c.text, new PiiShield({ allowlist: c.allowlist }).redact(c.text), c.redaction);
   });

@@ -160,7 +160,7 @@ describe('PHP parity (fixtures/redaction.json)', () => {
     expect(extractor.extract(text)).toStrictEqual(redaction.entities.map((e) => expectedEntity(text, e)));
   });
 
-  // Custom types are phase 7.
+  // Custom types: test/learning-fixtures.test.ts.
   it.each(fixture.configured.filter((c) => c.customTypes.length === 0))(
     'configured: $case',
     ({ allowlist, text, redaction }) => {

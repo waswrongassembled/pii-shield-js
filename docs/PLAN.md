@@ -87,6 +87,9 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
 - **ctype_space** on one character is ASCII-only (`\t\n\v\f\r` and space): `PartialMask` masks a no-break space.
 - **Checksums:** use integer arithmetic for the IBAN mod 97 (BigInt or chunked), SVNR and tax ID.
 - **Vault plaintext** (found in phase 6): PHP's `json_encode()` escapes `/` as `\/` and every non-ASCII UTF-16 unit as a lowercase `\u` escape, an empty mapping is `[]`; `src/internal/php-json.ts` reproduces it, so the same nonce gives the same payload. When reading, `json_decode(…, true)` turns integer-like keys (`"1"`, `"-7"`, within int64) into ints, which PHP's `is_string()` check rejects as corrupt: the port rejects them too. Decode with a fatal `TextDecoder` and `ignoreBOM: true` (PHP rejects invalid UTF-8 and a BOM), build the mapping with `Object.fromEntries` (`__proto__` stays a key), and never attach a `JSON.parse` error as `cause`: V8 quotes the plaintext in its message.
+- **Learned patterns** (found in phase 7): they are not translated to a JavaScript `RegExp` but run on a small backtracking matcher for the grammar subset (`src/learning/learned-pattern.ts`) with PCRE semantics: UCP `\d \w \s`, `.` = everything but `"\n"`, `[]a]`, `[a-b-c]`, an unescaped `~` is invalid (it ends PHP's delimiters), `$` also before a final `"\n"`, and after an empty match `preg_match_all()` retries non-empty at the same place (`x{0}|VN-\d+` finds `VN-12`). It counts choice points and backtracks per start position like PCRE2's JIT does with `pcre.backtrack_limit` (calibrated: `.{0,45}` three times passes, `.{0,46}` does not; 15 `(?:a|a)` pass, 16 do not), skips choice points for runs that cannot give characters back (auto-possessification) and adds a budget linear in the text per `matchAll()`, so detection never hangs. A differential test against `RegExp` checks the backtracking order.
+- **PatternLearner** tokenizes with `ctype_digit()` (ASCII) and `trim()` (ASCII), so Arabic digits and a no-break space become literals; it escapes `= ! < > :`, which the grammar then rejects (`fixtures/learning.json` → `learnerEscapes`).
+- **Learned-type JSON:** `json_encode()` with `JSON_UNESCAPED_UNICODE` still escapes U+2028/U+2029; otherwise `JSON.stringify(…, null, 4)` is byte-identical.
 - **Async validation:** vault methods are `async`, so a bad TTL rejects the Promise instead of throwing synchronously (PHP throws). Constructor arguments (`key`, `vaultTtl`) still throw synchronously.
 - **Secrets:** wipe buffers after use (`buf.fill(0)`) instead of `sodium_memzero`. Keep the key out of logs and errors.
 - **Error messages:** never contain PII values (PHP names positions, not values). Keep the wording of client-facing messages (see "Idiomatic TypeScript").
@@ -105,7 +108,7 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
    - `InMemoryVault`, `EncryptedVault`, storage interface, Redis adapter;
    - `restoreFromVault`, `forget`, TTL; async methods next to the sync ones (`redactToVault(text): Promise<RedactionResult & { vaultId }>`), the sync `RedactionResult` has no `vaultId`;
    - compat test against PHP payloads.
-7. **Learning:**
+7. **Learning** (done):
    - `CustomEntityType`, `PatternGrammar`, `PatternLearner`, `EntityLearner` (learn/preview/forget/types);
    - stores: JSON file (with file locking), in-memory, and a cache store via a small KV interface;
    - `LearnedTypesDetector`, `CustomEntityDetector`.

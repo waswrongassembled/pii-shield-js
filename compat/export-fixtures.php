@@ -586,6 +586,66 @@ $learnedEntities = entities($learnedDetector->detect($learnedTypesText));
 unlink($file);
 rmdir($tmpDir);
 
+// More PCRE semantics the port must reproduce: class edge cases, Unicode classes, empty alternatives.
+$extraPatterns = [
+    '[a-\d]', '[\s-z]', '[a-\-]', '[!-\-]', '[\--\/]', '[]-a]', '[a-b-c]', '[\W]', '[a\W]', '[^\W]', '[\S\d]', '[^\s\S]', '[\s\W]', '[^a\W]', '[\-]', '\-', '[\^]', '[\]]',
+    'a~b', '[~]', '\\\\~', '\~', '.', '\s', '\S', '\w', '\W', '\d', '\D', '[\w]', '[\s]', '[\d]', '|a', 'x{0}|a', 'a{0,1}', 'a{1,}',
+];
+$extraProbes = ['a', 'b', 'c', 'z', '-', '!', '/', ']', '^', '~', '\\~', "\r", "\u{0085}", "\u{180E}", "\u{2029}", "\u{FEFF}", '١', "\u{0301}", "e\u{0301}", "\u{203F}", '_', 'ſ', "\u{212A}", '²', 'Ⅻ', '😀', '', 'aa', 'ab'];
+$extraGrammar = [];
+foreach ($extraPatterns as $pattern) {
+    $violation = PatternGrammar::violation($pattern);
+    $compiles = false !== @preg_match('~(?:'.$pattern.')~u', '');
+    $matches = null;
+    if (null === $violation && $compiles) {
+        $matches = [];
+        foreach ($extraProbes as $probe) {
+            if (1 === preg_match('~^(?:'.$pattern.')$~u', $probe)) {
+                $matches[] = $probe;
+            }
+        }
+    }
+    $extraGrammar[] = ['pattern' => $pattern, 'violation' => $violation, 'compiles' => $compiles, 'fullMatches' => $matches];
+}
+
+// Whole-word search of learned patterns (CustomEntityDetector), incl. empty matches (PCRE retries non-empty).
+$searchCases = [
+    ['VN-\d{4}-\d{6}', 'VN-2026-000417', 'VN-2026-000417 XVN-2026-000417 VN-2026-0004171 _VN-2026-000417 VN-2026-000417_ é VN-2026-000417é'],
+    ['x{0}|VN-\d+', 'VN-1', 'a VN-12 b VN-3'],
+    ['|VN-\d+', 'VN-1', 'VN-12, VN-3'],
+    ['\d{2}', '12', '12 123 ١٢ 1٢ 😀12😀 12'],
+    ['[A-Z]{2}\s\d{2}', 'AB 12', "AB 12 AB\u{00A0}12 AB\u{2028}12 AB\u{FEFF}12 AB\n12"],
+    ['a.c', 'abc', "abc a\nc a\u{2028}c a\rc"],
+    ['\w+', 'ab', "ab e\u{0301}x a\u{203F}b"],
+    ['\s+-', ' -', '   - x'],
+];
+$search = [];
+foreach ($searchCases as [$pattern, $example, $text]) {
+    $search[] = ['pattern' => $pattern, 'example' => $example, 'text' => $text]
+        + attempt(static fn () => entities((new CustomEntityDetector(new CustomEntityType('SOME_NUMBER', 'x', [$example], [], $pattern)))->detect($text)));
+}
+
+// The second line of defence (backtracking budget on adversarial input). PCRE's optimisations decide some of these.
+$budgetCases = [
+    ['.{0,45}.{0,45}.{0,45}', 'a'], ['.{0,46}.{0,46}.{0,46}', 'a'], ['.{0,100}.{0,100}', 'a'], ['.{0,100}.{0,100}.{0,100}', 'a'],
+    [str_repeat('(?:a|a)', 15), str_repeat('a', 15)], [str_repeat('(?:a|a)', 16), str_repeat('a', 16)],
+    ['\d{0,100}\d{0,100}\d{0,100}', '1'], ['\s{0,100}\s{0,100}x', ' x'], ['\w+\w{0,99}', 'a'], ['.*.{0,100}', 'a'],
+    ['\S+@x\.at', 'a@x.at'], ['\s+X', ' X'], ['\s+\d', ' 1'], ['[a\W]{0,50}[a\W]{0,50}[a\W]{0,50}', 'a'],
+    ['\d{1,3}\d{1,3}\d{1,3}\d{1,3}\d{1,3}\d{1,3}\d{1,3}\d{1,3}', '12345678'], ['\d{0,100}\d{0,100}\d{0,100}X', '1X'],
+];
+$budget = [];
+foreach ($budgetCases as [$pattern, $example]) {
+    $budget[] = ['pattern' => $pattern, 'example' => $example]
+        + attempt(static fn () => (new CustomEntityType('SOME_NUMBER', 'x', [$example], [], $pattern))->pattern);
+}
+
+// PatternLearner escapes characters the grammar does not allow escaped.
+$learnerEscapes = [];
+foreach ([['AB:12'], ['AB=12'], ['AB!12'], ['AB#12'], ['AB~12'], ['AB.12'], ['١٢-AB'], ["AB\u{00A0}12"]] as $examples) {
+    $learnerEscapes[] = ['examples' => $examples]
+        + attempt(static fn () => (new EntityLearner(new \Clarifile\PiiShield\Learning\JsonFileCustomEntityStore('/nonexistent/x.json')))->preview('SOME_NUMBER', 'x', $examples)->type->pattern);
+}
+
 write($outDir, 'learning.json', [
     'patternLearner' => $learned,
     'customEntityType' => $typeCases,
@@ -603,6 +663,10 @@ write($outDir, 'learning.json', [
         'afterForget' => ['forget' => 'PET_NAME', 'file' => $storeFileAfterForget],
         'detect' => ['text' => $learnedTypesText, 'entities' => $learnedEntities],
     ],
+    'grammarExtra' => ['probes' => $extraProbes, 'cases' => $extraGrammar],
+    'search' => $search,
+    'budget' => $budget,
+    'learnerEscapes' => $learnerEscapes,
 ], $commit);
 
 // ---------------------------------------------------------------------------------------------

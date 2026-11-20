@@ -39,3 +39,19 @@ A JavaScript string can contain lone surrogates (see above); `EncryptedVault` wr
 ## TypeLabelMask accepts only a subset of sprintf()
 
 PHP's `TypeLabelMask` passes its format to `sprintf()`. The port supports `%s` (once), `%1$s` and `%%`, which covers every format that renders the type name, and throws a `TypeError` in the constructor for anything else (`%d`, padding, a second `%s`, a trailing `%`), where PHP would render garbage or throw at mask time. A function `(type) => string` can be passed instead of a format.
+
+## Learned types: snapshot instead of a store read per text
+
+PHP's `LearnedTypesDetector` reads the store on every `detect()`. Detection is synchronous here and stores are async, so `EntityLearner` keeps a snapshot: `learn()` and `forget()` update it, `refresh()` reloads it (call it on a timer to see types other processes learned), `EntityLearner.create()` loads it once. `new LearnedTypesDetector(types | () => types)` works without a learner.
+
+## Learned patterns: backtracking budget
+
+Learned patterns run on the port's own matcher with PHP's budget of 100000 per start position, calibrated against PCRE2's JIT. PCRE2's start-up optimisations (required character, first character) are not reproduced, so for patterns close to the limit "it takes too long on adversarial input" can be decided differently; every case in `fixtures/learning.json` → `budget` agrees. On top, one `detect()` call may spend at most 1000000 + 50 × text length steps in total; PHP has no such limit and can run quadratic (e.g. `\s+\d` on a long run of spaces). When a budget runs out, detection throws `PiiShieldError` with code `DETECTION_BACKTRACK_LIMIT` (PHP: `RuntimeException` "Regex failed: Backtrack limit exhausted", same message).
+
+## Learned patterns outside the grammar: which message
+
+PHP checks whether PCRE compiles a pattern before it checks the grammar. For patterns outside the grammar the port cannot ask PCRE; it recognises the common compile errors (unbalanced parentheses, nothing to repeat, unclosed class, trailing backslash, unescaped `~`, `x{3,2}`, invalid ranges) and otherwise assumes the pattern compiles. Such a pattern is rejected either way, but rarely with "is not a valid regular expression" where PHP says "is not allowed: …" or vice versa.
+
+## Key-value store format and locking
+
+`KeyValueCustomEntityStore` (PHP: `CacheCustomEntityStore` over PSR-6) stores the list as JSON under `pii_shield.learned_types`, not in PHP's PSR-6 serialisation, so PHP and Node cannot share that key. `JsonFileCustomEntityStore` locks writes by default with a lock file (`<path>.lock`, exclusive create, stale after 10 s); PHP's file store does not lock unless wrapped in `LockingCustomEntityStore` (symfony/lock), and the two locks do not exclude each other. The file itself is byte-identical.

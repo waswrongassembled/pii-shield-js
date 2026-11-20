@@ -26,3 +26,18 @@ export class VaultError extends PiiShieldError {
     super(message, code, options);
   }
 }
+
+export type LearningErrorCode = 'LEARNING_FAILED' | 'LEARNING_PLAIN_WORDS';
+
+/**
+ * A custom entity type could not be learned or loaded; the message says why and how to fix it
+ * (PHP's LearningFailedException). `LEARNING_PLAIN_WORDS` (PHP code 1): the examples are plain words,
+ * which cannot become a safe pattern. Messages name positions, never example values.
+ */
+export class LearningError extends PiiShieldError {
+  declare readonly code: LearningErrorCode;
+
+  constructor(message: string, code: LearningErrorCode = 'LEARNING_FAILED', options?: ErrorOptions) {
+    super(message, code, options);
+  }
+}

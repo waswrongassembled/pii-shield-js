@@ -122,6 +122,10 @@ export interface LearningFixture extends FixtureMeta {
     afterForget: { forget: string; file: string };
     detect: { text: string; entities: FixtureEntity[] };
   };
+  grammarExtra: LearningFixture['grammar'];
+  search: ({ pattern: string; example: string; text: string } & Outcome<FixtureEntity[]>)[];
+  budget: ({ pattern: string; example: string } & Outcome<string>)[];
+  learnerEscapes: ({ examples: string[] } & Outcome<string>)[];
 }
 
 export interface VaultFixture extends FixtureMeta {
