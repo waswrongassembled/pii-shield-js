@@ -168,3 +168,15 @@ export function codePointSlice(text: string, offset: number, length: number): st
 export function toUtf16Offset(text: string, codePointOffset: number): number {
   return [...text].slice(0, codePointOffset).join('').length;
 }
+
+/** A fixture entity as the TypeScript port reports it: UTF-16 offset, no length, label only when set. */
+export function expectedEntity(text: string, e: FixtureEntity): Record<string, unknown> {
+  return {
+    type: e.type,
+    value: e.value,
+    offset: toUtf16Offset(text, e.offset),
+    confidence: e.confidence,
+    detector: e.detector,
+    ...(e.label === null ? {} : { label: e.label }),
+  };
+}

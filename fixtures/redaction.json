@@ -1775,6 +1775,1594 @@
             "mask": "😀 Grüße\nSehr geehrter Herr [PERSON], SVNR [SVNR], Mail 😀[EMAIL]."
         },
         {
+            "case": "detector: pcre: Unicode digit before SVNR",
+            "text": "SVNR ١4568 150392",
+            "redaction": {
+                "redactedText": "SVNR ١4568 150392",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "SVNR ١4568 150392"
+        },
+        {
+            "case": "detector: pcre: Unicode digit after SVNR",
+            "text": "SVNR 4568 150392١",
+            "redaction": {
+                "redactedText": "SVNR 4568 150392١",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "SVNR 4568 150392١"
+        },
+        {
+            "case": "detector: pcre: fullwidth SVNR",
+            "text": "SVNR ４５６８ １５０３９２",
+            "redaction": {
+                "redactedText": "SVNR ４５６８ １５０３９２",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "SVNR ４５６８ １５０３９２"
+        },
+        {
+            "case": "detector: pcre: phone with some Unicode digits",
+            "text": "Privat +43 6641 23٤٥٦٧",
+            "redaction": {
+                "redactedText": "Privat ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "+43 6641 23٤٥٦٧"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "+43 6641 23٤٥٦٧",
+                        "offset": 7,
+                        "length": 15,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Privat *** **** ****٦٧"
+        },
+        {
+            "case": "detector: pcre: phone with Unicode digits only",
+            "text": "Privat +٤٣ ٦٦٤ ١٢٣٤٥٦٧",
+            "redaction": {
+                "redactedText": "Privat +٤٣ ٦٦٤ ١٢٣٤٥٦٧",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Privat +٤٣ ٦٦٤ ١٢٣٤٥٦٧"
+        },
+        {
+            "case": "detector: pcre: Unicode digit before phone",
+            "text": "Privat ١0664 1234567",
+            "redaction": {
+                "redactedText": "Privat ١0664 1234567",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Privat ١0664 1234567"
+        },
+        {
+            "case": "detector: pcre: AT tax number with Unicode digits",
+            "text": "Steuernummer 46 ١٢٣/4567",
+            "redaction": {
+                "redactedText": "Steuernummer ⟦TAX_NUMBER_1⟧",
+                "vault": {
+                    "⟦TAX_NUMBER_1⟧": "46 ١٢٣/4567"
+                },
+                "entities": [
+                    {
+                        "type": "TAX_NUMBER",
+                        "label": null,
+                        "value": "46 ١٢٣/4567",
+                        "offset": 13,
+                        "length": 11,
+                        "confidence": 0.9,
+                        "detector": "tax_number"
+                    }
+                ]
+            },
+            "mask": "Steuernummer [TAX_NUMBER]"
+        },
+        {
+            "case": "detector: pcre: fullwidth tax id",
+            "text": "Steuer-ID ８６０９５７４２７１９",
+            "redaction": {
+                "redactedText": "Steuer-ID ８６０９５７４２７１９",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Steuer-ID ８６０９５７４２７１９"
+        },
+        {
+            "case": "detector: pcre: house number with Unicode digits",
+            "text": "Lindenweg ١٢\n6900 Bregenz",
+            "redaction": {
+                "redactedText": "⟦ADDRESS_1⟧",
+                "vault": {
+                    "⟦ADDRESS_1⟧": "Lindenweg ١٢\n6900 Bregenz"
+                },
+                "entities": [
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Lindenweg ١٢\n6900 Bregenz",
+                        "offset": 0,
+                        "length": 25,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "[ADDRESS]"
+        },
+        {
+            "case": "detector: pcre: plate with Unicode digits",
+            "text": "Kennzeichen B-١٢٣AB",
+            "redaction": {
+                "redactedText": "Kennzeichen ⟦LICENSE_PLATE_1⟧",
+                "vault": {
+                    "⟦LICENSE_PLATE_1⟧": "B-١٢٣AB"
+                },
+                "entities": [
+                    {
+                        "type": "LICENSE_PLATE",
+                        "label": null,
+                        "value": "B-١٢٣AB",
+                        "offset": 12,
+                        "length": 7,
+                        "confidence": 0.9,
+                        "detector": "license_plate"
+                    }
+                ]
+            },
+            "mask": "Kennzeichen [LICENSE_PLATE]"
+        },
+        {
+            "case": "detector: pcre: birth day with Unicode digits",
+            "text": "geb. ١٥.03.1992",
+            "redaction": {
+                "redactedText": "geb. ١٥.03.1992",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "geb. ١٥.03.1992"
+        },
+        {
+            "case": "detector: pcre: birth year with Unicode digits",
+            "text": "geb. 15.03.١٩٩٢",
+            "redaction": {
+                "redactedText": "geb. 15.03.١٩٩٢",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "geb. 15.03.١٩٩٢"
+        },
+        {
+            "case": "detector: pcre: file number before a Unicode digit",
+            "text": "Zahl: ABCD-١",
+            "redaction": {
+                "redactedText": "Zahl: ABCD-١",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Zahl: ABCD-١"
+        },
+        {
+            "case": "detector: pcre: IBAN with a Unicode digit",
+            "text": "IBAN AT٦1 1904 3002 3457 3201",
+            "redaction": {
+                "redactedText": "IBAN AT٦1 1904 3002 3457 3201",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "IBAN AT٦1 1904 3002 3457 3201"
+        },
+        {
+            "case": "detector: pcre: e-mail before a letter",
+            "text": "Privat: maria@example.orgä",
+            "redaction": {
+                "redactedText": "Privat: maria@example.orgä",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Privat: maria@example.orgä"
+        },
+        {
+            "case": "detector: pcre: e-mail after a letter",
+            "text": "Privat: ämaria@example.org",
+            "redaction": {
+                "redactedText": "Privat: ämaria@example.org",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Privat: ämaria@example.org"
+        },
+        {
+            "case": "detector: pcre: e-mail before a combining mark",
+            "text": "Privat: maria@example.orǵ",
+            "redaction": {
+                "redactedText": "Privat: maria@example.orǵ",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Privat: maria@example.orǵ"
+        },
+        {
+            "case": "detector: pcre: e-mail before an underscore",
+            "text": "Privat: maria@example.org_",
+            "redaction": {
+                "redactedText": "Privat: maria@example.org_",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Privat: maria@example.org_"
+        },
+        {
+            "case": "detector: pcre: IBAN after a letter",
+            "text": "ÄAT61 1904 3002 3457 3201",
+            "redaction": {
+                "redactedText": "ÄAT61 1904 3002 3457 3201",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "ÄAT61 1904 3002 3457 3201"
+        },
+        {
+            "case": "detector: pcre: IBAN before a letter",
+            "text": "AT61 1904 3002 3457 3201é",
+            "redaction": {
+                "redactedText": "AT61 1904 3002 3457 3201é",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "AT61 1904 3002 3457 3201é"
+        },
+        {
+            "case": "detector: pcre: salutation after a letter",
+            "text": "éHerr Beispielmann",
+            "redaction": {
+                "redactedText": "éHerr Beispielmann",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "éHerr Beispielmann"
+        },
+        {
+            "case": "detector: pcre: birth keyword after a letter",
+            "text": "Rügeb. 15.03.1992",
+            "redaction": {
+                "redactedText": "Rügeb. 15.03.1992",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Rügeb. 15.03.1992"
+        },
+        {
+            "case": "detector: pcre: file number keyword after a letter",
+            "text": "ÜZahl: BHMS-VK-2026/48213",
+            "redaction": {
+                "redactedText": "ÜZahl: BHMS-VK-2026/48213",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "ÜZahl: BHMS-VK-2026/48213"
+        },
+        {
+            "case": "detector: pcre: plate before a letter",
+            "text": "Kennzeichen B-123ABé",
+            "redaction": {
+                "redactedText": "Kennzeichen B-123ABé",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Kennzeichen B-123ABé"
+        },
+        {
+            "case": "detector: pcre: phone after a letter",
+            "text": "Privat é0664 1234567",
+            "redaction": {
+                "redactedText": "Privat é0664 1234567",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Privat é0664 1234567"
+        },
+        {
+            "case": "detector: pcre: phone before a letter",
+            "text": "Privat 0664 1234567é",
+            "redaction": {
+                "redactedText": "Privat 0664 1234567é",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Privat 0664 1234567é"
+        },
+        {
+            "case": "detector: pcre: authority keyword before a letter",
+            "text": "Erreichen Sie unsé unter 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie unsé unter ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 25,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie unsé unter ***** ***45"
+        },
+        {
+            "case": "detector: pcre: authority keyword with umlaut",
+            "text": "Erreichen Sie Ämtern unter 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie Ämtern unter ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 27,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie Ämtern unter ***** ***45"
+        },
+        {
+            "case": "detector: pcre: authority keyword with long s",
+            "text": "Erreichen Sie unſ unter 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie unſ unter 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie unſ unter 05572 12345"
+        },
+        {
+            "case": "detector: pcre: authority keyword in capitals",
+            "text": "Erreichen Sie UNS unter 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie UNS unter 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie UNS unter 05572 12345"
+        },
+        {
+            "case": "detector: pcre: authority keyword with Kelvin sign",
+            "text": "Erreichen Sie das AMTK unter 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie das AMTK unter ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 29,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie das AMTK unter ***** ***45"
+        },
+        {
+            "case": "detector: pcre: NEL is whitespace",
+            "text": "geb.15.03.1992",
+            "redaction": {
+                "redactedText": "geb.⟦BIRTH_DATE_1⟧",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "15.03.1992"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "15.03.1992",
+                        "offset": 5,
+                        "length": 10,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "geb.[BIRTH_DATE]"
+        },
+        {
+            "case": "detector: pcre: BOM is no whitespace",
+            "text": "geb.﻿15.03.1992",
+            "redaction": {
+                "redactedText": "geb.﻿15.03.1992",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "geb.﻿15.03.1992"
+        },
+        {
+            "case": "detector: pcre: Mongolian vowel separator is whitespace",
+            "text": "geb.᠎15.03.1992",
+            "redaction": {
+                "redactedText": "geb.᠎⟦BIRTH_DATE_1⟧",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "15.03.1992"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "15.03.1992",
+                        "offset": 5,
+                        "length": 10,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "geb.᠎[BIRTH_DATE]"
+        },
+        {
+            "case": "detector: pcre: line separator and no-break space in a birth date",
+            "text": "geboren\u2028am 15. 03.1992",
+            "redaction": {
+                "redactedText": "geboren\u2028am ⟦BIRTH_DATE_1⟧",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "15. 03.1992"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "15. 03.1992",
+                        "offset": 11,
+                        "length": 11,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "geboren\u2028am [BIRTH_DATE]"
+        },
+        {
+            "case": "detector: pcre: tab in a birth date",
+            "text": "geb. 15.\t03.1992",
+            "redaction": {
+                "redactedText": "geb. ⟦BIRTH_DATE_1⟧",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "15.\t03.1992"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "15.\t03.1992",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "geb. [BIRTH_DATE]"
+        },
+        {
+            "case": "detector: pcre: sentence ends at NEL",
+            "text": "Bei Fragen erreichen Sie uns.Privat 05572 12345",
+            "redaction": {
+                "redactedText": "Bei Fragen erreichen Sie uns.Privat ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 37,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Bei Fragen erreichen Sie uns.Privat ***** ***45"
+        },
+        {
+            "case": "detector: pcre: sentence does not end at BOM",
+            "text": "Bei Fragen erreichen Sie uns.﻿Privat 05572 12345",
+            "redaction": {
+                "redactedText": "Bei Fragen erreichen Sie uns.﻿Privat 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bei Fragen erreichen Sie uns.﻿Privat 05572 12345"
+        },
+        {
+            "case": "detector: pcre: recipient phone after NEL",
+            "text": "Wir haben notiert: IhreTelefonnummer 05572 12345",
+            "redaction": {
+                "redactedText": "Wir haben notiert: IhreTelefonnummer ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 38,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Wir haben notiert: IhreTelefonnummer ***** ***45"
+        },
+        {
+            "case": "detector: pcre: recipient phone after BOM",
+            "text": "Wir haben notiert: Ihre﻿Telefonnummer 05572 12345",
+            "redaction": {
+                "redactedText": "Wir haben notiert: Ihre﻿Telefonnummer 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Wir haben notiert: Ihre﻿Telefonnummer 05572 12345"
+        },
+        {
+            "case": "detector: pcre: address line ends at line separator",
+            "text": "Lindenweg 12\n6900 Bregenz\u2028x",
+            "redaction": {
+                "redactedText": "Lindenweg 12\n6900 Bregenz\u2028x",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Lindenweg 12\n6900 Bregenz\u2028x"
+        },
+        {
+            "case": "detector: pcre: address line starts after line separator",
+            "text": "x\u2028Lindenweg 12\n6900 Bregenz",
+            "redaction": {
+                "redactedText": "x\u2028Lindenweg 12\n6900 Bregenz",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "x\u2028Lindenweg 12\n6900 Bregenz"
+        },
+        {
+            "case": "detector: pcre: address line starts after CR",
+            "text": "x\rLindenweg 12\n6900 Bregenz",
+            "redaction": {
+                "redactedText": "x\r⟦ADDRESS_1⟧",
+                "vault": {
+                    "⟦ADDRESS_1⟧": "Lindenweg 12\n6900 Bregenz"
+                },
+                "entities": [
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Lindenweg 12\n6900 Bregenz",
+                        "offset": 2,
+                        "length": 25,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "x\r[ADDRESS]"
+        },
+        {
+            "case": "detector: pcre: salutation line starts after paragraph separator",
+            "text": "x\u2029Frau\nMaria Musterfrau\n",
+            "redaction": {
+                "redactedText": "x\u2029Frau\nMaria Musterfrau\n",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "x\u2029Frau\nMaria Musterfrau\n"
+        },
+        {
+            "case": "detector: pcre: name line ends at CR",
+            "text": "Frau\nMaria Musterfrau\rx",
+            "redaction": {
+                "redactedText": "Frau\n⟦PERSON_1⟧\rx",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 5,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    }
+                ]
+            },
+            "mask": "Frau\n[PERSON]\rx"
+        },
+        {
+            "case": "detector: pcre: abbreviation z.B.",
+            "text": "Bitte an uns wenden, z.B. Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Bitte an uns wenden, z.B. Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bitte an uns wenden, z.B. Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: abbreviation after a sentence",
+            "text": "Bitte an uns wenden. Mag. Muster, Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Bitte an uns wenden. Mag. Muster, Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 39,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Bitte an uns wenden. Mag. Muster, Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: initial after a sentence",
+            "text": "Bitte an uns wenden. M. Muster, Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Bitte an uns wenden. M. Muster, Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 37,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Bitte an uns wenden. M. Muster, Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: non-ASCII initial after a sentence",
+            "text": "Bitte an uns wenden. É. Muster, Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Bitte an uns wenden. É. Muster, Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 37,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Bitte an uns wenden. É. Muster, Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: exclamation mark ends a sentence",
+            "text": "Bitte an uns wenden! Muster, Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Bitte an uns wenden! Muster, Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 34,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Bitte an uns wenden! Muster, Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: sentence starts with an umlaut",
+            "text": "Bitte an uns wenden. Ämter, Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Bitte an uns wenden. Ämter, Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 33,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Bitte an uns wenden. Ämter, Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: sentence starts with an emoji",
+            "text": "Bitte an uns wenden. 😀 Muster, Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Bitte an uns wenden. 😀 Muster, Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bitte an uns wenden. 😀 Muster, Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: letterhead",
+            "text": "Bezirkshauptmannschaft Musterstadt\nVerkehrsamt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nVerkehrsamt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nVerkehrsamt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at."
+        },
+        {
+            "case": "detector: pcre: letterhead line with byte 0x85 (Å)",
+            "text": "Bezirkshauptmannschaft Musterstadt Å\nVerkehrsamt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt Å\nVerkehrsamt\n\nSie erreichen mich unter ⟦EMAIL_1⟧.",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 75,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt Å\nVerkehrsamt\n\nSie erreichen mich unter [EMAIL]."
+        },
+        {
+            "case": "detector: pcre: letterhead second line after byte 0x85 (Å)",
+            "text": "Verkehrsamt Å\nBezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+            "redaction": {
+                "redactedText": "Verkehrsamt Å\nBezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter ⟦EMAIL_1⟧.",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 75,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Verkehrsamt Å\nBezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter [EMAIL]."
+        },
+        {
+            "case": "detector: pcre: letterhead second line after NEL",
+            "text": "Verkehrsamtx\nBezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+            "redaction": {
+                "redactedText": "Verkehrsamtx\nBezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter ⟦EMAIL_1⟧.",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 75,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Verkehrsamtx\nBezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter [EMAIL]."
+        },
+        {
+            "case": "detector: pcre: letterhead second line after line separator",
+            "text": "Verkehrsamt\u2028Bezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+            "redaction": {
+                "redactedText": "Verkehrsamt\u2028Bezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Verkehrsamt\u2028Bezirkshauptmannschaft Musterstadt\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at."
+        },
+        {
+            "case": "detector: pcre: letterhead limit cuts a character",
+            "text": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\n„x verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\n„x ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 47,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\n„x [EMAIL]"
+        },
+        {
+            "case": "detector: pcre: letterhead limit before ASCII",
+            "text": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\n\"x verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\n\"x verkehr@bh-musterstadt.gv.at",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\n\"x verkehr@bh-musterstadt.gv.at"
+        },
+        {
+            "case": "detector: pcre: letterhead limit before a 2-byte character",
+            "text": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\nÄx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\nÄx verkehr@bh-musterstadt.gv.at",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\n\nÄx verkehr@bh-musterstadt.gv.at"
+        },
+        {
+            "case": "detector: pcre: letterhead too long",
+            "text": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\nE\n\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\nE\n\nx verkehr@bh-musterstadt.gv.at",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nA\nB\nC\nD\nE\n\nx verkehr@bh-musterstadt.gv.at"
+        },
+        {
+            "case": "detector: pcre: letterhead with CRLF",
+            "text": "Bezirkshauptmannschaft Musterstadt\r\nA\r\n\r\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\r\nA\r\n\r\nx verkehr@bh-musterstadt.gv.at",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\r\nA\r\n\r\nx verkehr@bh-musterstadt.gv.at"
+        },
+        {
+            "case": "detector: pcre: letterhead with CRLF and blank",
+            "text": "Bezirkshauptmannschaft Musterstadt\nA\r\n \r\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nA\r\n \r\nx verkehr@bh-musterstadt.gv.at",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nA\r\n \r\nx verkehr@bh-musterstadt.gv.at"
+        },
+        {
+            "case": "detector: pcre: letterhead ends at salutation",
+            "text": "Bezirkshauptmannschaft Musterstadt\nA\nHerrn Muster\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nA\nHerrn ⟦PERSON_1⟧\nx verkehr@bh-musterstadt.gv.at",
+                "vault": {
+                    "⟦PERSON_1⟧": "Muster"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Muster",
+                        "offset": 43,
+                        "length": 6,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nA\nHerrn [PERSON]\nx verkehr@bh-musterstadt.gv.at"
+        },
+        {
+            "case": "detector: pcre: letterhead \"Anna\" is no salutation",
+            "text": "Bezirkshauptmannschaft Musterstadt\nAnna\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nAnna\nx ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 42,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nAnna\nx [EMAIL]"
+        },
+        {
+            "case": "detector: pcre: authority domains",
+            "text": "Bezirkshauptmannschaft Musterstadt\nA\n\nx verkehr@musterstadt.at verkehr@musterstadt-fitness.at verkehr@xy-musterstadt.at verkehr@MUSTERSTADT.AT",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nA\n\nx verkehr@musterstadt.at ⟦EMAIL_1⟧ ⟦EMAIL_2⟧ verkehr@MUSTERSTADT.AT",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@musterstadt-fitness.at",
+                    "⟦EMAIL_2⟧": "verkehr@xy-musterstadt.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@musterstadt-fitness.at",
+                        "offset": 63,
+                        "length": 30,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    },
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@xy-musterstadt.at",
+                        "offset": 94,
+                        "length": 25,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nA\n\nx verkehr@musterstadt.at [EMAIL] [EMAIL] verkehr@MUSTERSTADT.AT"
+        },
+        {
+            "case": "detector: pcre: letterhead after 2-byte characters",
+            "text": "ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Bezirkshauptmannschaft Musterstadt\n\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Bezirkshauptmannschaft Musterstadt\n\nx ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 1029,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Bezirkshauptmannschaft Musterstadt\n\nx [EMAIL]"
+        },
+        {
+            "case": "detector: pcre: letterhead on line 2 after 2-byte characters",
+            "text": "äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää\nBezirkshauptmannschaft Musterstadt\n\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää\nBezirkshauptmannschaft Musterstadt\n\nx ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 1038,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää\nBezirkshauptmannschaft Musterstadt\n\nx [EMAIL]"
+        },
+        {
+            "case": "detector: pcre: letterhead after 2000 bytes",
+            "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nBezirkshauptmannschaft Musterstadt\n\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nBezirkshauptmannschaft Musterstadt\n\nx ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 2038,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nBezirkshauptmannschaft Musterstadt\n\nx [EMAIL]"
+        },
+        {
+            "case": "detector: pcre: letterhead after 3-byte characters",
+            "text": "€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€\nBezirkshauptmannschaft Musterstadt\n\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€\nBezirkshauptmannschaft Musterstadt\n\nx ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 739,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€\nBezirkshauptmannschaft Musterstadt\n\nx [EMAIL]"
+        },
+        {
+            "case": "detector: pcre: letterhead with 4-byte characters",
+            "text": "Bezirkshauptmannschaft Musterstadt 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\n\nx verkehr@bh-musterstadt.gv.at",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\n\nx ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "verkehr@bh-musterstadt.gv.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "verkehr@bh-musterstadt.gv.at",
+                        "offset": 639,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\n\nx [EMAIL]"
+        },
+        {
+            "case": "detector: pcre: window before, 190 2-byte characters",
+            "text": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 191 2-byte characters",
+            "text": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 192 2-byte characters",
+            "text": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 193 2-byte characters",
+            "text": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 194 2-byte characters",
+            "text": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 195 2-byte characters",
+            "text": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 196 2-byte characters",
+            "text": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 220,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window before, 197 2-byte characters",
+            "text": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 221,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window before, 198 2-byte characters",
+            "text": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 222,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window before, 199 2-byte characters",
+            "text": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 223,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns äääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window before, 200 2-byte characters",
+            "text": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 224,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns ääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääääää Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window before, 95 4-byte characters",
+            "text": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 96 4-byte characters",
+            "text": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 97 4-byte characters",
+            "text": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345"
+        },
+        {
+            "case": "detector: pcre: window before, 98 4-byte characters",
+            "text": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 122,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window before, 99 4-byte characters",
+            "text": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 123,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window before, 100 4-byte characters",
+            "text": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 124,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window before, 101 4-byte characters",
+            "text": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 125,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 Tel. ***** ***45"
+        },
+        {
+            "case": "detector: pcre: window after, 380 1-byte characters",
+            "text": "Tel. 05572 12345 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+            "redaction": {
+                "redactedText": "Tel. 05572 12345 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Tel. 05572 12345 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns"
+        },
+        {
+            "case": "detector: pcre: window after, 385 1-byte characters",
+            "text": "Tel. 05572 12345 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. ***** ***45 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns"
+        },
+        {
+            "case": "detector: pcre: window after, 390 1-byte characters",
+            "text": "Tel. 05572 12345 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. ***** ***45 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns"
+        },
+        {
+            "case": "detector: pcre: window after, 395 1-byte characters",
+            "text": "Tel. 05572 12345 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. ***** ***45 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns"
+        },
+        {
+            "case": "detector: pcre: window after, 400 1-byte characters",
+            "text": "Tel. 05572 12345 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. ***** ***45 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa uns"
+        },
+        {
+            "case": "detector: pcre: window after, 190 2-byte characters",
+            "text": "Tel. 05572 12345 öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+            "redaction": {
+                "redactedText": "Tel. 05572 12345 öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Tel. 05572 12345 öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns"
+        },
+        {
+            "case": "detector: pcre: window after, 195 2-byte characters",
+            "text": "Tel. 05572 12345 ööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧ ööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. ***** ***45 ööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns"
+        },
+        {
+            "case": "detector: pcre: window after, 196 2-byte characters",
+            "text": "Tel. 05572 12345 öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧ öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. ***** ***45 öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns"
+        },
+        {
+            "case": "detector: pcre: window after, 197 2-byte characters",
+            "text": "Tel. 05572 12345 ööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧ ööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. ***** ***45 ööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns"
+        },
+        {
+            "case": "detector: pcre: window after, 200 2-byte characters",
+            "text": "Tel. 05572 12345 öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧ öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. ***** ***45 öööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööööö uns"
+        },
+        {
             "case": "extra: CRLF line endings",
             "text": "Frau\r\nMaria Musterfrau\r\nLindenweg 12\r\n6900 Bregenz\r\n",
             "redaction": {
@@ -2033,6 +3621,249 @@
                 "entities": []
             },
             "mask": "Betrag 110,00 Euro bis 15.11.2026, § 99 Abs. 3 lit. a StVO."
+        },
+        {
+            "case": "extra: normalization keeps original characters",
+            "text": "😀\r\nFrau\r\nMaria Musterfrau\r\nTel. 0664 1234567",
+            "redaction": {
+                "redactedText": "😀\r\nFrau\r\n⟦PERSON_1⟧\r\nTel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau",
+                    "⟦PHONE_1⟧": "0664 1234567"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 9,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "0664 1234567",
+                        "offset": 32,
+                        "length": 12,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "😀\r\nFrau\r\n[PERSON]\r\nTel. **********67"
+        },
+        {
+            "case": "extra: name line ends at NEL",
+            "text": "Frau\nMaria Musterfrau\nMusterfrau",
+            "redaction": {
+                "redactedText": "Frau\nMaria Musterfrau\nMusterfrau",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Frau\nMaria Musterfrau\nMusterfrau"
+        },
+        {
+            "case": "extra: propagation needs word boundaries",
+            "text": "Frau\nMaria Musterfrau\n\nAn Musterfrau_ und Musterfraú und 1Musterfrau und Musterfrau",
+            "redaction": {
+                "redactedText": "Frau\n⟦PERSON_1⟧\n\nAn ⟦PERSON_1⟧_ und ⟦PERSON_1⟧́ und 1Musterfrau und ⟦PERSON_1⟧",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 5,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Musterfrau",
+                        "offset": 26,
+                        "length": 10,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Musterfrau",
+                        "offset": 42,
+                        "length": 10,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Musterfrau",
+                        "offset": 74,
+                        "length": 10,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    }
+                ]
+            },
+            "mask": "Frau\n[PERSON]\n\nAn [PERSON]_ und [PERSON]́ und 1Musterfrau und [PERSON]"
+        },
+        {
+            "case": "extra: propagation of file number at boundaries",
+            "text": "Zahl: BHMS-VK-2026/48213\nBHMS-VK-2026/48213x BHMS-VK-2026/48213 /BHMS-VK-2026/48213",
+            "redaction": {
+                "redactedText": "Zahl: ⟦FILE_NUMBER_1⟧\nBHMS-VK-2026/48213x ⟦FILE_NUMBER_1⟧ /⟦FILE_NUMBER_1⟧",
+                "vault": {
+                    "⟦FILE_NUMBER_1⟧": "BHMS-VK-2026/48213"
+                },
+                "entities": [
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 6,
+                        "length": 18,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    },
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 45,
+                        "length": 18,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    },
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 65,
+                        "length": 18,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    }
+                ]
+            },
+            "mask": "Zahl: [FILE_NUMBER]\nBHMS-VK-2026/48213x [FILE_NUMBER] /[FILE_NUMBER]"
+        },
+        {
+            "case": "extra: propagation of nested values",
+            "text": "Kundennummer 4711\nKundennummer 4711-0815 und 4711 und 4711-0815",
+            "redaction": {
+                "redactedText": "Kundennummer ⟦FILE_NUMBER_1⟧\nKundennummer ⟦FILE_NUMBER_2⟧ und ⟦FILE_NUMBER_1⟧ und ⟦FILE_NUMBER_2⟧",
+                "vault": {
+                    "⟦FILE_NUMBER_1⟧": "4711",
+                    "⟦FILE_NUMBER_2⟧": "4711-0815"
+                },
+                "entities": [
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "4711",
+                        "offset": 13,
+                        "length": 4,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    },
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "4711-0815",
+                        "offset": 31,
+                        "length": 9,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    },
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "4711",
+                        "offset": 45,
+                        "length": 4,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    },
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "4711-0815",
+                        "offset": 54,
+                        "length": 9,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    }
+                ]
+            },
+            "mask": "Kundennummer [FILE_NUMBER]\nKundennummer [FILE_NUMBER] und [FILE_NUMBER] und [FILE_NUMBER]"
+        },
+        {
+            "case": "extra: propagation of astral names",
+            "text": "Frau\n𝐀𝐁 Musterfrau\n\n𝐀𝐁 Musterfrau",
+            "redaction": {
+                "redactedText": "Frau\n⟦PERSON_1⟧\n\n⟦PERSON_1⟧",
+                "vault": {
+                    "⟦PERSON_1⟧": "𝐀𝐁 Musterfrau"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "𝐀𝐁 Musterfrau",
+                        "offset": 5,
+                        "length": 13,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "𝐀𝐁 Musterfrau",
+                        "offset": 20,
+                        "length": 13,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    }
+                ]
+            },
+            "mask": "Frau\n[PERSON]\n\n[PERSON]"
+        },
+        {
+            "case": "extra: propagation of hyphenated surname",
+            "text": "Herrn\nJohann Beispielmann-Muster\n\nBeispielmann-Muster und Muster",
+            "redaction": {
+                "redactedText": "Herrn\n⟦PERSON_1⟧\n\n⟦PERSON_1⟧ und Muster",
+                "vault": {
+                    "⟦PERSON_1⟧": "Johann Beispielmann-Muster"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Johann Beispielmann-Muster",
+                        "offset": 6,
+                        "length": 26,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann-Muster",
+                        "offset": 34,
+                        "length": 19,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    }
+                ]
+            },
+            "mask": "Herrn\n[PERSON]\n\n[PERSON] und Muster"
         }
     ],
     "configured": [
