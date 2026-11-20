@@ -64,16 +64,19 @@ export interface PiiShieldMiddlewareOptions {
 /**
  * Joins all texts of a prompt for one consistent redaction: PHP's separator, contains no character any
  * detector matches. PHP throws when a text contains it (clarifile/pii-shield, PiiShieldProcessor); here it
- * gets longer until splitting the joined text gives the texts back (docs/DEVIATIONS.md).
+ * gets one U+2063 more than the longest run of U+2063 in the texts, so no text contains it and no
+ * occurrence can span a text boundary (the separator starts and ends with "\n"). Linear in the input.
  */
 function joinTexts(texts: readonly string[]): { joined: string; separator: string } {
-  for (let marks = 3; ; marks++) {
-    const separator = `\n${'\u{2063}'.repeat(marks)}\n`;
-    const joined = texts.join(separator);
-    if (joined.split(separator).length === texts.length) {
-      return { joined, separator };
+  let longest = 0;
+  for (const text of texts) {
+    for (const run of text.matchAll(/\u{2063}+/gu)) {
+      longest = Math.max(longest, run[0].length);
     }
   }
+  const separator = `\n${'\u{2063}'.repeat(Math.max(3, longest + 1))}\n`;
+
+  return { joined: texts.join(separator), separator };
 }
 
 /**

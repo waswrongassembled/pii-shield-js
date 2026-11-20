@@ -482,6 +482,18 @@ describe('piiShieldMiddleware: prompt', () => {
     expect(payload).toContain(JSON.stringify(sep).slice(1, -1));
   });
 
+  it('joins texts with a long U+2063 run in linear time', async () => {
+    const { mock, model } = setup([text('ok')]);
+    // Every shorter separator ("\n" + n × U+2063 + "\n") occurs in the texts.
+    const texts = Array.from({ length: 2000 }, (_, n) => `\n${'\u{2063}'.repeat(n)}\n`).join('');
+
+    const started = performance.now();
+    await generateText({ model, maxRetries: 0, instructions: texts, prompt: 'b' });
+
+    expect(performance.now() - started).toBeLessThan(2000);
+    expect(mock.doGenerateCalls[0]?.prompt[0]).toEqual({ role: 'system', content: texts });
+  });
+
   it('runs async detectors with the call’s abort signal', async () => {
     const signals: AbortSignal[] = [];
     const detector = new ModelDetector({
