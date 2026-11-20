@@ -1,0 +1,267 @@
+{
+    "generatedBy": "compat/export-fixtures.php",
+    "phpSource": "fa6d4b2adac98475fedb499c67cfa469016701ec",
+    "letters": [
+        {
+            "name": "01-strafverfuegung",
+            "text": "Bezirkshauptmannschaft Musterstadt\nAbteilung Verkehrsrecht\nHauptplatz 1, 6999 Musterstadt\n\nZahl: BHMS-VK-2026/48213\n\nFrau\nMaria Musterfrau\nLindenweg 12\n6900 Bregenz\n\nMusterstadt, 28.10.2026\n\nSTRAFVERFÜGUNG\n\nSie haben am 14.10.2026 um 07:42 Uhr in 6999 Musterstadt, L 200 bei Strkm 4,2, als Lenkerin des Kraftfahrzeuges mit dem Kennzeichen B-123AB die im Ortsgebiet zulässige Höchstgeschwindigkeit von 50 km/h um 23 km/h überschritten.\n\nSie haben dadurch folgende Rechtsvorschrift verletzt: § 20 Abs. 2 StVO\n\nWegen dieser Verwaltungsübertretung wird über Sie gemäß § 99 Abs. 3 lit. a StVO eine Geldstrafe von 110,00 Euro verhängt, im Falle der Uneinbringlichkeit eine Ersatzfreiheitsstrafe von 22 Stunden.\n\nZahlungshinweis: Bitte überweisen Sie den Betrag binnen zwei Wochen ab Zustellung auf das Konto IBAN AT61 1904 3002 3457 3201, Verwendungszweck: BHMS-VK-2026/48213.\n\nRechtsmittelbelehrung: Sie haben das Recht, gegen diese Strafverfügung binnen zwei Wochen nach Zustellung Einspruch zu erheben (§ 49 VStG). Der Einspruch ist bei der Bezirkshauptmannschaft Musterstadt schriftlich oder per E-Mail an verkehrsrecht@bh-musterstadt.example einzubringen.\n\nFür die Bezirkshauptmannschaft\nMag. Thomas Beispiel\n",
+            "expected": {
+                "pii": [
+                    {
+                        "type": "PERSON",
+                        "value": "Maria Musterfrau"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "value": "Lindenweg 12\n6900 Bregenz"
+                    },
+                    {
+                        "type": "FILE_NUMBER",
+                        "value": "BHMS-VK-2026/48213"
+                    },
+                    {
+                        "type": "LICENSE_PLATE",
+                        "value": "B-123AB"
+                    },
+                    {
+                        "type": "IBAN",
+                        "value": "AT61 1904 3002 3457 3201"
+                    }
+                ],
+                "must_survive": [
+                    "Bezirkshauptmannschaft Musterstadt",
+                    "28.10.2026",
+                    "14.10.2026",
+                    "§ 20 Abs. 2 StVO",
+                    "§ 99 Abs. 3 lit. a StVO",
+                    "§ 49 VStG",
+                    "110,00 Euro",
+                    "binnen zwei Wochen",
+                    "50 km/h",
+                    "23 km/h"
+                ],
+                "negative": [],
+                "notes": "Official's name and authority e-mail are not the recipient's PII. Decide in task A whether to redact them (default: keep authority contact data, it is needed for the action steps)."
+            },
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nAbteilung Verkehrsrecht\nHauptplatz 1, 6999 Musterstadt\n\nZahl: ⟦FILE_NUMBER_1⟧\n\nFrau\n⟦PERSON_1⟧\n⟦ADDRESS_1⟧\n\nMusterstadt, 28.10.2026\n\nSTRAFVERFÜGUNG\n\nSie haben am 14.10.2026 um 07:42 Uhr in 6999 Musterstadt, L 200 bei Strkm 4,2, als Lenkerin des Kraftfahrzeuges mit dem Kennzeichen ⟦LICENSE_PLATE_1⟧ die im Ortsgebiet zulässige Höchstgeschwindigkeit von 50 km/h um 23 km/h überschritten.\n\nSie haben dadurch folgende Rechtsvorschrift verletzt: § 20 Abs. 2 StVO\n\nWegen dieser Verwaltungsübertretung wird über Sie gemäß § 99 Abs. 3 lit. a StVO eine Geldstrafe von 110,00 Euro verhängt, im Falle der Uneinbringlichkeit eine Ersatzfreiheitsstrafe von 22 Stunden.\n\nZahlungshinweis: Bitte überweisen Sie den Betrag binnen zwei Wochen ab Zustellung auf das Konto IBAN ⟦IBAN_1⟧, Verwendungszweck: ⟦FILE_NUMBER_1⟧.\n\nRechtsmittelbelehrung: Sie haben das Recht, gegen diese Strafverfügung binnen zwei Wochen nach Zustellung Einspruch zu erheben (§ 49 VStG). Der Einspruch ist bei der Bezirkshauptmannschaft Musterstadt schriftlich oder per E-Mail an verkehrsrecht@bh-musterstadt.example einzubringen.\n\nFür die Bezirkshauptmannschaft\nMag. Thomas Beispiel\n",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau",
+                    "⟦FILE_NUMBER_1⟧": "BHMS-VK-2026/48213",
+                    "⟦ADDRESS_1⟧": "Lindenweg 12\n6900 Bregenz",
+                    "⟦LICENSE_PLATE_1⟧": "B-123AB",
+                    "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201"
+                },
+                "entities": [
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 97,
+                        "length": 18,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 122,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Lindenweg 12\n6900 Bregenz",
+                        "offset": 139,
+                        "length": 25,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    },
+                    {
+                        "type": "LICENSE_PLATE",
+                        "label": null,
+                        "value": "B-123AB",
+                        "offset": 339,
+                        "length": 7,
+                        "confidence": 0.9,
+                        "detector": "license_plate"
+                    },
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002 3457 3201",
+                        "offset": 807,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    },
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 851,
+                        "length": 18,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    }
+                ]
+            },
+            "restored": "Bezirkshauptmannschaft Musterstadt\nAbteilung Verkehrsrecht\nHauptplatz 1, 6999 Musterstadt\n\nZahl: BHMS-VK-2026/48213\n\nFrau\nMaria Musterfrau\nLindenweg 12\n6900 Bregenz\n\nMusterstadt, 28.10.2026\n\nSTRAFVERFÜGUNG\n\nSie haben am 14.10.2026 um 07:42 Uhr in 6999 Musterstadt, L 200 bei Strkm 4,2, als Lenkerin des Kraftfahrzeuges mit dem Kennzeichen B-123AB die im Ortsgebiet zulässige Höchstgeschwindigkeit von 50 km/h um 23 km/h überschritten.\n\nSie haben dadurch folgende Rechtsvorschrift verletzt: § 20 Abs. 2 StVO\n\nWegen dieser Verwaltungsübertretung wird über Sie gemäß § 99 Abs. 3 lit. a StVO eine Geldstrafe von 110,00 Euro verhängt, im Falle der Uneinbringlichkeit eine Ersatzfreiheitsstrafe von 22 Stunden.\n\nZahlungshinweis: Bitte überweisen Sie den Betrag binnen zwei Wochen ab Zustellung auf das Konto IBAN AT61 1904 3002 3457 3201, Verwendungszweck: BHMS-VK-2026/48213.\n\nRechtsmittelbelehrung: Sie haben das Recht, gegen diese Strafverfügung binnen zwei Wochen nach Zustellung Einspruch zu erheben (§ 49 VStG). Der Einspruch ist bei der Bezirkshauptmannschaft Musterstadt schriftlich oder per E-Mail an verkehrsrecht@bh-musterstadt.example einzubringen.\n\nFür die Bezirkshauptmannschaft\nMag. Thomas Beispiel\n",
+            "mask": "Bezirkshauptmannschaft Musterstadt\nAbteilung Verkehrsrecht\nHauptplatz 1, 6999 Musterstadt\n\nZahl: [FILE_NUMBER]\n\nFrau\n[PERSON]\n[ADDRESS]\n\nMusterstadt, 28.10.2026\n\nSTRAFVERFÜGUNG\n\nSie haben am 14.10.2026 um 07:42 Uhr in 6999 Musterstadt, L 200 bei Strkm 4,2, als Lenkerin des Kraftfahrzeuges mit dem Kennzeichen [LICENSE_PLATE] die im Ortsgebiet zulässige Höchstgeschwindigkeit von 50 km/h um 23 km/h überschritten.\n\nSie haben dadurch folgende Rechtsvorschrift verletzt: § 20 Abs. 2 StVO\n\nWegen dieser Verwaltungsübertretung wird über Sie gemäß § 99 Abs. 3 lit. a StVO eine Geldstrafe von 110,00 Euro verhängt, im Falle der Uneinbringlichkeit eine Ersatzfreiheitsstrafe von 22 Stunden.\n\nZahlungshinweis: Bitte überweisen Sie den Betrag binnen zwei Wochen ab Zustellung auf das Konto IBAN AT61 **** **** **** 3201, Verwendungszweck: [FILE_NUMBER].\n\nRechtsmittelbelehrung: Sie haben das Recht, gegen diese Strafverfügung binnen zwei Wochen nach Zustellung Einspruch zu erheben (§ 49 VStG). Der Einspruch ist bei der Bezirkshauptmannschaft Musterstadt schriftlich oder per E-Mail an verkehrsrecht@bh-musterstadt.example einzubringen.\n\nFür die Bezirkshauptmannschaft\nMag. Thomas Beispiel\n"
+        },
+        {
+            "name": "02-finanzamt-vorschreibung",
+            "text": "Finanzamt Österreich\nDienststelle Musterland\n\nHerrn\nJohann Beispielmann\nBahnhofstraße 7/3\n4020 Linz\n\nSteuernummer: 46 123/4567\nSozialversicherungsnummer: 4568 150392\ngeb. 15.03.1992\n\nLinz, 02.11.2026\n\nBuchungsmitteilung Nr. 3/2026\n\nSehr geehrter Herr Beispielmann,\n\nauf Ihrem Abgabenkonto wurde die Einkommensteuer-Vorauszahlung für das 4. Quartal 2026 in Höhe von 1.245,00 Euro gebucht. Der Betrag ist am 15.11.2026 fällig.\n\nBitte überweisen Sie den Betrag auf das Konto des Finanzamtes. Geben Sie als Verwendungszweck Ihre Steuernummer an. Bei verspäteter Zahlung kann gemäß § 217 BAO ein Säumniszuschlag von 2 % festgesetzt werden.\n\nBei Fragen erreichen Sie uns unter +43 50 233 233.\n\nIhr Finanzamt Österreich\n",
+            "expected": {
+                "pii": [
+                    {
+                        "type": "PERSON",
+                        "value": "Johann Beispielmann"
+                    },
+                    {
+                        "type": "PERSON",
+                        "value": "Beispielmann"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "value": "Bahnhofstraße 7/3\n4020 Linz"
+                    },
+                    {
+                        "type": "TAX_NUMBER",
+                        "value": "46 123/4567"
+                    },
+                    {
+                        "type": "SVNR",
+                        "value": "4568 150392"
+                    },
+                    {
+                        "type": "BIRTH_DATE",
+                        "value": "15.03.1992"
+                    }
+                ],
+                "must_survive": [
+                    "Finanzamt Österreich",
+                    "02.11.2026",
+                    "15.11.2026",
+                    "1.245,00 Euro",
+                    "4. Quartal 2026",
+                    "§ 217 BAO",
+                    "2 %",
+                    "+43 50 233 233"
+                ],
+                "negative": [
+                    {
+                        "value": "1234 010180",
+                        "reason": "SVNR with wrong check digit (correct would be 1237 010180), validator must reject"
+                    }
+                ],
+                "notes": "'Beispielmann' alone must map to the same placeholder as 'Johann Beispielmann' (same person). The authority hotline is public and must survive."
+            },
+            "redaction": {
+                "redactedText": "Finanzamt Österreich\nDienststelle Musterland\n\nHerrn\n⟦PERSON_1⟧\n⟦ADDRESS_1⟧\n\nSteuernummer: ⟦TAX_NUMBER_1⟧\nSozialversicherungsnummer: ⟦SVNR_1⟧\ngeb. ⟦BIRTH_DATE_1⟧\n\nLinz, 02.11.2026\n\nBuchungsmitteilung Nr. 3/2026\n\nSehr geehrter Herr ⟦PERSON_1⟧,\n\nauf Ihrem Abgabenkonto wurde die Einkommensteuer-Vorauszahlung für das 4. Quartal 2026 in Höhe von 1.245,00 Euro gebucht. Der Betrag ist am 15.11.2026 fällig.\n\nBitte überweisen Sie den Betrag auf das Konto des Finanzamtes. Geben Sie als Verwendungszweck Ihre Steuernummer an. Bei verspäteter Zahlung kann gemäß § 217 BAO ein Säumniszuschlag von 2 % festgesetzt werden.\n\nBei Fragen erreichen Sie uns unter +43 50 233 233.\n\nIhr Finanzamt Österreich\n",
+                "vault": {
+                    "⟦PERSON_1⟧": "Johann Beispielmann",
+                    "⟦ADDRESS_1⟧": "Bahnhofstraße 7/3\n4020 Linz",
+                    "⟦TAX_NUMBER_1⟧": "46 123/4567",
+                    "⟦SVNR_1⟧": "4568 150392",
+                    "⟦BIRTH_DATE_1⟧": "15.03.1992"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Johann Beispielmann",
+                        "offset": 52,
+                        "length": 19,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Bahnhofstraße 7/3\n4020 Linz",
+                        "offset": 72,
+                        "length": 27,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    },
+                    {
+                        "type": "TAX_NUMBER",
+                        "label": null,
+                        "value": "46 123/4567",
+                        "offset": 115,
+                        "length": 11,
+                        "confidence": 0.9,
+                        "detector": "tax_number"
+                    },
+                    {
+                        "type": "SVNR",
+                        "label": null,
+                        "value": "4568 150392",
+                        "offset": 154,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "at_svnr"
+                    },
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "15.03.1992",
+                        "offset": 171,
+                        "length": 10,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann",
+                        "offset": 251,
+                        "length": 12,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "restored": "Finanzamt Österreich\nDienststelle Musterland\n\nHerrn\nJohann Beispielmann\nBahnhofstraße 7/3\n4020 Linz\n\nSteuernummer: 46 123/4567\nSozialversicherungsnummer: 4568 150392\ngeb. 15.03.1992\n\nLinz, 02.11.2026\n\nBuchungsmitteilung Nr. 3/2026\n\nSehr geehrter Herr Johann Beispielmann,\n\nauf Ihrem Abgabenkonto wurde die Einkommensteuer-Vorauszahlung für das 4. Quartal 2026 in Höhe von 1.245,00 Euro gebucht. Der Betrag ist am 15.11.2026 fällig.\n\nBitte überweisen Sie den Betrag auf das Konto des Finanzamtes. Geben Sie als Verwendungszweck Ihre Steuernummer an. Bei verspäteter Zahlung kann gemäß § 217 BAO ein Säumniszuschlag von 2 % festgesetzt werden.\n\nBei Fragen erreichen Sie uns unter +43 50 233 233.\n\nIhr Finanzamt Österreich\n",
+            "mask": "Finanzamt Österreich\nDienststelle Musterland\n\nHerrn\n[PERSON]\n[ADDRESS]\n\nSteuernummer: [TAX_NUMBER]\nSozialversicherungsnummer: [SVNR]\ngeb. [BIRTH_DATE]\n\nLinz, 02.11.2026\n\nBuchungsmitteilung Nr. 3/2026\n\nSehr geehrter Herr [PERSON],\n\nauf Ihrem Abgabenkonto wurde die Einkommensteuer-Vorauszahlung für das 4. Quartal 2026 in Höhe von 1.245,00 Euro gebucht. Der Betrag ist am 15.11.2026 fällig.\n\nBitte überweisen Sie den Betrag auf das Konto des Finanzamtes. Geben Sie als Verwendungszweck Ihre Steuernummer an. Bei verspäteter Zahlung kann gemäß § 217 BAO ein Säumniszuschlag von 2 % festgesetzt werden.\n\nBei Fragen erreichen Sie uns unter +43 50 233 233.\n\nIhr Finanzamt Österreich\n"
+        },
+        {
+            "name": "03-anonymverfuegung",
+            "text": "Magistrat der Stadt Musterhausen\nParkraumüberwachung\nRathausplatz 2, 8999 Musterhausen\n\nMusterhausen, 03.11.2026\n\nANONYMVERFÜGUNG\n\nDas Fahrzeug von Lukas Testmann, wohnhaft Gartengasse 5, 8990 Beispieldorf, war am 27.10.2026 um 14:10 Uhr in der Kurzparkzone Rathausplatz ohne gültigen Parkschein abgestellt.\n\nGemäß § 4 Abs. 1 MusterParkG wird eine Geldstrafe von 48,00 Euro festgesetzt. Bitte überweisen Sie den Betrag binnen vier Wochen ab Ausstellung.\n\nBei Fragen wenden Sie sich an parken@musterhausen.example.\n",
+            "expected": {
+                "pii": [
+                    {
+                        "type": "PERSON",
+                        "value": "Lukas Testmann"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "value": "Gartengasse 5, 8990 Beispieldorf"
+                    }
+                ],
+                "must_survive": [
+                    "Magistrat der Stadt Musterhausen",
+                    "03.11.2026",
+                    "27.10.2026",
+                    "§ 4 Abs. 1 MusterParkG",
+                    "48,00 Euro",
+                    "binnen vier Wochen ab Ausstellung"
+                ],
+                "negative": [],
+                "notes": "Synthetic. Name without salutation and a one-line address: only model-based detection finds them (detection: model). The regex acceptance tests skip this letter; ModelDetectorTest covers it with a recorded model answer.",
+                "detection": "model"
+            },
+            "redaction": {
+                "redactedText": "Magistrat der Stadt Musterhausen\nParkraumüberwachung\nRathausplatz 2, 8999 Musterhausen\n\nMusterhausen, 03.11.2026\n\nANONYMVERFÜGUNG\n\nDas Fahrzeug von Lukas Testmann, wohnhaft Gartengasse 5, 8990 Beispieldorf, war am 27.10.2026 um 14:10 Uhr in der Kurzparkzone Rathausplatz ohne gültigen Parkschein abgestellt.\n\nGemäß § 4 Abs. 1 MusterParkG wird eine Geldstrafe von 48,00 Euro festgesetzt. Bitte überweisen Sie den Betrag binnen vier Wochen ab Ausstellung.\n\nBei Fragen wenden Sie sich an parken@musterhausen.example.\n",
+                "vault": {},
+                "entities": []
+            },
+            "restored": "Magistrat der Stadt Musterhausen\nParkraumüberwachung\nRathausplatz 2, 8999 Musterhausen\n\nMusterhausen, 03.11.2026\n\nANONYMVERFÜGUNG\n\nDas Fahrzeug von Lukas Testmann, wohnhaft Gartengasse 5, 8990 Beispieldorf, war am 27.10.2026 um 14:10 Uhr in der Kurzparkzone Rathausplatz ohne gültigen Parkschein abgestellt.\n\nGemäß § 4 Abs. 1 MusterParkG wird eine Geldstrafe von 48,00 Euro festgesetzt. Bitte überweisen Sie den Betrag binnen vier Wochen ab Ausstellung.\n\nBei Fragen wenden Sie sich an parken@musterhausen.example.\n",
+            "mask": "Magistrat der Stadt Musterhausen\nParkraumüberwachung\nRathausplatz 2, 8999 Musterhausen\n\nMusterhausen, 03.11.2026\n\nANONYMVERFÜGUNG\n\nDas Fahrzeug von Lukas Testmann, wohnhaft Gartengasse 5, 8990 Beispieldorf, war am 27.10.2026 um 14:10 Uhr in der Kurzparkzone Rathausplatz ohne gültigen Parkschein abgestellt.\n\nGemäß § 4 Abs. 1 MusterParkG wird eine Geldstrafe von 48,00 Euro festgesetzt. Bitte überweisen Sie den Betrag binnen vier Wochen ab Ausstellung.\n\nBei Fragen wenden Sie sich an parken@musterhausen.example.\n"
+        }
+    ]
+}

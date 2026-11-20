@@ -1,0 +1,2364 @@
+{
+    "generatedBy": "compat/export-fixtures.php",
+    "phpSource": "fa6d4b2adac98475fedb499c67cfa469016701ec",
+    "cases": [
+        {
+            "case": "detector: svnr: valid with space",
+            "text": "SVNR: 4568 150392.",
+            "redaction": {
+                "redactedText": "SVNR: ⟦SVNR_1⟧.",
+                "vault": {
+                    "⟦SVNR_1⟧": "4568 150392"
+                },
+                "entities": [
+                    {
+                        "type": "SVNR",
+                        "label": null,
+                        "value": "4568 150392",
+                        "offset": 6,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "at_svnr"
+                    }
+                ]
+            },
+            "mask": "SVNR: [SVNR]."
+        },
+        {
+            "case": "detector: svnr: valid compact",
+            "text": "Nr. 1237010180",
+            "redaction": {
+                "redactedText": "Nr. ⟦SVNR_1⟧",
+                "vault": {
+                    "⟦SVNR_1⟧": "1237010180"
+                },
+                "entities": [
+                    {
+                        "type": "SVNR",
+                        "label": null,
+                        "value": "1237010180",
+                        "offset": 4,
+                        "length": 10,
+                        "confidence": 1.0,
+                        "detector": "at_svnr"
+                    }
+                ]
+            },
+            "mask": "Nr. [SVNR]"
+        },
+        {
+            "case": "detector: svnr: wrong check digit",
+            "text": "SVNR 1234 010180",
+            "redaction": {
+                "redactedText": "SVNR 1234 010180",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "SVNR 1234 010180"
+        },
+        {
+            "case": "detector: svnr: with hyphen",
+            "text": "SVNR 4568-150392",
+            "redaction": {
+                "redactedText": "SVNR ⟦SVNR_1⟧",
+                "vault": {
+                    "⟦SVNR_1⟧": "4568-150392"
+                },
+                "entities": [
+                    {
+                        "type": "SVNR",
+                        "label": null,
+                        "value": "4568-150392",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "at_svnr"
+                    }
+                ]
+            },
+            "mask": "SVNR [SVNR]"
+        },
+        {
+            "case": "detector: svnr: split across lines",
+            "text": "SVNR 4568\n150392",
+            "redaction": {
+                "redactedText": "SVNR ⟦SVNR_1⟧",
+                "vault": {
+                    "⟦SVNR_1⟧": "4568\n150392"
+                },
+                "entities": [
+                    {
+                        "type": "SVNR",
+                        "label": null,
+                        "value": "4568\n150392",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "at_svnr"
+                    }
+                ]
+            },
+            "mask": "SVNR [SVNR]"
+        },
+        {
+            "case": "detector: svnr: hyphen needs a birth date",
+            "text": "Unser Zeichen: VWA-2026-100084, bitte angeben",
+            "redaction": {
+                "redactedText": "Unser Zeichen: VWA-2026-100084, bitte angeben",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Unser Zeichen: VWA-2026-100084, bitte angeben"
+        },
+        {
+            "case": "detector: svnr: line break needs a birth date",
+            "text": "Dornbirn, am 12.03.2026\n100084 Euro sind offen",
+            "redaction": {
+                "redactedText": "Dornbirn, am 12.03.2026\n100084 Euro sind offen",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Dornbirn, am 12.03.2026\n100084 Euro sind offen"
+        },
+        {
+            "case": "detector: svnr: year of a date is no SVNR start",
+            "text": "Dornbirn, am 12.03.2026\n150392 Euro sind offen",
+            "redaction": {
+                "redactedText": "Dornbirn, am 12.03.2026\n150392 Euro sind offen",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Dornbirn, am 12.03.2026\n150392 Euro sind offen"
+        },
+        {
+            "case": "detector: svnr: part of longer number",
+            "text": "Konto 912370101801",
+            "redaction": {
+                "redactedText": "Konto 912370101801",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Konto 912370101801"
+        },
+        {
+            "case": "detector: iban: grouped",
+            "text": "IBAN AT61 1904 3002 3457 3201, danke",
+            "redaction": {
+                "redactedText": "IBAN ⟦IBAN_1⟧, danke",
+                "vault": {
+                    "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201"
+                },
+                "entities": [
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002 3457 3201",
+                        "offset": 5,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    }
+                ]
+            },
+            "mask": "IBAN AT61 **** **** **** 3201, danke"
+        },
+        {
+            "case": "detector: iban: compact DE",
+            "text": "auf DE89370400440532013000 überweisen",
+            "redaction": {
+                "redactedText": "auf ⟦IBAN_1⟧ überweisen",
+                "vault": {
+                    "⟦IBAN_1⟧": "DE89370400440532013000"
+                },
+                "entities": [
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "DE89370400440532013000",
+                        "offset": 4,
+                        "length": 22,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    }
+                ]
+            },
+            "mask": "auf DE89**************3000 überweisen"
+        },
+        {
+            "case": "detector: iban: followed by uppercase word",
+            "text": "AT61 1904 3002 3457 3201 BIC",
+            "redaction": {
+                "redactedText": "⟦IBAN_1⟧ BIC",
+                "vault": {
+                    "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201"
+                },
+                "entities": [
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002 3457 3201",
+                        "offset": 0,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    }
+                ]
+            },
+            "mask": "AT61 **** **** **** 3201 BIC"
+        },
+        {
+            "case": "detector: iban: split across lines",
+            "text": "IBAN AT61 1904 3002\n3457 3201, danke",
+            "redaction": {
+                "redactedText": "IBAN ⟦IBAN_1⟧, danke",
+                "vault": {
+                    "⟦IBAN_1⟧": "AT61 1904 3002\n3457 3201"
+                },
+                "entities": [
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002\n3457 3201",
+                        "offset": 5,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    }
+                ]
+            },
+            "mask": "IBAN AT61 **** ****\n**** 3201, danke"
+        },
+        {
+            "case": "detector: iban: BIC on the next line",
+            "text": "AT61 1904 3002 3457 3201\nBKAUATWW",
+            "redaction": {
+                "redactedText": "⟦IBAN_1⟧\nBKAUATWW",
+                "vault": {
+                    "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201"
+                },
+                "entities": [
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002 3457 3201",
+                        "offset": 0,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    }
+                ]
+            },
+            "mask": "AT61 **** **** **** 3201\nBKAUATWW"
+        },
+        {
+            "case": "detector: iban: invalid checksum",
+            "text": "AT62 1904 3002 3457 3201",
+            "redaction": {
+                "redactedText": "AT62 1904 3002 3457 3201",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "AT62 1904 3002 3457 3201"
+        },
+        {
+            "case": "detector: tax: AT Steuernummer",
+            "text": "Steuernummer: 46 123/4567",
+            "redaction": {
+                "redactedText": "Steuernummer: ⟦TAX_NUMBER_1⟧",
+                "vault": {
+                    "⟦TAX_NUMBER_1⟧": "46 123/4567"
+                },
+                "entities": [
+                    {
+                        "type": "TAX_NUMBER",
+                        "label": null,
+                        "value": "46 123/4567",
+                        "offset": 14,
+                        "length": 11,
+                        "confidence": 0.9,
+                        "detector": "tax_number"
+                    }
+                ]
+            },
+            "mask": "Steuernummer: [TAX_NUMBER]"
+        },
+        {
+            "case": "detector: tax: DE Steuernummer",
+            "text": "StNr. 181/815/08155",
+            "redaction": {
+                "redactedText": "StNr. ⟦TAX_NUMBER_1⟧",
+                "vault": {
+                    "⟦TAX_NUMBER_1⟧": "181/815/08155"
+                },
+                "entities": [
+                    {
+                        "type": "TAX_NUMBER",
+                        "label": null,
+                        "value": "181/815/08155",
+                        "offset": 6,
+                        "length": 13,
+                        "confidence": 0.9,
+                        "detector": "tax_number"
+                    }
+                ]
+            },
+            "mask": "StNr. [TAX_NUMBER]"
+        },
+        {
+            "case": "detector: tax: DE Steuer-ID valid",
+            "text": "Steuer-ID 86095742719",
+            "redaction": {
+                "redactedText": "Steuer-ID ⟦TAX_NUMBER_1⟧",
+                "vault": {
+                    "⟦TAX_NUMBER_1⟧": "86095742719"
+                },
+                "entities": [
+                    {
+                        "type": "TAX_NUMBER",
+                        "label": null,
+                        "value": "86095742719",
+                        "offset": 10,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "de_tax_id"
+                    }
+                ]
+            },
+            "mask": "Steuer-ID [TAX_NUMBER]"
+        },
+        {
+            "case": "detector: tax: DE Steuer-ID invalid",
+            "text": "Steuer-ID 86095742718",
+            "redaction": {
+                "redactedText": "Steuer-ID 86095742718",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Steuer-ID 86095742718"
+        },
+        {
+            "case": "detector: tax: amount is no tax number",
+            "text": "Betrag 1.245,00 Euro",
+            "redaction": {
+                "redactedText": "Betrag 1.245,00 Euro",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Betrag 1.245,00 Euro"
+        },
+        {
+            "case": "detector: tax: several, in text order",
+            "text": "Steuer-ID 86095742719\nStNr. 181/815/08155\nSteuer-ID 24051867317",
+            "redaction": {
+                "redactedText": "Steuer-ID ⟦TAX_NUMBER_1⟧\nStNr. ⟦TAX_NUMBER_2⟧\nSteuer-ID ⟦TAX_NUMBER_3⟧",
+                "vault": {
+                    "⟦TAX_NUMBER_1⟧": "86095742719",
+                    "⟦TAX_NUMBER_2⟧": "181/815/08155",
+                    "⟦TAX_NUMBER_3⟧": "24051867317"
+                },
+                "entities": [
+                    {
+                        "type": "TAX_NUMBER",
+                        "label": null,
+                        "value": "86095742719",
+                        "offset": 10,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "de_tax_id"
+                    },
+                    {
+                        "type": "TAX_NUMBER",
+                        "label": null,
+                        "value": "181/815/08155",
+                        "offset": 28,
+                        "length": 13,
+                        "confidence": 0.9,
+                        "detector": "tax_number"
+                    },
+                    {
+                        "type": "TAX_NUMBER",
+                        "label": null,
+                        "value": "24051867317",
+                        "offset": 52,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "de_tax_id"
+                    }
+                ]
+            },
+            "mask": "Steuer-ID [TAX_NUMBER]\nStNr. [TAX_NUMBER]\nSteuer-ID [TAX_NUMBER]"
+        },
+        {
+            "case": "detector: email: private",
+            "text": "Kontakt: maria.musterfrau@example.com",
+            "redaction": {
+                "redactedText": "Kontakt: ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "maria.musterfrau@example.com"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "maria.musterfrau@example.com",
+                        "offset": 9,
+                        "length": 28,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Kontakt: [EMAIL]"
+        },
+        {
+            "case": "detector: email: authority contact kept",
+            "text": "Der Einspruch ist per E-Mail an post@bh.example einzubringen.",
+            "redaction": {
+                "redactedText": "Der Einspruch ist per E-Mail an post@bh.example einzubringen.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Der Einspruch ist per E-Mail an post@bh.example einzubringen."
+        },
+        {
+            "case": "detector: email: several private",
+            "text": "maria@example.org und johann@example.org",
+            "redaction": {
+                "redactedText": "⟦EMAIL_1⟧ und ⟦EMAIL_2⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "maria@example.org",
+                    "⟦EMAIL_2⟧": "johann@example.org"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "maria@example.org",
+                        "offset": 0,
+                        "length": 17,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    },
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "johann@example.org",
+                        "offset": 22,
+                        "length": 18,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "[EMAIL] und [EMAIL]"
+        },
+        {
+            "case": "detector: email: private after an authority contact",
+            "text": "Einspruch an post@bh.example einzubringen.\nPrivat: maria@example.org",
+            "redaction": {
+                "redactedText": "Einspruch an post@bh.example einzubringen.\nPrivat: ⟦EMAIL_1⟧",
+                "vault": {
+                    "⟦EMAIL_1⟧": "maria@example.org"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "maria@example.org",
+                        "offset": 51,
+                        "length": 17,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Einspruch an post@bh.example einzubringen.\nPrivat: [EMAIL]"
+        },
+        {
+            "case": "detector: email: authority keyword on another line",
+            "text": "Finanzamt Linz\nKontakt: maria@example.org\nBescheid vom Finanzamt",
+            "redaction": {
+                "redactedText": "Finanzamt Linz\nKontakt: ⟦EMAIL_1⟧\nBescheid vom Finanzamt",
+                "vault": {
+                    "⟦EMAIL_1⟧": "maria@example.org"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "maria@example.org",
+                        "offset": 24,
+                        "length": 17,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Finanzamt Linz\nKontakt: [EMAIL]\nBescheid vom Finanzamt"
+        },
+        {
+            "case": "detector: email: authority keyword in another sentence of the line",
+            "text": "Ihr Einspruch ist eingelangt. Ihre Adresse maria@example.org wurde gespeichert.",
+            "redaction": {
+                "redactedText": "Ihr Einspruch ist eingelangt. Ihre Adresse ⟦EMAIL_1⟧ wurde gespeichert.",
+                "vault": {
+                    "⟦EMAIL_1⟧": "maria@example.org"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "maria@example.org",
+                        "offset": 43,
+                        "length": 17,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Ihr Einspruch ist eingelangt. Ihre Adresse [EMAIL] wurde gespeichert."
+        },
+        {
+            "case": "detector: email: first person singular is the writer, not the authority",
+            "text": "Gegen den Bescheid erhebe ich Einspruch. Sie erreichen mich unter johann.beispielmann@example.at.",
+            "redaction": {
+                "redactedText": "Gegen den Bescheid erhebe ich Einspruch. Sie erreichen mich unter ⟦EMAIL_1⟧.",
+                "vault": {
+                    "⟦EMAIL_1⟧": "johann.beispielmann@example.at"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "johann.beispielmann@example.at",
+                        "offset": 66,
+                        "length": 30,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Gegen den Bescheid erhebe ich Einspruch. Sie erreichen mich unter [EMAIL]."
+        },
+        {
+            "case": "detector: email: \"Ihre E-Mail-Adresse\" is the recipient's",
+            "text": "Ihre E-Mail-Adresse maria@example.org haben wir gespeichert.",
+            "redaction": {
+                "redactedText": "Ihre E-Mail-Adresse ⟦EMAIL_1⟧ haben wir gespeichert.",
+                "vault": {
+                    "⟦EMAIL_1⟧": "maria@example.org"
+                },
+                "entities": [
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "maria@example.org",
+                        "offset": 20,
+                        "length": 17,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "Ihre E-Mail-Adresse [EMAIL] haben wir gespeichert."
+        },
+        {
+            "case": "detector: email: case worker in first person, authority domain under gv.at",
+            "text": "Bezirkshauptmannschaft Musterstadt\nVerkehrsamt\n\nFrau\nMaria Musterfrau\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt\nVerkehrsamt\n\nFrau\n⟦PERSON_1⟧\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 53,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    }
+                ]
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt\nVerkehrsamt\n\nFrau\n[PERSON]\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at."
+        },
+        {
+            "case": "detector: email: authority contact redacted when disabled",
+            "text": "Bitte kontaktieren Sie uns unter post@bh.example.",
+            "redaction": {
+                "redactedText": "Bitte kontaktieren Sie uns unter post@bh.example.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bitte kontaktieren Sie uns unter post@bh.example."
+        },
+        {
+            "case": "detector: phone: international",
+            "text": "Mobil: +43 664 1234567",
+            "redaction": {
+                "redactedText": "Mobil: ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "+43 664 1234567"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "+43 664 1234567",
+                        "offset": 7,
+                        "length": 15,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Mobil: *** *** *****67"
+        },
+        {
+            "case": "detector: phone: national",
+            "text": "Tel. 0664/1234567",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "0664/1234567"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "0664/1234567",
+                        "offset": 5,
+                        "length": 12,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. **********67"
+        },
+        {
+            "case": "detector: phone: authority hotline kept",
+            "text": "Bei Fragen erreichen Sie uns unter +43 50 233 233.",
+            "redaction": {
+                "redactedText": "Bei Fragen erreichen Sie uns unter +43 50 233 233.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bei Fragen erreichen Sie uns unter +43 50 233 233."
+        },
+        {
+            "case": "detector: phone: several private",
+            "text": "Mobil +43 664 1234567, Festnetz 05572 123456",
+            "redaction": {
+                "redactedText": "Mobil ⟦PHONE_1⟧, Festnetz ⟦PHONE_2⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "+43 664 1234567",
+                    "⟦PHONE_2⟧": "05572 123456"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "+43 664 1234567",
+                        "offset": 6,
+                        "length": 15,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    },
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 123456",
+                        "offset": 32,
+                        "length": 12,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Mobil *** *** *****67, Festnetz ***** ****56"
+        },
+        {
+            "case": "detector: phone: private after an authority hotline",
+            "text": "Erreichen Sie uns unter +43 50 233 233.\nPrivat: 0664/1234567",
+            "redaction": {
+                "redactedText": "Erreichen Sie uns unter +43 50 233 233.\nPrivat: ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "0664/1234567"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "0664/1234567",
+                        "offset": 48,
+                        "length": 12,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Erreichen Sie uns unter +43 50 233 233.\nPrivat: **********67"
+        },
+        {
+            "case": "detector: phone: authority keyword in another sentence of the line",
+            "text": "Gegen den Bescheid haben Sie Einspruch erhoben. Ihre Telefonnummer lautet 0664/1234567.",
+            "redaction": {
+                "redactedText": "Gegen den Bescheid haben Sie Einspruch erhoben. Ihre Telefonnummer lautet ⟦PHONE_1⟧.",
+                "vault": {
+                    "⟦PHONE_1⟧": "0664/1234567"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "0664/1234567",
+                        "offset": 74,
+                        "length": 12,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Gegen den Bescheid haben Sie Einspruch erhoben. Ihre Telefonnummer lautet **********67."
+        },
+        {
+            "case": "detector: phone: abbreviations do not end the sentence",
+            "text": "Bezirkshauptmannschaft Musterstadt, Abt. Verkehr, Tel. 05572 12345",
+            "redaction": {
+                "redactedText": "Bezirkshauptmannschaft Musterstadt, Abt. Verkehr, Tel. 05572 12345",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bezirkshauptmannschaft Musterstadt, Abt. Verkehr, Tel. 05572 12345"
+        },
+        {
+            "case": "detector: phone: authority hotline after an earlier sentence",
+            "text": "Bitte beachten Sie die Frist. Bei Fragen erreichen Sie uns unter Tel. 05572 12345.",
+            "redaction": {
+                "redactedText": "Bitte beachten Sie die Frist. Bei Fragen erreichen Sie uns unter Tel. 05572 12345.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bitte beachten Sie die Frist. Bei Fragen erreichen Sie uns unter Tel. 05572 12345."
+        },
+        {
+            "case": "detector: phone: mobile number is never an authority contact",
+            "text": "Ihren Einspruch haben wir unter 0664 1234567 notiert.",
+            "redaction": {
+                "redactedText": "Ihren Einspruch haben wir unter ⟦PHONE_1⟧ notiert.",
+                "vault": {
+                    "⟦PHONE_1⟧": "0664 1234567"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "0664 1234567",
+                        "offset": 32,
+                        "length": 12,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Ihren Einspruch haben wir unter **** *****67 notiert."
+        },
+        {
+            "case": "detector: phone: international mobile number is never an authority contact",
+            "text": "Laut unserer Unterlagen sind Sie unter +43 664 1234567 erreichbar.",
+            "redaction": {
+                "redactedText": "Laut unserer Unterlagen sind Sie unter ⟦PHONE_1⟧ erreichbar.",
+                "vault": {
+                    "⟦PHONE_1⟧": "+43 664 1234567"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "+43 664 1234567",
+                        "offset": 39,
+                        "length": 15,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Laut unserer Unterlagen sind Sie unter *** *** *****67 erreichbar."
+        },
+        {
+            "case": "detector: phone: first person singular is the writer, not the authority",
+            "text": "Gegen den Bescheid erhebe ich Einspruch. Sie erreichen mich unter 05572 12345.",
+            "redaction": {
+                "redactedText": "Gegen den Bescheid erhebe ich Einspruch. Sie erreichen mich unter ⟦PHONE_1⟧.",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 66,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Gegen den Bescheid erhebe ich Einspruch. Sie erreichen mich unter ***** ***45."
+        },
+        {
+            "case": "detector: phone: mobile number with trunk zero after the country code",
+            "text": "Ihren Einspruch haben wir unter +43 0664 1234567 notiert.",
+            "redaction": {
+                "redactedText": "Ihren Einspruch haben wir unter ⟦PHONE_1⟧ notiert.",
+                "vault": {
+                    "⟦PHONE_1⟧": "+43 0664 1234567"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "+43 0664 1234567",
+                        "offset": 32,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Ihren Einspruch haben wir unter *** **** *****67 notiert."
+        },
+        {
+            "case": "detector: phone: \"Ihre Telefonnummer\" is the recipient's",
+            "text": "Ihre Telefonnummer 05572 12345 haben wir gespeichert.",
+            "redaction": {
+                "redactedText": "Ihre Telefonnummer ⟦PHONE_1⟧ haben wir gespeichert.",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 12345"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 12345",
+                        "offset": 19,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Ihre Telefonnummer ***** ***45 haben wir gespeichert."
+        },
+        {
+            "case": "detector: phone: authority hotline with \"Ihrem Bescheid\" kept",
+            "text": "Bei Fragen zu Ihrem Bescheid erreichen Sie uns unter 05572 12345.",
+            "redaction": {
+                "redactedText": "Bei Fragen zu Ihrem Bescheid erreichen Sie uns unter 05572 12345.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bei Fragen zu Ihrem Bescheid erreichen Sie uns unter 05572 12345."
+        },
+        {
+            "case": "detector: phone: Salzburg landline is no mobile",
+            "text": "Rückfragen richten Sie bitte an das Magistrat Salzburg, Tel. 0662 8072 2000.",
+            "redaction": {
+                "redactedText": "Rückfragen richten Sie bitte an das Magistrat Salzburg, Tel. 0662 8072 2000.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Rückfragen richten Sie bitte an das Magistrat Salzburg, Tel. 0662 8072 2000."
+        },
+        {
+            "case": "detector: phone: Salzburg landline with country code is no mobile",
+            "text": "Rückfragen richten Sie bitte an das Magistrat Salzburg, Tel. +43 662 8072 2000.",
+            "redaction": {
+                "redactedText": "Rückfragen richten Sie bitte an das Magistrat Salzburg, Tel. +43 662 8072 2000.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Rückfragen richten Sie bitte an das Magistrat Salzburg, Tel. +43 662 8072 2000."
+        },
+        {
+            "case": "detector: phone: Pinzgau landline is no mobile",
+            "text": "Bei Fragen erreichen Sie uns unter 06542 7860.",
+            "redaction": {
+                "redactedText": "Bei Fragen erreichen Sie uns unter 06542 7860.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bei Fragen erreichen Sie uns unter 06542 7860."
+        },
+        {
+            "case": "detector: phone: Upper Austrian landline is no mobile",
+            "text": "Bei Fragen erreichen Sie uns unter 07612 7920.",
+            "redaction": {
+                "redactedText": "Bei Fragen erreichen Sie uns unter 07612 7920.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bei Fragen erreichen Sie uns unter 07612 7920."
+        },
+        {
+            "case": "detector: phone: Vienna landline is no mobile",
+            "text": "Bei Fragen erreichen Sie uns unter 01 514 33.",
+            "redaction": {
+                "redactedText": "Bei Fragen erreichen Sie uns unter 01 514 33.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bei Fragen erreichen Sie uns unter 01 514 33."
+        },
+        {
+            "case": "detector: phone: Frankfurt landline is no mobile",
+            "text": "Bei Fragen erreichen Sie uns unter 069 212 0.",
+            "redaction": {
+                "redactedText": "Bei Fragen erreichen Sie uns unter 069 212 0.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bei Fragen erreichen Sie uns unter 069 212 0."
+        },
+        {
+            "case": "detector: phone: German mobile with country code",
+            "text": "Ihren Einspruch haben wir unter +49 151 2345678 notiert.",
+            "redaction": {
+                "redactedText": "Ihren Einspruch haben wir unter ⟦PHONE_1⟧ notiert.",
+                "vault": {
+                    "⟦PHONE_1⟧": "+49 151 2345678"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "+49 151 2345678",
+                        "offset": 32,
+                        "length": 15,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Ihren Einspruch haben wir unter *** *** *****78 notiert."
+        },
+        {
+            "case": "detector: phone: case worker in first person is kept",
+            "text": "Für Rückfragen zu Ihrem Einspruch stehe ich Ihnen unter 05572 306 1234 zur Verfügung.",
+            "redaction": {
+                "redactedText": "Für Rückfragen zu Ihrem Einspruch stehe ich Ihnen unter 05572 306 1234 zur Verfügung.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Für Rückfragen zu Ihrem Einspruch stehe ich Ihnen unter 05572 306 1234 zur Verfügung."
+        },
+        {
+            "case": "detector: phone: \"Ihrer E-Mail vom\" does not make it personal",
+            "text": "Bezüglich Ihrer E-Mail vom 01.02.2026 erreichen Sie uns unter 05572 306 0.",
+            "redaction": {
+                "redactedText": "Bezüglich Ihrer E-Mail vom 01.02.2026 erreichen Sie uns unter 05572 306 0.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Bezüglich Ihrer E-Mail vom 01.02.2026 erreichen Sie uns unter 05572 306 0."
+        },
+        {
+            "case": "detector: phone: \"Meinung\" is no first person",
+            "text": "Nach unserer Meinung erreichen Sie uns am besten unter 05572 306 0.",
+            "redaction": {
+                "redactedText": "Nach unserer Meinung erreichen Sie uns am besten unter 05572 306 0.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Nach unserer Meinung erreichen Sie uns am besten unter 05572 306 0."
+        },
+        {
+            "case": "detector: phone: \"Ihre Rufnummer\" is the recipient's",
+            "text": "Wir haben Ihren Einspruch erhalten, Ihre Rufnummer 05572 45678 ist vermerkt.",
+            "redaction": {
+                "redactedText": "Wir haben Ihren Einspruch erhalten, Ihre Rufnummer ⟦PHONE_1⟧ ist vermerkt.",
+                "vault": {
+                    "⟦PHONE_1⟧": "05572 45678"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "05572 45678",
+                        "offset": 51,
+                        "length": 11,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Wir haben Ihren Einspruch erhalten, Ihre Rufnummer ***** ***78 ist vermerkt."
+        },
+        {
+            "case": "detector: phone: seven digits are enough",
+            "text": "Tel. 0664 123",
+            "redaction": {
+                "redactedText": "Tel. ⟦PHONE_1⟧",
+                "vault": {
+                    "⟦PHONE_1⟧": "0664 123"
+                },
+                "entities": [
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "0664 123",
+                        "offset": 5,
+                        "length": 8,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    }
+                ]
+            },
+            "mask": "Tel. **** *23"
+        },
+        {
+            "case": "detector: phone: six digits are not",
+            "text": "Tel. 0664 12",
+            "redaction": {
+                "redactedText": "Tel. 0664 12",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Tel. 0664 12"
+        },
+        {
+            "case": "detector: phone: time is no phone",
+            "text": "um 07:42 Uhr",
+            "redaction": {
+                "redactedText": "um 07:42 Uhr",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "um 07:42 Uhr"
+        },
+        {
+            "case": "detector: phone: date is no phone",
+            "text": "am 02.11.2026",
+            "redaction": {
+                "redactedText": "am 02.11.2026",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "am 02.11.2026"
+        },
+        {
+            "case": "detector: birth date: geb.",
+            "text": "geb. 15.03.1992",
+            "redaction": {
+                "redactedText": "geb. ⟦BIRTH_DATE_1⟧",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "15.03.1992"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "15.03.1992",
+                        "offset": 5,
+                        "length": 10,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "geb. [BIRTH_DATE]"
+        },
+        {
+            "case": "detector: birth date: geboren am",
+            "text": "geboren am 1.3.1980 in Linz",
+            "redaction": {
+                "redactedText": "geboren am ⟦BIRTH_DATE_1⟧ in Linz",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "1.3.1980"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "1.3.1980",
+                        "offset": 11,
+                        "length": 8,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "geboren am [BIRTH_DATE] in Linz"
+        },
+        {
+            "case": "detector: birth date: Geburtsdatum",
+            "text": "Geburtsdatum: 01.01.1970",
+            "redaction": {
+                "redactedText": "Geburtsdatum: ⟦BIRTH_DATE_1⟧",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "01.01.1970"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "01.01.1970",
+                        "offset": 14,
+                        "length": 10,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "Geburtsdatum: [BIRTH_DATE]"
+        },
+        {
+            "case": "detector: birth date: geb. am",
+            "text": "geb. am 15.03.1992",
+            "redaction": {
+                "redactedText": "geb. am ⟦BIRTH_DATE_1⟧",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "15.03.1992"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "15.03.1992",
+                        "offset": 8,
+                        "length": 10,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "geb. am [BIRTH_DATE]"
+        },
+        {
+            "case": "detector: birth date: Geburtsdatum without colon",
+            "text": "Geburtsdatum 01.01.1970",
+            "redaction": {
+                "redactedText": "Geburtsdatum ⟦BIRTH_DATE_1⟧",
+                "vault": {
+                    "⟦BIRTH_DATE_1⟧": "01.01.1970"
+                },
+                "entities": [
+                    {
+                        "type": "BIRTH_DATE",
+                        "label": null,
+                        "value": "01.01.1970",
+                        "offset": 13,
+                        "length": 10,
+                        "confidence": 0.95,
+                        "detector": "birth_date"
+                    }
+                ]
+            },
+            "mask": "Geburtsdatum [BIRTH_DATE]"
+        },
+        {
+            "case": "detector: birth date: deadline is kept",
+            "text": "fällig am 15.11.2026",
+            "redaction": {
+                "redactedText": "fällig am 15.11.2026",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "fällig am 15.11.2026"
+        },
+        {
+            "case": "detector: birth date: impossible date",
+            "text": "geb. 31.02.1992",
+            "redaction": {
+                "redactedText": "geb. 31.02.1992",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "geb. 31.02.1992"
+        },
+        {
+            "case": "detector: file number: Zahl",
+            "text": "Zahl: BHMS-VK-2026/48213\n",
+            "redaction": {
+                "redactedText": "Zahl: ⟦FILE_NUMBER_1⟧\n",
+                "vault": {
+                    "⟦FILE_NUMBER_1⟧": "BHMS-VK-2026/48213"
+                },
+                "entities": [
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 6,
+                        "length": 18,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    }
+                ]
+            },
+            "mask": "Zahl: [FILE_NUMBER]\n"
+        },
+        {
+            "case": "detector: file number: Verwendungszweck",
+            "text": "Verwendungszweck: BHMS-VK-2026/48213.",
+            "redaction": {
+                "redactedText": "Verwendungszweck: ⟦FILE_NUMBER_1⟧.",
+                "vault": {
+                    "⟦FILE_NUMBER_1⟧": "BHMS-VK-2026/48213"
+                },
+                "entities": [
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 18,
+                        "length": 18,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    }
+                ]
+            },
+            "mask": "Verwendungszweck: [FILE_NUMBER]."
+        },
+        {
+            "case": "detector: file number: Kundennummer",
+            "text": "Kundennummer 4711-0815",
+            "redaction": {
+                "redactedText": "Kundennummer ⟦FILE_NUMBER_1⟧",
+                "vault": {
+                    "⟦FILE_NUMBER_1⟧": "4711-0815"
+                },
+                "entities": [
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "4711-0815",
+                        "offset": 13,
+                        "length": 9,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    }
+                ]
+            },
+            "mask": "Kundennummer [FILE_NUMBER]"
+        },
+        {
+            "case": "detector: file number: without digits",
+            "text": "Verwendungszweck: Ihre Steuernummer",
+            "redaction": {
+                "redactedText": "Verwendungszweck: Ihre Steuernummer",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Verwendungszweck: Ihre Steuernummer"
+        },
+        {
+            "case": "detector: file number: no keyword",
+            "text": "Buchungsmitteilung Nr. 3/2026",
+            "redaction": {
+                "redactedText": "Buchungsmitteilung Nr. 3/2026",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Buchungsmitteilung Nr. 3/2026"
+        },
+        {
+            "case": "detector: plate: AT",
+            "text": "mit dem Kennzeichen B-123AB die",
+            "redaction": {
+                "redactedText": "mit dem Kennzeichen ⟦LICENSE_PLATE_1⟧ die",
+                "vault": {
+                    "⟦LICENSE_PLATE_1⟧": "B-123AB"
+                },
+                "entities": [
+                    {
+                        "type": "LICENSE_PLATE",
+                        "label": null,
+                        "value": "B-123AB",
+                        "offset": 20,
+                        "length": 7,
+                        "confidence": 0.9,
+                        "detector": "license_plate"
+                    }
+                ]
+            },
+            "mask": "mit dem Kennzeichen [LICENSE_PLATE] die"
+        },
+        {
+            "case": "detector: plate: DE",
+            "text": "Kennzeichen: M-AB 1234.",
+            "redaction": {
+                "redactedText": "Kennzeichen: ⟦LICENSE_PLATE_1⟧.",
+                "vault": {
+                    "⟦LICENSE_PLATE_1⟧": "M-AB 1234"
+                },
+                "entities": [
+                    {
+                        "type": "LICENSE_PLATE",
+                        "label": null,
+                        "value": "M-AB 1234",
+                        "offset": 13,
+                        "length": 9,
+                        "confidence": 0.9,
+                        "detector": "license_plate"
+                    }
+                ]
+            },
+            "mask": "Kennzeichen: [LICENSE_PLATE]."
+        },
+        {
+            "case": "detector: plate: no keyword",
+            "text": "Straße L 200 bei Strkm 4,2",
+            "redaction": {
+                "redactedText": "Straße L 200 bei Strkm 4,2",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Straße L 200 bei Strkm 4,2"
+        },
+        {
+            "case": "detector: person: address block",
+            "text": "Frau\nMaria Musterfrau\nLindenweg 12",
+            "redaction": {
+                "redactedText": "Frau\n⟦PERSON_1⟧\nLindenweg 12",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 5,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    }
+                ]
+            },
+            "mask": "Frau\n[PERSON]\nLindenweg 12"
+        },
+        {
+            "case": "detector: person: address block with title",
+            "text": "Herrn\nDr. Johann Beispielmann\n",
+            "redaction": {
+                "redactedText": "Herrn\nDr. ⟦PERSON_1⟧\n",
+                "vault": {
+                    "⟦PERSON_1⟧": "Johann Beispielmann"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Johann Beispielmann",
+                        "offset": 10,
+                        "length": 19,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    }
+                ]
+            },
+            "mask": "Herrn\nDr. [PERSON]\n"
+        },
+        {
+            "case": "detector: person: inline salutation",
+            "text": "Sehr geehrter Herr Beispielmann,",
+            "redaction": {
+                "redactedText": "Sehr geehrter Herr ⟦PERSON_1⟧,",
+                "vault": {
+                    "⟦PERSON_1⟧": "Beispielmann"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann",
+                        "offset": 19,
+                        "length": 12,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "mask": "Sehr geehrter Herr [PERSON],"
+        },
+        {
+            "case": "detector: person: inline first and last name",
+            "text": "wie mit Frau Maria Musterfrau besprochen",
+            "redaction": {
+                "redactedText": "wie mit Frau ⟦PERSON_1⟧ besprochen",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 13,
+                        "length": 16,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "mask": "wie mit Frau [PERSON] besprochen"
+        },
+        {
+            "case": "detector: person: inline over-redacts following noun",
+            "text": "Herr Beispielmann Bescheid gegeben",
+            "redaction": {
+                "redactedText": "Herr ⟦PERSON_1⟧ gegeben",
+                "vault": {
+                    "⟦PERSON_1⟧": "Beispielmann Bescheid"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann Bescheid",
+                        "offset": 5,
+                        "length": 21,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "mask": "Herr [PERSON] gegeben"
+        },
+        {
+            "case": "detector: person: inline takes at most two words",
+            "text": "Frau Maria Anna Musterfrau",
+            "redaction": {
+                "redactedText": "Frau ⟦PERSON_1⟧ Musterfrau",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Anna"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Anna",
+                        "offset": 5,
+                        "length": 10,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "mask": "Frau [PERSON] Musterfrau"
+        },
+        {
+            "case": "detector: person: inline name with non-German capital",
+            "text": "Sehr geehrte Frau Čermáková,",
+            "redaction": {
+                "redactedText": "Sehr geehrte Frau ⟦PERSON_1⟧,",
+                "vault": {
+                    "⟦PERSON_1⟧": "Čermáková"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Čermáková",
+                        "offset": 18,
+                        "length": 9,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "mask": "Sehr geehrte Frau [PERSON],"
+        },
+        {
+            "case": "detector: person: address block with non-German capitals",
+            "text": "Herrn\nŽeljko Šarić\nLindenweg 12",
+            "redaction": {
+                "redactedText": "Herrn\n⟦PERSON_1⟧\nLindenweg 12",
+                "vault": {
+                    "⟦PERSON_1⟧": "Željko Šarić"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Željko Šarić",
+                        "offset": 6,
+                        "length": 12,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    }
+                ]
+            },
+            "mask": "Herrn\n[PERSON]\nLindenweg 12"
+        },
+        {
+            "case": "detector: person: no salutation",
+            "text": "Mag. Thomas Beispiel",
+            "redaction": {
+                "redactedText": "Mag. Thomas Beispiel",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Mag. Thomas Beispiel"
+        },
+        {
+            "case": "detector: person: OCR blank line after salutation",
+            "text": "Frau\n\nMaria Musterfrau\nLindenweg 12",
+            "redaction": {
+                "redactedText": "Frau\n\n⟦PERSON_1⟧\nLindenweg 12",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 6,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    }
+                ]
+            },
+            "mask": "Frau\n\n[PERSON]\nLindenweg 12"
+        },
+        {
+            "case": "detector: person: OCR split first name",
+            "text": "Herrn\n\nJ ohann Beispielmann\n\nBahnhofstraße 7/3",
+            "redaction": {
+                "redactedText": "Herrn\n\n⟦PERSON_1⟧\n\nBahnhofstraße 7/3",
+                "vault": {
+                    "⟦PERSON_1⟧": "J ohann Beispielmann"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "J ohann Beispielmann",
+                        "offset": 7,
+                        "length": 20,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    }
+                ]
+            },
+            "mask": "Herrn\n\n[PERSON]\n\nBahnhofstraße 7/3"
+        },
+        {
+            "case": "detector: person: OCR blank lines, at most two",
+            "text": "Frau\n\n\n\nMaria Musterfrau",
+            "redaction": {
+                "redactedText": "Frau\n\n\n\nMaria Musterfrau",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Frau\n\n\n\nMaria Musterfrau"
+        },
+        {
+            "case": "detector: person: salutation ending a line in running text",
+            "text": "Das haben wir mit unserem Herrn\n\nBitte zahlen Sie bis Ende",
+            "redaction": {
+                "redactedText": "Das haben wir mit unserem Herrn\n\nBitte zahlen Sie bis Ende",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Das haben wir mit unserem Herrn\n\nBitte zahlen Sie bis Ende"
+        },
+        {
+            "case": "detector: person: lone salutation before lower-case text",
+            "text": "Frau\n\nbitte beachten Sie",
+            "redaction": {
+                "redactedText": "Frau\n\nbitte beachten Sie",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Frau\n\nbitte beachten Sie"
+        },
+        {
+            "case": "detector: address: street and city",
+            "text": "Lindenweg 12\n6900 Bregenz\n",
+            "redaction": {
+                "redactedText": "⟦ADDRESS_1⟧\n",
+                "vault": {
+                    "⟦ADDRESS_1⟧": "Lindenweg 12\n6900 Bregenz"
+                },
+                "entities": [
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Lindenweg 12\n6900 Bregenz",
+                        "offset": 0,
+                        "length": 25,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "[ADDRESS]\n"
+        },
+        {
+            "case": "detector: address: door number",
+            "text": "Bahnhofstraße 7/3\n4020 Linz",
+            "redaction": {
+                "redactedText": "⟦ADDRESS_1⟧",
+                "vault": {
+                    "⟦ADDRESS_1⟧": "Bahnhofstraße 7/3\n4020 Linz"
+                },
+                "entities": [
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Bahnhofstraße 7/3\n4020 Linz",
+                        "offset": 0,
+                        "length": 27,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "[ADDRESS]"
+        },
+        {
+            "case": "detector: address: DE postcode",
+            "text": "Musterallee 5a\n10115 Berlin",
+            "redaction": {
+                "redactedText": "⟦ADDRESS_1⟧",
+                "vault": {
+                    "⟦ADDRESS_1⟧": "Musterallee 5a\n10115 Berlin"
+                },
+                "entities": [
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Musterallee 5a\n10115 Berlin",
+                        "offset": 0,
+                        "length": 27,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "[ADDRESS]"
+        },
+        {
+            "case": "detector: address: street with non-German capital",
+            "text": "Šumavská 12\n6900 Bregenz",
+            "redaction": {
+                "redactedText": "⟦ADDRESS_1⟧",
+                "vault": {
+                    "⟦ADDRESS_1⟧": "Šumavská 12\n6900 Bregenz"
+                },
+                "entities": [
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Šumavská 12\n6900 Bregenz",
+                        "offset": 0,
+                        "length": 24,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "[ADDRESS]"
+        },
+        {
+            "case": "detector: address: single line letterhead kept",
+            "text": "Hauptplatz 1, 6999 Musterstadt",
+            "redaction": {
+                "redactedText": "Hauptplatz 1, 6999 Musterstadt",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Hauptplatz 1, 6999 Musterstadt"
+        },
+        {
+            "case": "detector: address: OCR blank line before city",
+            "text": "Bahnhofstraße 7/3\n\n4020 Linz\n",
+            "redaction": {
+                "redactedText": "⟦ADDRESS_1⟧\n",
+                "vault": {
+                    "⟦ADDRESS_1⟧": "Bahnhofstraße 7/3\n\n4020 Linz"
+                },
+                "entities": [
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Bahnhofstraße 7/3\n\n4020 Linz",
+                        "offset": 0,
+                        "length": 28,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "[ADDRESS]\n"
+        },
+        {
+            "case": "detector: address: OCR two blank lines before city",
+            "text": "Lindenweg 12\n\n\n6900 Bregenz",
+            "redaction": {
+                "redactedText": "⟦ADDRESS_1⟧",
+                "vault": {
+                    "⟦ADDRESS_1⟧": "Lindenweg 12\n\n\n6900 Bregenz"
+                },
+                "entities": [
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Lindenweg 12\n\n\n6900 Bregenz",
+                        "offset": 0,
+                        "length": 27,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "[ADDRESS]"
+        },
+        {
+            "case": "detector: address: separate paragraphs are no address",
+            "text": "Rechtsmittelfrist 14\n\n\n\n6900 Bregenz",
+            "redaction": {
+                "redactedText": "Rechtsmittelfrist 14\n\n\n\n6900 Bregenz",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Rechtsmittelfrist 14\n\n\n\n6900 Bregenz"
+        },
+        {
+            "case": "extra: emoji and astral characters",
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "redaction": {
+                "redactedText": "😀 Grüße\nSehr geehrter Herr ⟦PERSON_1⟧, SVNR ⟦SVNR_1⟧, Mail 😀⟦EMAIL_1⟧.",
+                "vault": {
+                    "⟦PERSON_1⟧": "Beispielmann",
+                    "⟦SVNR_1⟧": "4568 150392",
+                    "⟦EMAIL_1⟧": "maria@example.org"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann",
+                        "offset": 27,
+                        "length": 12,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    },
+                    {
+                        "type": "SVNR",
+                        "label": null,
+                        "value": "4568 150392",
+                        "offset": 46,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "at_svnr"
+                    },
+                    {
+                        "type": "EMAIL",
+                        "label": null,
+                        "value": "maria@example.org",
+                        "offset": 65,
+                        "length": 17,
+                        "confidence": 1.0,
+                        "detector": "email"
+                    }
+                ]
+            },
+            "mask": "😀 Grüße\nSehr geehrter Herr [PERSON], SVNR [SVNR], Mail 😀[EMAIL]."
+        },
+        {
+            "case": "extra: CRLF line endings",
+            "text": "Frau\r\nMaria Musterfrau\r\nLindenweg 12\r\n6900 Bregenz\r\n",
+            "redaction": {
+                "redactedText": "Frau\r\n⟦PERSON_1⟧\r\n⟦ADDRESS_1⟧\r\n",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau",
+                    "⟦ADDRESS_1⟧": "Lindenweg 12\r\n6900 Bregenz"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 6,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Lindenweg 12\r\n6900 Bregenz",
+                        "offset": 24,
+                        "length": 26,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "Frau\r\n[PERSON]\r\n[ADDRESS]\r\n"
+        },
+        {
+            "case": "extra: lone CR",
+            "text": "Herrn\rDr. Johann Beispielmann\rBahnhofstraße 7/3\r4020 Linz",
+            "redaction": {
+                "redactedText": "Herrn\rDr. ⟦PERSON_1⟧\r⟦ADDRESS_1⟧",
+                "vault": {
+                    "⟦PERSON_1⟧": "Johann Beispielmann",
+                    "⟦ADDRESS_1⟧": "Bahnhofstraße 7/3\r4020 Linz"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Johann Beispielmann",
+                        "offset": 10,
+                        "length": 19,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Bahnhofstraße 7/3\r4020 Linz",
+                        "offset": 30,
+                        "length": 27,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    }
+                ]
+            },
+            "mask": "Herrn\rDr. [PERSON]\r[ADDRESS]"
+        },
+        {
+            "case": "extra: no-break and thin spaces",
+            "text": "SVNR 4568 150392, Tel. 0664 1234567, IBAN AT61 1904 3002 3457 3201",
+            "redaction": {
+                "redactedText": "SVNR ⟦SVNR_1⟧, Tel. ⟦PHONE_1⟧, IBAN ⟦IBAN_1⟧",
+                "vault": {
+                    "⟦SVNR_1⟧": "4568 150392",
+                    "⟦PHONE_1⟧": "0664 1234567",
+                    "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201"
+                },
+                "entities": [
+                    {
+                        "type": "SVNR",
+                        "label": null,
+                        "value": "4568 150392",
+                        "offset": 5,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "at_svnr"
+                    },
+                    {
+                        "type": "PHONE",
+                        "label": null,
+                        "value": "0664 1234567",
+                        "offset": 23,
+                        "length": 12,
+                        "confidence": 0.8,
+                        "detector": "phone"
+                    },
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002 3457 3201",
+                        "offset": 42,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    }
+                ]
+            },
+            "mask": "SVNR [SVNR], Tel. **********67, IBAN AT61***** **** **** 3201"
+        },
+        {
+            "case": "extra: surname alias before full name",
+            "text": "Sehr geehrter Herr Beispielmann,\n\nHerrn\nJohann Beispielmann\nLindenweg 12\n6900 Bregenz\n\nHerr Beispielmann wurde informiert.",
+            "redaction": {
+                "redactedText": "Sehr geehrter Herr ⟦PERSON_1⟧,\n\nHerrn\n⟦PERSON_1⟧\n⟦ADDRESS_1⟧\n\nHerr ⟦PERSON_1⟧ wurde informiert.",
+                "vault": {
+                    "⟦PERSON_1⟧": "Johann Beispielmann",
+                    "⟦ADDRESS_1⟧": "Lindenweg 12\n6900 Bregenz"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann",
+                        "offset": 19,
+                        "length": 12,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Johann Beispielmann",
+                        "offset": 40,
+                        "length": 19,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Lindenweg 12\n6900 Bregenz",
+                        "offset": 60,
+                        "length": 25,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann",
+                        "offset": 92,
+                        "length": 12,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "mask": "Sehr geehrter Herr [PERSON],\n\nHerrn\n[PERSON]\n[ADDRESS]\n\nHerr [PERSON] wurde informiert."
+        },
+        {
+            "case": "extra: same value twice",
+            "text": "IBAN AT61 1904 3002 3457 3201 und nochmals AT61 1904 3002 3457 3201.",
+            "redaction": {
+                "redactedText": "IBAN ⟦IBAN_1⟧ und nochmals ⟦IBAN_1⟧.",
+                "vault": {
+                    "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201"
+                },
+                "entities": [
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002 3457 3201",
+                        "offset": 5,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    },
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002 3457 3201",
+                        "offset": 43,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    }
+                ]
+            },
+            "mask": "IBAN AT61 **** **** **** 3201 und nochmals AT61 **** **** **** 3201."
+        },
+        {
+            "case": "extra: propagation of file number",
+            "text": "Zahl: BHMS-VK-2026/48213\nBitte BHMS-VK-2026/48213 angeben, nicht XBHMS-VK-2026/48213.",
+            "redaction": {
+                "redactedText": "Zahl: ⟦FILE_NUMBER_1⟧\nBitte ⟦FILE_NUMBER_1⟧ angeben, nicht XBHMS-VK-2026/48213.",
+                "vault": {
+                    "⟦FILE_NUMBER_1⟧": "BHMS-VK-2026/48213"
+                },
+                "entities": [
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 6,
+                        "length": 18,
+                        "confidence": 0.9,
+                        "detector": "file_number"
+                    },
+                    {
+                        "type": "FILE_NUMBER",
+                        "label": null,
+                        "value": "BHMS-VK-2026/48213",
+                        "offset": 31,
+                        "length": 18,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    }
+                ]
+            },
+            "mask": "Zahl: [FILE_NUMBER]\nBitte [FILE_NUMBER] angeben, nicht XBHMS-VK-2026/48213."
+        },
+        {
+            "case": "extra: existing placeholders in input",
+            "text": "Text mit ⟦PERSON_1⟧ und [[iban 2]] bleibt, SVNR 4568 150392.",
+            "redaction": {
+                "redactedText": "Text mit ⟦PERSON_1⟧ und [[iban 2]] bleibt, SVNR ⟦SVNR_1⟧.",
+                "vault": {
+                    "⟦SVNR_1⟧": "4568 150392"
+                },
+                "entities": [
+                    {
+                        "type": "SVNR",
+                        "label": null,
+                        "value": "4568 150392",
+                        "offset": 48,
+                        "length": 11,
+                        "confidence": 1.0,
+                        "detector": "at_svnr"
+                    }
+                ]
+            },
+            "mask": "Text mit ⟦PERSON_1⟧ und [[iban 2]] bleibt, SVNR [SVNR]."
+        },
+        {
+            "case": "extra: empty",
+            "text": "",
+            "redaction": {
+                "redactedText": "",
+                "vault": {},
+                "entities": []
+            },
+            "mask": ""
+        },
+        {
+            "case": "extra: no PII",
+            "text": "Betrag 110,00 Euro bis 15.11.2026, § 99 Abs. 3 lit. a StVO.",
+            "redaction": {
+                "redactedText": "Betrag 110,00 Euro bis 15.11.2026, § 99 Abs. 3 lit. a StVO.",
+                "vault": {},
+                "entities": []
+            },
+            "mask": "Betrag 110,00 Euro bis 15.11.2026, § 99 Abs. 3 lit. a StVO."
+        }
+    ],
+    "configured": [
+        {
+            "case": "allowlist",
+            "allowlist": [
+                "4568 150392",
+                "Beispielmann"
+            ],
+            "customTypes": [],
+            "text": "SVNR 4568 150392. Sehr geehrter Herr Beispielmann, Herrn Johann Beispielmann.",
+            "redaction": {
+                "redactedText": "SVNR 4568 150392. Sehr geehrter Herr Beispielmann, Herrn ⟦PERSON_1⟧.",
+                "vault": {
+                    "⟦PERSON_1⟧": "Johann Beispielmann"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Johann Beispielmann",
+                        "offset": 57,
+                        "length": 19,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    }
+                ]
+            },
+            "mask": "SVNR 4568 150392. Sehr geehrter Herr Beispielmann, Herrn [PERSON]."
+        },
+        {
+            "case": "custom type",
+            "allowlist": [],
+            "customTypes": [
+                {
+                    "name": "INSURANCE_NUMBER",
+                    "description": "Versichertennummer einer Versicherung",
+                    "examples": [
+                        "VN-2026-000417"
+                    ],
+                    "counterExamples": [],
+                    "pattern": "VN-\\d{4}-\\d{6}"
+                }
+            ],
+            "text": "Ihre Versichertennummer VN-2026-000417 (Polizze VN-2025-998812) ist gültig. Siehe VN-2026-000417.",
+            "redaction": {
+                "redactedText": "Ihre Versichertennummer ⟦INSURANCE_NUMBER_1⟧ (Polizze ⟦INSURANCE_NUMBER_2⟧) ist gültig. Siehe ⟦INSURANCE_NUMBER_1⟧.",
+                "vault": {
+                    "⟦INSURANCE_NUMBER_1⟧": "VN-2026-000417",
+                    "⟦INSURANCE_NUMBER_2⟧": "VN-2025-998812"
+                },
+                "entities": [
+                    {
+                        "type": "OTHER",
+                        "label": "INSURANCE_NUMBER",
+                        "value": "VN-2026-000417",
+                        "offset": 24,
+                        "length": 14,
+                        "confidence": 0.75,
+                        "detector": "custom"
+                    },
+                    {
+                        "type": "OTHER",
+                        "label": "INSURANCE_NUMBER",
+                        "value": "VN-2025-998812",
+                        "offset": 48,
+                        "length": 14,
+                        "confidence": 0.75,
+                        "detector": "custom"
+                    },
+                    {
+                        "type": "OTHER",
+                        "label": "INSURANCE_NUMBER",
+                        "value": "VN-2026-000417",
+                        "offset": 82,
+                        "length": 14,
+                        "confidence": 0.75,
+                        "detector": "custom"
+                    }
+                ]
+            },
+            "mask": "Ihre Versichertennummer [INSURANCE_NUMBER] (Polizze [INSURANCE_NUMBER]) ist gültig. Siehe [INSURANCE_NUMBER]."
+        }
+    ],
+    "restore": {
+        "vault": {
+            "⟦PERSON_1⟧": "Maria Musterfrau",
+            "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201",
+            "⟦INSURANCE_NUMBER_2⟧": "VN-2025-998812",
+            "⟦VN2_NUMBER_3_1⟧": "VN-2026-000417"
+        },
+        "cases": [
+            {
+                "case": "canonical",
+                "text": "Sehr geehrte ⟦PERSON_1⟧, IBAN ⟦IBAN_1⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦PERSON_1⟧"
+                    },
+                    {
+                        "canonical": "⟦IBAN_1⟧",
+                        "original": "⟦IBAN_1⟧"
+                    }
+                ],
+                "restored": "Sehr geehrte Maria Musterfrau, IBAN AT61 1904 3002 3457 3201.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "lower case and spaces",
+                "text": "An ⟦person 1⟧ und ⟦ iban_1 ⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦person 1⟧"
+                    },
+                    {
+                        "canonical": "⟦IBAN_1⟧",
+                        "original": "⟦ iban_1 ⟧"
+                    }
+                ],
+                "restored": "An Maria Musterfrau und AT61 1904 3002 3457 3201.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "ascii brackets",
+                "text": "An [[PERSON_1]] und [[iban 1]].",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "[[PERSON_1]]"
+                    },
+                    {
+                        "canonical": "⟦IBAN_1⟧",
+                        "original": "[[iban 1]]"
+                    }
+                ],
+                "restored": "An Maria Musterfrau und AT61 1904 3002 3457 3201.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "markdown-escaped underscore",
+                "text": "An ⟦PERSON\\_1⟧ und [[INSURANCE\\_NUMBER\\_2]].",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦PERSON\\_1⟧"
+                    },
+                    {
+                        "canonical": "⟦INSURANCE_NUMBER_2⟧",
+                        "original": "[[INSURANCE\\_NUMBER\\_2]]"
+                    }
+                ],
+                "restored": "An Maria Musterfrau und VN-2025-998812.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦IBAN_1⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "multi-space and newline inside",
+                "text": "An ⟦PERSON   1⟧ und ⟦INSURANCE \n NUMBER_2⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦PERSON   1⟧"
+                    },
+                    {
+                        "canonical": "⟦INSURANCE_NUMBER_2⟧",
+                        "original": "⟦INSURANCE \n NUMBER_2⟧"
+                    }
+                ],
+                "restored": "An Maria Musterfrau und VN-2025-998812.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦IBAN_1⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "digits in type name",
+                "text": "Nummer ⟦vn2 number 3 1⟧ und ⟦VN2_NUMBER_3_1⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦VN2_NUMBER_3_1⟧",
+                        "original": "⟦vn2 number 3 1⟧"
+                    },
+                    {
+                        "canonical": "⟦VN2_NUMBER_3_1⟧",
+                        "original": "⟦VN2_NUMBER_3_1⟧"
+                    }
+                ],
+                "restored": "Nummer VN-2026-000417 und VN-2026-000417.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "unknown placeholder",
+                "text": "An ⟦PERSON_2⟧ und ⟦EMAIL_1⟧, aber ⟦PERSON_1⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_2⟧",
+                        "original": "⟦PERSON_2⟧"
+                    },
+                    {
+                        "canonical": "⟦EMAIL_1⟧",
+                        "original": "⟦EMAIL_1⟧"
+                    },
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦PERSON_1⟧"
+                    }
+                ],
+                "restored": "An ⟦PERSON_2⟧ und ⟦EMAIL_1⟧, aber Maria Musterfrau.",
+                "unknownPlaceholders": [
+                    "⟦PERSON_2⟧",
+                    "⟦EMAIL_1⟧"
+                ],
+                "unusedPlaceholders": [
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": false
+            },
+            {
+                "case": "mixed brackets are tolerated",
+                "text": "An ⟦PERSON_1]] und [[PERSON_1⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦PERSON_1]]"
+                    },
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "[[PERSON_1⟧"
+                    }
+                ],
+                "restored": "An Maria Musterfrau und Maria Musterfrau.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "no number",
+                "text": "An ⟦PERSON⟧ und [[IBAN]].",
+                "placeholders": [],
+                "restored": "An ⟦PERSON⟧ und [[IBAN]].",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "leading digit in type",
+                "text": "An ⟦1PERSON_1⟧.",
+                "placeholders": [],
+                "restored": "An ⟦1PERSON_1⟧.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "no placeholders",
+                "text": "Keine Platzhalter hier.",
+                "placeholders": [],
+                "restored": "Keine Platzhalter hier.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "empty",
+                "text": "",
+                "placeholders": [],
+                "restored": "",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            }
+        ]
+    }
+}

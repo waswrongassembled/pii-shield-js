@@ -1,0 +1,184 @@
+{
+    "generatedBy": "compat/export-fixtures.php",
+    "phpSource": "fa6d4b2adac98475fedb499c67cfa469016701ec",
+    "partialMask": [
+        {
+            "case": "keeps whitespace",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 2,
+                    "keepEnd": 2,
+                    "maskChar": "*"
+                }
+            },
+            "value": "AB 12 34 CD",
+            "masked": "AB ** ** CD"
+        },
+        {
+            "case": "too short is fully masked",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 4,
+                    "keepEnd": 4,
+                    "maskChar": "*"
+                }
+            },
+            "value": "AB12345",
+            "masked": "*******"
+        },
+        {
+            "case": "exactly keep length is fully masked",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 2,
+                    "keepEnd": 2,
+                    "maskChar": "*"
+                }
+            },
+            "value": "ABCD",
+            "masked": "****"
+        },
+        {
+            "case": "multibyte",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 1,
+                    "keepEnd": 0,
+                    "maskChar": "*"
+                }
+            },
+            "value": "Müller",
+            "masked": "M*****"
+        },
+        {
+            "case": "custom mask character",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 0,
+                    "keepEnd": 1,
+                    "maskChar": "#"
+                }
+            },
+            "value": "12345",
+            "masked": "####5"
+        },
+        {
+            "case": "tabs and newlines kept",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 1,
+                    "keepEnd": 1,
+                    "maskChar": "*"
+                }
+            },
+            "value": "AB\tCD\nEF",
+            "masked": "A*\t**\n*F"
+        },
+        {
+            "case": "unicode space is masked (ctype_space is ASCII only)",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 1,
+                    "keepEnd": 1,
+                    "maskChar": "*"
+                }
+            },
+            "value": "AB CD",
+            "masked": "A***D"
+        },
+        {
+            "case": "astral characters",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 1,
+                    "keepEnd": 1,
+                    "maskChar": "*"
+                }
+            },
+            "value": "😀abc😀",
+            "masked": "😀***😀"
+        },
+        {
+            "case": "keep nothing",
+            "strategy": {
+                "class": "PartialMask",
+                "options": {
+                    "keepStart": 0,
+                    "keepEnd": 0,
+                    "maskChar": "*"
+                }
+            },
+            "value": "ABC",
+            "masked": "***"
+        }
+    ],
+    "partialMaskNegative": {
+        "error": {
+            "class": "InvalidArgumentException",
+            "code": 0,
+            "message": "Characters to keep must not be negative."
+        }
+    },
+    "typeLabelMask": [
+        {
+            "format": "[%s]",
+            "type": "PERSON",
+            "masked": "[PERSON]"
+        },
+        {
+            "format": "<%s>",
+            "type": "PERSON",
+            "masked": "<PERSON>"
+        },
+        {
+            "format": "%s",
+            "type": "PERSON",
+            "masked": "PERSON"
+        },
+        {
+            "format": "***",
+            "type": "PERSON",
+            "masked": "***"
+        }
+    ],
+    "masker": [
+        {
+            "case": "IBAN keeps first and last 4",
+            "text": "IBAN AT61 1904 3002 3457 3201, danke",
+            "masked": "IBAN AT61 **** **** **** 3201, danke"
+        },
+        {
+            "case": "phone keeps last 2",
+            "text": "Mobil: +43 664 1234567",
+            "masked": "Mobil: *** *** *****67"
+        },
+        {
+            "case": "person as type label",
+            "text": "Sehr geehrte Frau Musterfrau,",
+            "masked": "Sehr geehrte Frau [PERSON],"
+        },
+        {
+            "case": "SVNR as type label",
+            "text": "SVNR 4568 150392",
+            "masked": "SVNR [SVNR]"
+        },
+        {
+            "case": "multi-line address as one label",
+            "text": "Frau\nMaria Musterfrau\nLindenweg 12\n6900 Bregenz",
+            "masked": "Frau\n[PERSON]\n[ADDRESS]"
+        },
+        {
+            "case": "no PII unchanged",
+            "text": "Betrag 110,00 Euro bis 15.11.2026",
+            "masked": "Betrag 110,00 Euro bis 15.11.2026"
+        }
+    ]
+}
