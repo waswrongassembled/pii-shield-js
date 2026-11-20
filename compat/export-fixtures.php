@@ -330,7 +330,8 @@ $extraTexts = [
     'propagation of file number at boundaries' => "Zahl: BHMS-VK-2026/48213\nBHMS-VK-2026/48213x BHMS-VK-2026/48213 /BHMS-VK-2026/48213",
     'propagation of nested values' => "Kundennummer 4711\nKundennummer 4711-0815 und 4711 und 4711-0815",
     'propagation of astral names' => "Frau\n𝐀𝐁 Musterfrau\n\n𝐀𝐁 Musterfrau",
-    'propagation of hyphenated surname' => "Herrn\nJohann Beispielmann-Muster\n\nBeispielmann-Muster und Muster",
+    'propagation of hyphenated surname' => "Herrn\nJohann Beispielmann-Muster\n\nBeispielmann-Muster und Muster",    'two full names with the same surname' => "Herrn\nJohann Beispielmann\n\nFrau\nMaria Beispielmann\nLindenweg 12\n6900 Bregenz\n\nSehr geehrter Herr Beispielmann, Beispielmann",
+    'surname alias with different type counters' => "Sehr geehrte Frau Musterfrau, IBAN AT61 1904 3002 3457 3201.\n\nFrau\nMaria Musterfrau\n\nHerrn\nJohann Beispielmann",
 ];
 foreach ($extraTexts as $case => $text) {
     $texts[$text] = 'extra: '.$case;
@@ -375,6 +376,21 @@ $restoreTexts = [
     'leading digit in type' => 'An ⟦1PERSON_1⟧.',
     'no placeholders' => 'Keine Platzhalter hier.',
     'empty' => '',
+    // PCRE edge cases: the tolerant pattern is /u (Unicode \s and \d), the separator replacement is not.
+    'no-break space before number' => "An ⟦PERSON\u{00A0}1⟧.",
+    'unicode spaces around type' => "An ⟦\u{00A0}PERSON_1\u{3000}⟧.",
+    'no-break space inside type stays (replacement without /u)' => "An ⟦INSURANCE\u{00A0}NUMBER_2⟧.",
+    'NEL inside type stays' => "An ⟦INSURANCE\u{0085}NUMBER_2⟧.",
+    'line separator inside type stays' => "An ⟦INSURANCE\u{2028}NUMBER_2⟧.",
+    'vertical tab and form feed inside type' => "An ⟦INSURANCE\x0BNUMBER_2⟧ und ⟦INSURANCE\x0CNUMBER_2⟧.",
+    'BOM is no whitespace' => "An ⟦\u{FEFF}PERSON_1⟧.",
+    'Unicode digits in number' => "An ⟦PERSON_\u{0661}⟧ und ⟦PERSON_\u{FF11}⟧.",
+    'leading zero in number' => 'An ⟦PERSON_01⟧.',
+    'Kelvin sign and long s are no letters' => "An ⟦\u{212A}EY_1⟧ und ⟦PER\u{017F}ON_1⟧.",
+    'nested and tripled brackets' => 'An ⟦⟦PERSON_1⟧⟧ und [[[IBAN_1]]].',
+    'double backslash, double underscore, trailing separator' => 'An ⟦PERSON\\\\_1⟧, ⟦INSURANCE__NUMBER_2⟧, ⟦PERSON_1_⟧.',
+    'escaped space and mixed separators' => 'An ⟦INSURANCE\\ NUMBER_2⟧ und ⟦INSURANCE_ NUMBER _2⟧.',
+    'astral characters around placeholders' => 'An 😀⟦PERSON_1⟧😀 und 𝐀[[iban 1]].',
 ];
 $restoreCases = [];
 foreach ($restoreTexts as $case => $text) {

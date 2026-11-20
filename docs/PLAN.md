@@ -82,6 +82,9 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
 - **PCRE vs. JS character classes** (seen in `fixtures/learning.json`, grammar probes): with `/u`, PCRE `\s` matches U+00A0 and U+2028 but not U+FEFF, JS `\s` matches all three; PCRE `.` matches U+2028, JS `.` does not. `[]a]` is a valid class in PCRE and a syntax error in JS. Learned patterns must translate these, or the grammar must reject them.
 - **ReDoS:** PHP survives catastrophic backtracking only by throwing at `pcre.backtrack_limit`; JavaScript has no limit and hangs. Every ported pattern needs a bounded run time on adversarial input (`test/redos.test.ts`); emulate atomic groups with `(?!\d)`-style guards or `(?=(…))\1`.
 - **String functions:** offsets are UTF-16, but length limits and masking that PHP counts with `mb_*` (e.g. `MAX_EXAMPLE_LENGTH`, `PartialMask`) must count code points (`[...s]`) to reject and mask exactly what PHP does. `strtoupper` is ASCII-only in PHP; `toUpperCase()` is not, so for type names use an ASCII-only helper.
+- **Placeholders** (found in phase 4–5): the tolerant pattern is `/u` (Unicode `\s`, `\d` = `\p{Nd}`, so `⟦PERSON_١⟧` is found and stays non-ASCII), but PHP normalizes the separators inside the type with a pattern _without_ `/u`: only ASCII whitespace becomes `_`, a no-break space inside the type survives and makes the placeholder unknown. Cases in `fixtures/redaction.json` → `restore.cases`.
+- **Mappings are insertion-ordered:** PHP arrays keep insertion order, and placeholders (`⟦…`) are never integer-like keys, so a plain object keeps the same order. Person full names are numbered before everything else (PHP iterates `[...fullNames, ...entities]`), so `⟦PERSON_2⟧` can precede `⟦IBAN_1⟧` in the mapping.
+- **ctype_space** on one character is ASCII-only (`\t\n\v\f\r` and space): `PartialMask` masks a no-break space.
 - **Checksums:** use integer arithmetic for the IBAN mod 97 (BigInt or chunked), SVNR and tax ID.
 - **Secrets:** wipe buffers after use (`buf.fill(0)`) instead of `sodium_memzero`. Keep the key out of logs and errors.
 - **Error messages:** never contain PII values (PHP names positions, not values). Keep the wording of client-facing messages (see "Idiomatic TypeScript").
@@ -94,11 +97,11 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
    - `RegexMatcher`, `AuthorityContext`;
    - Email, Phone, Iban, AtSvnr, TaxNumber, FileNumber, BirthDate, LicensePlate, PostalAddress, SalutationPerson.
 3. **Extraction** (done): `Entity`, `EntityType`, `EntityExtractor` (overlaps, word boundaries, priority). `TextSpans` moves to phase 4 (with UTF-16 offsets it is a plain slice loop).
-4. **Redaction:** `Placeholder`, `RedactionResult`, `RestoreResult`, `PiiShield.redact/restore`, `NullPiiShield`.
-5. **Masking:** `PiiMasker`, `TypeLabelMask`, `PartialMask`.
+4. **Redaction** (done): `Placeholder`, `RedactionResult`, `RestoreResult`, `PiiShield.redact/restore`, `NullPiiShield`.
+5. **Masking** (done): `PiiMasker`, `TypeLabelMask`, `PartialMask`.
 6. **Vault:**
    - `InMemoryVault`, `EncryptedVault`, storage interface, Redis adapter;
-   - `restoreFromVault`, `forget`, TTL;
+   - `restoreFromVault`, `forget`, TTL; async methods next to the sync ones (`redactToVault(text): Promise<RedactionResult & { vaultId }>`), the sync `RedactionResult` has no `vaultId`;
    - compat test against PHP payloads.
 7. **Learning:**
    - `CustomEntityType`, `PatternGrammar`, `PatternLearner`, `EntityLearner` (learn/preview/forget/types);
