@@ -3,7 +3,17 @@
 Reversible PII redaction for LLM applications, with DACH recognizers (AT SVNR, IBAN, tax numbers) and checksum validation.
 TypeScript port of [`clarifile/pii-shield`](https://github.com/massiveart/clarifile/tree/main/packages/pii-shield), wire-compatible with the PHP package.
 
-**Status:** work in progress, see [docs/PLAN.md](docs/PLAN.md). Detection (validators, detectors, `EntityExtractor`), redaction/restore (`PiiShield`), masking (`PiiMasker`), the vault (`redactToVault`/`restoreFromVault`, `EncryptedVault`, Redis storage in `@waswrongassembled/pii-shield/vault-redis`), learning (`EntityLearner`, `learnPattern`, `CustomEntityDetector`, JSON file / key-value / in-memory stores) and model-based detection (`ModelDetector` with `redactAsync()`, AI SDK adapter in `@waswrongassembled/pii-shield/ai-sdk`) and the Vercel AI SDK middleware (`piiShieldMiddleware`) are ported; the MCP server and HTTP service follow.
+**Status:** work in progress, see [docs/PLAN.md](docs/PLAN.md). Detection (validators, detectors, `EntityExtractor`), redaction/restore (`PiiShield`), masking (`PiiMasker`), the vault (`redactToVault`/`restoreFromVault`, `EncryptedVault`, Redis storage in `@waswrongassembled/pii-shield/vault-redis`), learning (`EntityLearner`, `learnPattern`, `CustomEntityDetector`, JSON file / key-value / in-memory stores) and model-based detection (`ModelDetector` with `redactAsync()`, AI SDK adapter in `@waswrongassembled/pii-shield/ai-sdk`) the Vercel AI SDK middleware (`piiShieldMiddleware`), the HTTP service (`@waswrongassembled/pii-shield/server`, `pii-shield serve`) and the MCP server (`@waswrongassembled/pii-shield/mcp`, `pii-shield mcp`) are ported; the release follows.
+
+## HTTP service, MCP server and CLI
+
+```sh
+npx @waswrongassembled/pii-shield serve              # /v1 (docs/openapi.yaml) and /mcp on 127.0.0.1:8088
+npx @waswrongassembled/pii-shield mcp                # MCP over STDIO, e.g. claude mcp add pii-shield -- npx @waswrongassembled/pii-shield mcp
+PII_SERVICE_TOKEN=$(openssl rand -hex 24) npx @waswrongassembled/pii-shield serve --host 0.0.0.0 --port 8080
+```
+
+Same API as the PHP service (`POST /v1/redact`, `/v1/restore`, `/v1/mask`, `/v1/learn`, `GET /v1/entities`, ...), same MCP tools (`redact_text`, `restore_text`, `mask_text`, `learn_entity_type`, `list_entity_types`). Without a token only local peers are answered. `/mcp` and `pii-shield mcp` need `@modelcontextprotocol/sdk` (optional peer dependency). Configuration and programmatic use (`startServer()`, `ServiceApi`, `createMcpServer()`): [docs/server.md](docs/server.md).
 
 ## Vercel AI SDK
 

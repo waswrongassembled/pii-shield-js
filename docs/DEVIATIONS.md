@@ -103,3 +103,18 @@ PHP decides whether a finding follows a legal citation with a regex that can bac
 The middleware redacts and restores object keys in tool call inputs and JSON tool outputs too, not only string values (PHP's `StructuredRestorer` keeps keys): a key like `{"Maria Musterfrau": 3}` would otherwise reach the provider. If two keys of one object map to the same key, the call is rejected with `UnsupportedContentError`.
 
 File, reasoning-file and custom parts of assistant messages cannot be redacted. PHP passes non-text assistant content through; the middleware rejects them (fail closed), including part types of later AI SDK versions it does not know. `allowOpaqueAssistantParts: true` passes them through for histories whose files come from the model itself.
+
+## HTTP service and MCP server
+
+Same endpoints, JSON shapes, status codes and messages as PHP's `ServiceApi`, `RequestGuard` and `PiiShieldTools` (`docs/openapi.yaml`, contract test). Differences:
+
+- **No demo page and no `/api`:** the Node server serves `/v1` and `/mcp` only, so it always behaves like PHP's service mode for other paths (404 `{"error":"Not found."}`). Trusting local peers without a token is still the default; `PII_SERVICE_ONLY=1` (or `requireToken`) turns it off as in PHP.
+- **Body size limit (new):** a request body over 2 MiB (`PII_SERVICE_MAX_BODY_BYTES`) gets 413 `{"error":"The request body is too large."}`. PHP reads any size.
+- **Unexpected errors** (not a pii-shield error) answer 500 `{"error":"Internal server error."}`; PHP lets Symfony render its error page. Learning store errors are 500 "Detection failed." as in PHP.
+- **Response JSON** is `JSON.stringify()`: Symfony's `JsonResponse` also escapes `<`, `>`, `&`, `'` and `"` inside strings as `\u003C` etc. Same JSON values.
+- **Model configuration errors** (unknown provider, missing key or URL, external provider without `PII_SERVICE_ACKNOWLEDGE_EXTERNAL=true`) stop the CLI at start with a message naming the variable. PHP builds the model per request and answers 400 (missing key) or 500. `PII_DEMO_GENERIC_KEY` also works as `PII_SERVICE_MODEL_KEY`.
+- **Stores:** the vault is in memory (default) or Redis (`PII_SERVICE_VAULT_STORE`, key from `PII_SERVICE_VAULT_KEY`); PHP's filesystem and SQLite pools and its key file in `var/` do not exist. Learned types are in memory unless `PII_SERVICE_LEARNED_TYPES` names a JSON file (PHP default: `demo/var/learned-types.json`), or in Redis via `KeyValueCustomEntityStore` (not shareable with PHP's PSR-6 key, see above).
+- **Learned types are re-read** from the store before every detection request (the learner's snapshot is refreshed), so types learned by other processes apply as in PHP.
+- **Local peers:** `PII_LOCAL_PEERS` and the Docker gateway are read once at start (PHP: per request). IPv4-mapped IPv6 peers (`::ffff:127.0.0.1`) count as their IPv4 address.
+- **MCP:** argument validation is the port's own for the tools' schemas: the first violation with the wording of PHP's validator for required, type, enum, pattern and item type. Sessions are kept in memory (idle 1 hour, at most 1000, least recently used closed first); PHP stores them in files. Answers are JSON, not SSE. `serverInfo` and `instructions` are PHP's.
+- **Model providers** of the CLI call the providers' HTTP APIs with `fetch` (Ollama `/api/chat`, OpenAI-compatible `/v1/chat/completions`, Anthropic `/v1/messages`) with PHP's options (temperature 0 and no reasoning with 1024 answer tokens for self-hosted models, no redirects, 170 s timeout via `PII_SERVICE_MODEL_TIMEOUT`); PHP uses the Symfony AI bridges. Anthropic gets `max_tokens: 4096`.
