@@ -31,10 +31,22 @@
     "./ai-sdk": {
       "types": "./dist/ai-sdk/index.d.ts",
       "import": "./dist/ai-sdk/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
     }
   },
+  "bin": {
+    "pii-shield": "dist/bin.js"
+  },
   "files": [
-    "dist"
+    "dist",
+    "docs/openapi.yaml"
   ],
   "sideEffects": false,
   "scripts": {
@@ -50,9 +62,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@types/node": "^22.20.5",
     "@vitest/coverage-v8": "^5.1.1",
     "ai": "^7.0.177",
+    "ajv": "^8.20.0",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.14.0",
@@ -60,16 +74,21 @@
     "prettier": "^3.10.1",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.73.0",
-    "vitest": "^5.1.1"
+    "vitest": "^5.1.1",
+    "yaml": "^2.9.1"
   },
   "dependencies": {
     "@noble/ciphers": "^2.4.0"
   },
   "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "ai": "^7.0.0",
     "ioredis": "^5.0.0 || ^6.0.0"
   },
   "peerDependenciesMeta": {
+    "@modelcontextprotocol/sdk": {
+      "optional": true
+    },
     "ai": {
       "optional": true
     },
