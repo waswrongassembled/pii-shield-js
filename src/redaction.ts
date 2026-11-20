@@ -15,13 +15,19 @@ export type PlaceholderMapping = Readonly<Record<string, string>>;
  * A frozen plain object. `JSON.stringify` includes the mapping (it is the data you restore from);
  * only `util.inspect` / `console.log` in Node hide it, like PHP's `__debugInfo()`.
  *
- * Phase 6 adds vault-backed redaction, whose result extends this type with a `vaultId`.
+ * `PiiShield.redactToVault()` returns a VaultRedactionResult, which adds the `vaultId`.
  */
 export interface RedactionResult {
   readonly redactedText: string;
   readonly mapping: PlaceholderMapping;
   /** All detected entities (offsets into the original text), for diagnostics and tests. */
   readonly entities: readonly Entity[];
+}
+
+/** Result of `PiiShield.redactToVault()`: the mapping is also stored in the vault under `vaultId`. */
+export interface VaultRedactionResult extends RedactionResult {
+  /** 32 lowercase hex characters (16 random bytes). Pass it to restoreFromVault() and forget(). */
+  readonly vaultId: string;
 }
 
 export interface RestoreResult {
@@ -42,6 +48,26 @@ export interface Redactor {
   restore(text: string, source: RedactionResult | PlaceholderMapping): RestoreResult;
 }
 
+/**
+ * Unmasking across requests (PHP's VaultAwarePiiShieldInterface): the mapping is stored in a vault, a later
+ * request restores by id.
+ */
+export interface VaultRedactor extends Redactor {
+  /** Redacts like redact() and stores the mapping in the vault under a new random id. */
+  redactToVault(text: string): Promise<VaultRedactionResult>;
+  /**
+   * @throws VaultError if the id is unknown or expired, or the entry cannot be read
+   * @throws Error if no vault is configured
+   */
+  restoreFromVault(text: string, vaultId: string): Promise<RestoreResult>;
+  /**
+   * Deletes the mapping immediately (end of conversation, right to erasure).
+   *
+   * @throws Error if no vault is configured
+   */
+  forget(vaultId: string): Promise<void>;
+}
+
 const INSPECT = Symbol.for('nodejs.util.inspect.custom');
 
 /** @internal */
@@ -56,6 +82,17 @@ export function createRedactionResult(
   });
 
   return Object.freeze(result);
+}
+
+/** @internal */
+export function withVaultId(result: RedactionResult, vaultId: string): VaultRedactionResult {
+  const { redactedText, mapping, entities } = result;
+  const withId = { redactedText, mapping, entities, vaultId };
+  Object.defineProperty(withId, INSPECT, {
+    value: () => ({ redactedText, mapping: '[hidden]', entityCount: entities.length, vaultId }),
+  });
+
+  return Object.freeze(withId);
 }
 
 /**

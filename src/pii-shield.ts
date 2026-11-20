@@ -1,6 +1,7 @@
 import { type Entity, typeName } from './entity.js';
 import { EntityExtractor, type EntityExtractorOptions, surname } from './entity-extractor.js';
 import { EntityType } from './entity-type.js';
+import { VaultError } from './errors.js';
 import { replaceSpans } from './internal/text-spans.js';
 import { formatPlaceholder } from './placeholder.js';
 import {
@@ -10,9 +11,18 @@ import {
   type Redactor,
   restorePlaceholders,
   type RestoreResult,
+  type VaultRedactionResult,
+  type VaultRedactor,
+  withVaultId,
 } from './redaction.js';
+import { assertTtl, type Vault } from './vault/vault.js';
 
-export type PiiShieldOptions = EntityExtractorOptions;
+export interface PiiShieldOptions extends EntityExtractorOptions {
+  /** Optional; enables redactToVault(), restoreFromVault() and forget() across requests. */
+  vault?: Vault;
+  /** Seconds a stored mapping lives, a positive integer. Default: PiiShield.DEFAULT_VAULT_TTL (3600). */
+  vaultTtl?: number;
+}
 
 /**
  * Replaces each detected entity with a consistent, typed placeholder (see EntityExtractor for detection rules).
@@ -21,11 +31,18 @@ export type PiiShieldOptions = EntityExtractorOptions;
  * - Person aliases: a surname that also occurs as last part of a full name maps to the
  *   full name's placeholder. Restore yields the full name.
  */
-export class PiiShield implements Redactor {
+export class PiiShield implements VaultRedactor {
+  static readonly DEFAULT_VAULT_TTL = 3600;
+
   readonly #extractor: EntityExtractor;
+  readonly #vault: Vault | undefined;
+  readonly #vaultTtl: number;
 
   constructor(options: PiiShieldOptions = {}) {
-    const { detectors, allowlist } = options;
+    const { detectors, allowlist, vault, vaultTtl = PiiShield.DEFAULT_VAULT_TTL } = options;
+    assertTtl(vaultTtl, 'The vault TTL must be positive.');
+    this.#vault = vault;
+    this.#vaultTtl = vaultTtl;
     this.#extractor = new EntityExtractor({
       ...(detectors === undefined ? {} : { detectors }),
       ...(allowlist === undefined ? {} : { allowlist }),
@@ -46,6 +63,36 @@ export class PiiShield implements Redactor {
 
   restore(text: string, source: RedactionResult | PlaceholderMapping): RestoreResult {
     return restorePlaceholders(text, source);
+  }
+
+  async redactToVault(text: string): Promise<VaultRedactionResult> {
+    const vault = this.#requireVault();
+    const result = this.redact(text);
+    const vaultId = Buffer.from(globalThis.crypto.getRandomValues(new Uint8Array(16))).toString('hex');
+    await vault.store(vaultId, result.mapping, this.#vaultTtl);
+
+    return withVaultId(result, vaultId);
+  }
+
+  async restoreFromVault(text: string, vaultId: string): Promise<RestoreResult> {
+    const mapping = await this.#requireVault().fetch(vaultId);
+    if (mapping === null) {
+      throw new VaultError('Unknown or expired vault id.', 'VAULT_UNKNOWN_ID');
+    }
+
+    return restorePlaceholders(text, mapping);
+  }
+
+  async forget(vaultId: string): Promise<void> {
+    await this.#requireVault().delete(vaultId);
+  }
+
+  #requireVault(): Vault {
+    if (this.#vault === undefined) {
+      throw new Error('No vault configured. Pass a Vault to PiiShield to restore across requests.');
+    }
+
+    return this.#vault;
   }
 }
 

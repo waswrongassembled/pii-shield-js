@@ -86,6 +86,8 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
 - **Mappings are insertion-ordered:** PHP arrays keep insertion order, and placeholders (`⟦…`) are never integer-like keys, so a plain object keeps the same order. Person full names are numbered before everything else (PHP iterates `[...fullNames, ...entities]`), so `⟦PERSON_2⟧` can precede `⟦IBAN_1⟧` in the mapping.
 - **ctype_space** on one character is ASCII-only (`\t\n\v\f\r` and space): `PartialMask` masks a no-break space.
 - **Checksums:** use integer arithmetic for the IBAN mod 97 (BigInt or chunked), SVNR and tax ID.
+- **Vault plaintext** (found in phase 6): PHP's `json_encode()` escapes `/` as `\/` and every non-ASCII UTF-16 unit as a lowercase `\u` escape, an empty mapping is `[]`; `src/internal/php-json.ts` reproduces it, so the same nonce gives the same payload. When reading, `json_decode(…, true)` turns integer-like keys (`"1"`, `"-7"`, within int64) into ints, which PHP's `is_string()` check rejects as corrupt: the port rejects them too. Decode with a fatal `TextDecoder` and `ignoreBOM: true` (PHP rejects invalid UTF-8 and a BOM), build the mapping with `Object.fromEntries` (`__proto__` stays a key), and never attach a `JSON.parse` error as `cause`: V8 quotes the plaintext in its message.
+- **Async validation:** vault methods are `async`, so a bad TTL rejects the Promise instead of throwing synchronously (PHP throws). Constructor arguments (`key`, `vaultTtl`) still throw synchronously.
 - **Secrets:** wipe buffers after use (`buf.fill(0)`) instead of `sodium_memzero`. Keep the key out of logs and errors.
 - **Error messages:** never contain PII values (PHP names positions, not values). Keep the wording of client-facing messages (see "Idiomatic TypeScript").
 
@@ -99,7 +101,7 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
 3. **Extraction** (done): `Entity`, `EntityType`, `EntityExtractor` (overlaps, word boundaries, priority). `TextSpans` moves to phase 4 (with UTF-16 offsets it is a plain slice loop).
 4. **Redaction** (done): `Placeholder`, `RedactionResult`, `RestoreResult`, `PiiShield.redact/restore`, `NullPiiShield`.
 5. **Masking** (done): `PiiMasker`, `TypeLabelMask`, `PartialMask`.
-6. **Vault:**
+6. **Vault** (done):
    - `InMemoryVault`, `EncryptedVault`, storage interface, Redis adapter;
    - `restoreFromVault`, `forget`, TTL; async methods next to the sync ones (`redactToVault(text): Promise<RedactionResult & { vaultId }>`), the sync `RedactionResult` has no `vaultId`;
    - compat test against PHP payloads.

@@ -17,6 +17,7 @@ export { TaxNumberDetector } from './detectors/tax-number.js';
 export { createEntity, typeName, type Entity } from './entity.js';
 export { defaultDetectors, EntityExtractor, surname, type EntityExtractorOptions } from './entity-extractor.js';
 export { ENTITY_TYPES, EntityType, isEntityType } from './entity-type.js';
+export { PiiShieldError, VaultError, type VaultErrorCode } from './errors.js';
 export { PartialMask, type PartialMaskOptions } from './masking/partial-mask.js';
 export type { Masker, MaskingFunction, MaskingStrategy } from './masking/strategy.js';
 export { TypeLabelMask, type TypeLabelMaskOptions } from './masking/type-label-mask.js';
@@ -30,7 +31,18 @@ export {
   type Redactor,
   restorePlaceholders,
   type RestoreResult,
+  type VaultRedactionResult,
+  type VaultRedactor,
 } from './redaction.js';
 export { isValidAtSvnr } from './validators/at-svnr.js';
 export { isValidDeTaxId } from './validators/de-tax-id.js';
 export { isValidIban } from './validators/iban.js';
+export {
+  EncryptedVault,
+  type EncryptedVaultOptions,
+  generateVaultKey,
+  parseVaultKey,
+} from './vault/encrypted-vault.js';
+export { InMemoryVault, type InMemoryVaultOptions } from './vault/in-memory-vault.js';
+export { MemoryVaultStorage, type MemoryVaultStorageOptions } from './vault/memory-vault-storage.js';
+export type { Clock, Vault, VaultStorage } from './vault/vault.js';

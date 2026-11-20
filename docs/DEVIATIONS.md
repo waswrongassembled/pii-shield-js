@@ -23,6 +23,19 @@ PHP's phone pattern backtracks catastrophically on a long digit run followed by 
 
 PHP's `Placeholder::replaceAll()` throws a `RuntimeException` ("Placeholders could not be parsed: JIT stack limit exhausted") when PCRE runs out of JIT stack, e.g. for an unclosed `[[A` followed by thousands of ` 1` tokens. JavaScript's regex engine has no such limit: `replacePlaceholders()` and `restore()` return the text with that span unchanged (it is no placeholder). The matching cost stays linear for such input.
 
+## Vault-backed redaction is a separate async method
+
+PHP's `redact()` stores the mapping when a vault is configured and sets `RedactionResult::$vaultId` (else `null`). The port keeps `redact()` synchronous and vault-free: `redactToVault()` returns a Promise of the result plus `vaultId`, and throws when no vault is configured (PHP returns `vaultId = null`). `restoreFromVault()` and `forget()` return Promises.
+Without a vault, all three reject with a plain `Error` (PHP: `LogicException`) whose message names the TS interface: "No vault configured. Pass a Vault to PiiShield to restore across requests." (PHP: "… Pass a VaultInterface …").
+
+## Vault TTLs must be integers
+
+PHP's `int $ttl` type rejects fractions; the port checks at run time and throws a `TypeError` for a non-integer or `NaN` TTL. A TTL ≤ 0 throws a `RangeError` with PHP's message ("The TTL must be positive." / "The vault TTL must be positive."); PHP throws `InvalidArgumentException`. The key length check throws a `RangeError` with PHP's message.
+
+## Lone surrogates in vault mappings
+
+A JavaScript string can contain lone surrogates (see above); `EncryptedVault` writes them as `\u` escapes and reads them back. PHP never writes them, and its `json_decode()` rejects them, so PHP reports such an entry as "Vault entry is corrupt.". Payloads of well-formed text are byte-identical to PHP's.
+
 ## TypeLabelMask accepts only a subset of sprintf()
 
 PHP's `TypeLabelMask` passes its format to `sprintf()`. The port supports `%s` (once), `%1$s` and `%%`, which covers every format that renders the type name, and throws a `TypeError` in the constructor for anything else (`%d`, padding, a second `%s`, a trailing `%`), where PHP would render garbage or throw at mask time. A function `(type) => string` can be passed instead of a format.
