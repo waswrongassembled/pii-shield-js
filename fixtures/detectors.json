@@ -1,0 +1,1717 @@
+{
+    "generatedBy": "compat/export-fixtures.php",
+    "phpSource": "fa6d4b2adac98475fedb499c67cfa469016701ec",
+    "cases": [
+        {
+            "case": "svnr: valid with space",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "SVNR: 4568 150392.",
+            "entities": [
+                {
+                    "type": "SVNR",
+                    "label": null,
+                    "value": "4568 150392",
+                    "offset": 6,
+                    "length": 11,
+                    "confidence": 1.0,
+                    "detector": "at_svnr"
+                }
+            ]
+        },
+        {
+            "case": "svnr: valid compact",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "Nr. 1237010180",
+            "entities": [
+                {
+                    "type": "SVNR",
+                    "label": null,
+                    "value": "1237010180",
+                    "offset": 4,
+                    "length": 10,
+                    "confidence": 1.0,
+                    "detector": "at_svnr"
+                }
+            ]
+        },
+        {
+            "case": "svnr: wrong check digit",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "SVNR 1234 010180",
+            "entities": []
+        },
+        {
+            "case": "svnr: with hyphen",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "SVNR 4568-150392",
+            "entities": [
+                {
+                    "type": "SVNR",
+                    "label": null,
+                    "value": "4568-150392",
+                    "offset": 5,
+                    "length": 11,
+                    "confidence": 1.0,
+                    "detector": "at_svnr"
+                }
+            ]
+        },
+        {
+            "case": "svnr: split across lines",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "SVNR 4568\n150392",
+            "entities": [
+                {
+                    "type": "SVNR",
+                    "label": null,
+                    "value": "4568\n150392",
+                    "offset": 5,
+                    "length": 11,
+                    "confidence": 1.0,
+                    "detector": "at_svnr"
+                }
+            ]
+        },
+        {
+            "case": "svnr: hyphen needs a birth date",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "Unser Zeichen: VWA-2026-100084, bitte angeben",
+            "entities": []
+        },
+        {
+            "case": "svnr: line break needs a birth date",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "Dornbirn, am 12.03.2026\n100084 Euro sind offen",
+            "entities": []
+        },
+        {
+            "case": "svnr: year of a date is no SVNR start",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "Dornbirn, am 12.03.2026\n150392 Euro sind offen",
+            "entities": []
+        },
+        {
+            "case": "svnr: part of longer number",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "Konto 912370101801",
+            "entities": []
+        },
+        {
+            "case": "iban: grouped",
+            "detector": {
+                "class": "IbanDetector",
+                "options": {}
+            },
+            "text": "IBAN AT61 1904 3002 3457 3201, danke",
+            "entities": [
+                {
+                    "type": "IBAN",
+                    "label": null,
+                    "value": "AT61 1904 3002 3457 3201",
+                    "offset": 5,
+                    "length": 24,
+                    "confidence": 1.0,
+                    "detector": "iban"
+                }
+            ]
+        },
+        {
+            "case": "iban: compact DE",
+            "detector": {
+                "class": "IbanDetector",
+                "options": {}
+            },
+            "text": "auf DE89370400440532013000 überweisen",
+            "entities": [
+                {
+                    "type": "IBAN",
+                    "label": null,
+                    "value": "DE89370400440532013000",
+                    "offset": 4,
+                    "length": 22,
+                    "confidence": 1.0,
+                    "detector": "iban"
+                }
+            ]
+        },
+        {
+            "case": "iban: followed by uppercase word",
+            "detector": {
+                "class": "IbanDetector",
+                "options": {}
+            },
+            "text": "AT61 1904 3002 3457 3201 BIC",
+            "entities": [
+                {
+                    "type": "IBAN",
+                    "label": null,
+                    "value": "AT61 1904 3002 3457 3201",
+                    "offset": 0,
+                    "length": 24,
+                    "confidence": 1.0,
+                    "detector": "iban"
+                }
+            ]
+        },
+        {
+            "case": "iban: split across lines",
+            "detector": {
+                "class": "IbanDetector",
+                "options": {}
+            },
+            "text": "IBAN AT61 1904 3002\n3457 3201, danke",
+            "entities": [
+                {
+                    "type": "IBAN",
+                    "label": null,
+                    "value": "AT61 1904 3002\n3457 3201",
+                    "offset": 5,
+                    "length": 24,
+                    "confidence": 1.0,
+                    "detector": "iban"
+                }
+            ]
+        },
+        {
+            "case": "iban: BIC on the next line",
+            "detector": {
+                "class": "IbanDetector",
+                "options": {}
+            },
+            "text": "AT61 1904 3002 3457 3201\nBKAUATWW",
+            "entities": [
+                {
+                    "type": "IBAN",
+                    "label": null,
+                    "value": "AT61 1904 3002 3457 3201",
+                    "offset": 0,
+                    "length": 24,
+                    "confidence": 1.0,
+                    "detector": "iban"
+                }
+            ]
+        },
+        {
+            "case": "iban: invalid checksum",
+            "detector": {
+                "class": "IbanDetector",
+                "options": {}
+            },
+            "text": "AT62 1904 3002 3457 3201",
+            "entities": []
+        },
+        {
+            "case": "tax: AT Steuernummer",
+            "detector": {
+                "class": "TaxNumberDetector",
+                "options": {}
+            },
+            "text": "Steuernummer: 46 123/4567",
+            "entities": [
+                {
+                    "type": "TAX_NUMBER",
+                    "label": null,
+                    "value": "46 123/4567",
+                    "offset": 14,
+                    "length": 11,
+                    "confidence": 0.9,
+                    "detector": "tax_number"
+                }
+            ]
+        },
+        {
+            "case": "tax: DE Steuernummer",
+            "detector": {
+                "class": "TaxNumberDetector",
+                "options": {}
+            },
+            "text": "StNr. 181/815/08155",
+            "entities": [
+                {
+                    "type": "TAX_NUMBER",
+                    "label": null,
+                    "value": "181/815/08155",
+                    "offset": 6,
+                    "length": 13,
+                    "confidence": 0.9,
+                    "detector": "tax_number"
+                }
+            ]
+        },
+        {
+            "case": "tax: DE Steuer-ID valid",
+            "detector": {
+                "class": "TaxNumberDetector",
+                "options": {}
+            },
+            "text": "Steuer-ID 86095742719",
+            "entities": [
+                {
+                    "type": "TAX_NUMBER",
+                    "label": null,
+                    "value": "86095742719",
+                    "offset": 10,
+                    "length": 11,
+                    "confidence": 1.0,
+                    "detector": "de_tax_id"
+                }
+            ]
+        },
+        {
+            "case": "tax: DE Steuer-ID invalid",
+            "detector": {
+                "class": "TaxNumberDetector",
+                "options": {}
+            },
+            "text": "Steuer-ID 86095742718",
+            "entities": []
+        },
+        {
+            "case": "tax: amount is no tax number",
+            "detector": {
+                "class": "TaxNumberDetector",
+                "options": {}
+            },
+            "text": "Betrag 1.245,00 Euro",
+            "entities": []
+        },
+        {
+            "case": "tax: several, in text order",
+            "detector": {
+                "class": "TaxNumberDetector",
+                "options": {}
+            },
+            "text": "Steuer-ID 86095742719\nStNr. 181/815/08155\nSteuer-ID 24051867317",
+            "entities": [
+                {
+                    "type": "TAX_NUMBER",
+                    "label": null,
+                    "value": "86095742719",
+                    "offset": 10,
+                    "length": 11,
+                    "confidence": 1.0,
+                    "detector": "de_tax_id"
+                },
+                {
+                    "type": "TAX_NUMBER",
+                    "label": null,
+                    "value": "181/815/08155",
+                    "offset": 28,
+                    "length": 13,
+                    "confidence": 0.9,
+                    "detector": "tax_number"
+                },
+                {
+                    "type": "TAX_NUMBER",
+                    "label": null,
+                    "value": "24051867317",
+                    "offset": 52,
+                    "length": 11,
+                    "confidence": 1.0,
+                    "detector": "de_tax_id"
+                }
+            ]
+        },
+        {
+            "case": "email: private",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Kontakt: maria.musterfrau@example.com",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "maria.musterfrau@example.com",
+                    "offset": 9,
+                    "length": 28,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "email: authority contact kept",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Der Einspruch ist per E-Mail an post@bh.example einzubringen.",
+            "entities": []
+        },
+        {
+            "case": "email: several private",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "maria@example.org und johann@example.org",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "maria@example.org",
+                    "offset": 0,
+                    "length": 17,
+                    "confidence": 1.0,
+                    "detector": "email"
+                },
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "johann@example.org",
+                    "offset": 22,
+                    "length": 18,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "email: private after an authority contact",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Einspruch an post@bh.example einzubringen.\nPrivat: maria@example.org",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "maria@example.org",
+                    "offset": 51,
+                    "length": 17,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "email: authority keyword on another line",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Finanzamt Linz\nKontakt: maria@example.org\nBescheid vom Finanzamt",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "maria@example.org",
+                    "offset": 24,
+                    "length": 17,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "email: authority keyword in another sentence of the line",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Ihr Einspruch ist eingelangt. Ihre Adresse maria@example.org wurde gespeichert.",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "maria@example.org",
+                    "offset": 43,
+                    "length": 17,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "email: first person singular is the writer, not the authority",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Gegen den Bescheid erhebe ich Einspruch. Sie erreichen mich unter johann.beispielmann@example.at.",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "johann.beispielmann@example.at",
+                    "offset": 66,
+                    "length": 30,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "email: \"Ihre E-Mail-Adresse\" is the recipient's",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Ihre E-Mail-Adresse maria@example.org haben wir gespeichert.",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "maria@example.org",
+                    "offset": 20,
+                    "length": 17,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "email: case worker in first person, authority domain under gv.at",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bezirkshauptmannschaft Musterstadt\nVerkehrsamt\n\nFrau\nMaria Musterfrau\n\nSie erreichen mich unter verkehr@bh-musterstadt.gv.at.",
+            "entities": []
+        },
+        {
+            "case": "email: authority contact redacted when disabled",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": false
+                }
+            },
+            "text": "Bitte kontaktieren Sie uns unter post@bh.example.",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "post@bh.example",
+                    "offset": 33,
+                    "length": 15,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "phone: international",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Mobil: +43 664 1234567",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "+43 664 1234567",
+                    "offset": 7,
+                    "length": 15,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: national",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Tel. 0664/1234567",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "0664/1234567",
+                    "offset": 5,
+                    "length": 12,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: authority hotline kept",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bei Fragen erreichen Sie uns unter +43 50 233 233.",
+            "entities": []
+        },
+        {
+            "case": "phone: several private",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Mobil +43 664 1234567, Festnetz 05572 123456",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "+43 664 1234567",
+                    "offset": 6,
+                    "length": 15,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                },
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "05572 123456",
+                    "offset": 32,
+                    "length": 12,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: private after an authority hotline",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Erreichen Sie uns unter +43 50 233 233.\nPrivat: 0664/1234567",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "0664/1234567",
+                    "offset": 48,
+                    "length": 12,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: authority keyword in another sentence of the line",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Gegen den Bescheid haben Sie Einspruch erhoben. Ihre Telefonnummer lautet 0664/1234567.",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "0664/1234567",
+                    "offset": 74,
+                    "length": 12,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: abbreviations do not end the sentence",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bezirkshauptmannschaft Musterstadt, Abt. Verkehr, Tel. 05572 12345",
+            "entities": []
+        },
+        {
+            "case": "phone: authority hotline after an earlier sentence",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bitte beachten Sie die Frist. Bei Fragen erreichen Sie uns unter Tel. 05572 12345.",
+            "entities": []
+        },
+        {
+            "case": "phone: mobile number is never an authority contact",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Ihren Einspruch haben wir unter 0664 1234567 notiert.",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "0664 1234567",
+                    "offset": 32,
+                    "length": 12,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: international mobile number is never an authority contact",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Laut unserer Unterlagen sind Sie unter +43 664 1234567 erreichbar.",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "+43 664 1234567",
+                    "offset": 39,
+                    "length": 15,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: first person singular is the writer, not the authority",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Gegen den Bescheid erhebe ich Einspruch. Sie erreichen mich unter 05572 12345.",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "05572 12345",
+                    "offset": 66,
+                    "length": 11,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: mobile number with trunk zero after the country code",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Ihren Einspruch haben wir unter +43 0664 1234567 notiert.",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "+43 0664 1234567",
+                    "offset": 32,
+                    "length": 16,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: \"Ihre Telefonnummer\" is the recipient's",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Ihre Telefonnummer 05572 12345 haben wir gespeichert.",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "05572 12345",
+                    "offset": 19,
+                    "length": 11,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: authority hotline with \"Ihrem Bescheid\" kept",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bei Fragen zu Ihrem Bescheid erreichen Sie uns unter 05572 12345.",
+            "entities": []
+        },
+        {
+            "case": "phone: Salzburg landline is no mobile",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Rückfragen richten Sie bitte an das Magistrat Salzburg, Tel. 0662 8072 2000.",
+            "entities": []
+        },
+        {
+            "case": "phone: Salzburg landline with country code is no mobile",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Rückfragen richten Sie bitte an das Magistrat Salzburg, Tel. +43 662 8072 2000.",
+            "entities": []
+        },
+        {
+            "case": "phone: Pinzgau landline is no mobile",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bei Fragen erreichen Sie uns unter 06542 7860.",
+            "entities": []
+        },
+        {
+            "case": "phone: Upper Austrian landline is no mobile",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bei Fragen erreichen Sie uns unter 07612 7920.",
+            "entities": []
+        },
+        {
+            "case": "phone: Vienna landline is no mobile",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bei Fragen erreichen Sie uns unter 01 514 33.",
+            "entities": []
+        },
+        {
+            "case": "phone: Frankfurt landline is no mobile",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bei Fragen erreichen Sie uns unter 069 212 0.",
+            "entities": []
+        },
+        {
+            "case": "phone: German mobile with country code",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Ihren Einspruch haben wir unter +49 151 2345678 notiert.",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "+49 151 2345678",
+                    "offset": 32,
+                    "length": 15,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: case worker in first person is kept",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Für Rückfragen zu Ihrem Einspruch stehe ich Ihnen unter 05572 306 1234 zur Verfügung.",
+            "entities": []
+        },
+        {
+            "case": "phone: \"Ihrer E-Mail vom\" does not make it personal",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Bezüglich Ihrer E-Mail vom 01.02.2026 erreichen Sie uns unter 05572 306 0.",
+            "entities": []
+        },
+        {
+            "case": "phone: \"Meinung\" is no first person",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Nach unserer Meinung erreichen Sie uns am besten unter 05572 306 0.",
+            "entities": []
+        },
+        {
+            "case": "phone: \"Ihre Rufnummer\" is the recipient's",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Wir haben Ihren Einspruch erhalten, Ihre Rufnummer 05572 45678 ist vermerkt.",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "05572 45678",
+                    "offset": 51,
+                    "length": 11,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: seven digits are enough",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Tel. 0664 123",
+            "entities": [
+                {
+                    "type": "PHONE",
+                    "label": null,
+                    "value": "0664 123",
+                    "offset": 5,
+                    "length": 8,
+                    "confidence": 0.8,
+                    "detector": "phone"
+                }
+            ]
+        },
+        {
+            "case": "phone: six digits are not",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "Tel. 0664 12",
+            "entities": []
+        },
+        {
+            "case": "phone: time is no phone",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "um 07:42 Uhr",
+            "entities": []
+        },
+        {
+            "case": "phone: date is no phone",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "am 02.11.2026",
+            "entities": []
+        },
+        {
+            "case": "birth date: geb.",
+            "detector": {
+                "class": "BirthDateDetector",
+                "options": {}
+            },
+            "text": "geb. 15.03.1992",
+            "entities": [
+                {
+                    "type": "BIRTH_DATE",
+                    "label": null,
+                    "value": "15.03.1992",
+                    "offset": 5,
+                    "length": 10,
+                    "confidence": 0.95,
+                    "detector": "birth_date"
+                }
+            ]
+        },
+        {
+            "case": "birth date: geboren am",
+            "detector": {
+                "class": "BirthDateDetector",
+                "options": {}
+            },
+            "text": "geboren am 1.3.1980 in Linz",
+            "entities": [
+                {
+                    "type": "BIRTH_DATE",
+                    "label": null,
+                    "value": "1.3.1980",
+                    "offset": 11,
+                    "length": 8,
+                    "confidence": 0.95,
+                    "detector": "birth_date"
+                }
+            ]
+        },
+        {
+            "case": "birth date: Geburtsdatum",
+            "detector": {
+                "class": "BirthDateDetector",
+                "options": {}
+            },
+            "text": "Geburtsdatum: 01.01.1970",
+            "entities": [
+                {
+                    "type": "BIRTH_DATE",
+                    "label": null,
+                    "value": "01.01.1970",
+                    "offset": 14,
+                    "length": 10,
+                    "confidence": 0.95,
+                    "detector": "birth_date"
+                }
+            ]
+        },
+        {
+            "case": "birth date: geb. am",
+            "detector": {
+                "class": "BirthDateDetector",
+                "options": {}
+            },
+            "text": "geb. am 15.03.1992",
+            "entities": [
+                {
+                    "type": "BIRTH_DATE",
+                    "label": null,
+                    "value": "15.03.1992",
+                    "offset": 8,
+                    "length": 10,
+                    "confidence": 0.95,
+                    "detector": "birth_date"
+                }
+            ]
+        },
+        {
+            "case": "birth date: Geburtsdatum without colon",
+            "detector": {
+                "class": "BirthDateDetector",
+                "options": {}
+            },
+            "text": "Geburtsdatum 01.01.1970",
+            "entities": [
+                {
+                    "type": "BIRTH_DATE",
+                    "label": null,
+                    "value": "01.01.1970",
+                    "offset": 13,
+                    "length": 10,
+                    "confidence": 0.95,
+                    "detector": "birth_date"
+                }
+            ]
+        },
+        {
+            "case": "birth date: deadline is kept",
+            "detector": {
+                "class": "BirthDateDetector",
+                "options": {}
+            },
+            "text": "fällig am 15.11.2026",
+            "entities": []
+        },
+        {
+            "case": "birth date: impossible date",
+            "detector": {
+                "class": "BirthDateDetector",
+                "options": {}
+            },
+            "text": "geb. 31.02.1992",
+            "entities": []
+        },
+        {
+            "case": "file number: Zahl",
+            "detector": {
+                "class": "FileNumberDetector",
+                "options": {}
+            },
+            "text": "Zahl: BHMS-VK-2026/48213\n",
+            "entities": [
+                {
+                    "type": "FILE_NUMBER",
+                    "label": null,
+                    "value": "BHMS-VK-2026/48213",
+                    "offset": 6,
+                    "length": 18,
+                    "confidence": 0.9,
+                    "detector": "file_number"
+                }
+            ]
+        },
+        {
+            "case": "file number: Verwendungszweck",
+            "detector": {
+                "class": "FileNumberDetector",
+                "options": {}
+            },
+            "text": "Verwendungszweck: BHMS-VK-2026/48213.",
+            "entities": [
+                {
+                    "type": "FILE_NUMBER",
+                    "label": null,
+                    "value": "BHMS-VK-2026/48213",
+                    "offset": 18,
+                    "length": 18,
+                    "confidence": 0.9,
+                    "detector": "file_number"
+                }
+            ]
+        },
+        {
+            "case": "file number: Kundennummer",
+            "detector": {
+                "class": "FileNumberDetector",
+                "options": {}
+            },
+            "text": "Kundennummer 4711-0815",
+            "entities": [
+                {
+                    "type": "FILE_NUMBER",
+                    "label": null,
+                    "value": "4711-0815",
+                    "offset": 13,
+                    "length": 9,
+                    "confidence": 0.9,
+                    "detector": "file_number"
+                }
+            ]
+        },
+        {
+            "case": "file number: without digits",
+            "detector": {
+                "class": "FileNumberDetector",
+                "options": {}
+            },
+            "text": "Verwendungszweck: Ihre Steuernummer",
+            "entities": []
+        },
+        {
+            "case": "file number: no keyword",
+            "detector": {
+                "class": "FileNumberDetector",
+                "options": {}
+            },
+            "text": "Buchungsmitteilung Nr. 3/2026",
+            "entities": []
+        },
+        {
+            "case": "plate: AT",
+            "detector": {
+                "class": "LicensePlateDetector",
+                "options": {}
+            },
+            "text": "mit dem Kennzeichen B-123AB die",
+            "entities": [
+                {
+                    "type": "LICENSE_PLATE",
+                    "label": null,
+                    "value": "B-123AB",
+                    "offset": 20,
+                    "length": 7,
+                    "confidence": 0.9,
+                    "detector": "license_plate"
+                }
+            ]
+        },
+        {
+            "case": "plate: DE",
+            "detector": {
+                "class": "LicensePlateDetector",
+                "options": {}
+            },
+            "text": "Kennzeichen: M-AB 1234.",
+            "entities": [
+                {
+                    "type": "LICENSE_PLATE",
+                    "label": null,
+                    "value": "M-AB 1234",
+                    "offset": 13,
+                    "length": 9,
+                    "confidence": 0.9,
+                    "detector": "license_plate"
+                }
+            ]
+        },
+        {
+            "case": "plate: no keyword",
+            "detector": {
+                "class": "LicensePlateDetector",
+                "options": {}
+            },
+            "text": "Straße L 200 bei Strkm 4,2",
+            "entities": []
+        },
+        {
+            "case": "person: address block",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Frau\nMaria Musterfrau\nLindenweg 12",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Maria Musterfrau",
+                    "offset": 5,
+                    "length": 16,
+                    "confidence": 0.8,
+                    "detector": "salutation_block"
+                }
+            ]
+        },
+        {
+            "case": "person: address block with title",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Herrn\nDr. Johann Beispielmann\n",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Johann Beispielmann",
+                    "offset": 10,
+                    "length": 19,
+                    "confidence": 0.8,
+                    "detector": "salutation_block"
+                }
+            ]
+        },
+        {
+            "case": "person: inline salutation",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Sehr geehrter Herr Beispielmann,",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Beispielmann",
+                    "offset": 19,
+                    "length": 12,
+                    "confidence": 0.6,
+                    "detector": "salutation_inline"
+                }
+            ]
+        },
+        {
+            "case": "person: inline first and last name",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "wie mit Frau Maria Musterfrau besprochen",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Maria Musterfrau",
+                    "offset": 13,
+                    "length": 16,
+                    "confidence": 0.6,
+                    "detector": "salutation_inline"
+                }
+            ]
+        },
+        {
+            "case": "person: inline over-redacts following noun",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Herr Beispielmann Bescheid gegeben",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Beispielmann Bescheid",
+                    "offset": 5,
+                    "length": 21,
+                    "confidence": 0.6,
+                    "detector": "salutation_inline"
+                }
+            ]
+        },
+        {
+            "case": "person: inline takes at most two words",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Frau Maria Anna Musterfrau",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Maria Anna",
+                    "offset": 5,
+                    "length": 10,
+                    "confidence": 0.6,
+                    "detector": "salutation_inline"
+                }
+            ]
+        },
+        {
+            "case": "person: inline name with non-German capital",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Sehr geehrte Frau Čermáková,",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Čermáková",
+                    "offset": 18,
+                    "length": 9,
+                    "confidence": 0.6,
+                    "detector": "salutation_inline"
+                }
+            ]
+        },
+        {
+            "case": "person: address block with non-German capitals",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Herrn\nŽeljko Šarić\nLindenweg 12",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Željko Šarić",
+                    "offset": 6,
+                    "length": 12,
+                    "confidence": 0.8,
+                    "detector": "salutation_block"
+                }
+            ]
+        },
+        {
+            "case": "person: no salutation",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Mag. Thomas Beispiel",
+            "entities": []
+        },
+        {
+            "case": "person: OCR blank line after salutation",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Frau\n\nMaria Musterfrau\nLindenweg 12",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Maria Musterfrau",
+                    "offset": 6,
+                    "length": 16,
+                    "confidence": 0.8,
+                    "detector": "salutation_block"
+                }
+            ]
+        },
+        {
+            "case": "person: OCR split first name",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Herrn\n\nJ ohann Beispielmann\n\nBahnhofstraße 7/3",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "J ohann Beispielmann",
+                    "offset": 7,
+                    "length": 20,
+                    "confidence": 0.8,
+                    "detector": "salutation_block"
+                }
+            ]
+        },
+        {
+            "case": "person: OCR blank lines, at most two",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Frau\n\n\n\nMaria Musterfrau",
+            "entities": []
+        },
+        {
+            "case": "person: salutation ending a line in running text",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Das haben wir mit unserem Herrn\n\nBitte zahlen Sie bis Ende",
+            "entities": []
+        },
+        {
+            "case": "person: lone salutation before lower-case text",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "Frau\n\nbitte beachten Sie",
+            "entities": []
+        },
+        {
+            "case": "address: street and city",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "Lindenweg 12\n6900 Bregenz\n",
+            "entities": [
+                {
+                    "type": "ADDRESS",
+                    "label": null,
+                    "value": "Lindenweg 12\n6900 Bregenz",
+                    "offset": 0,
+                    "length": 25,
+                    "confidence": 0.8,
+                    "detector": "postal_address"
+                }
+            ]
+        },
+        {
+            "case": "address: door number",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "Bahnhofstraße 7/3\n4020 Linz",
+            "entities": [
+                {
+                    "type": "ADDRESS",
+                    "label": null,
+                    "value": "Bahnhofstraße 7/3\n4020 Linz",
+                    "offset": 0,
+                    "length": 27,
+                    "confidence": 0.8,
+                    "detector": "postal_address"
+                }
+            ]
+        },
+        {
+            "case": "address: DE postcode",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "Musterallee 5a\n10115 Berlin",
+            "entities": [
+                {
+                    "type": "ADDRESS",
+                    "label": null,
+                    "value": "Musterallee 5a\n10115 Berlin",
+                    "offset": 0,
+                    "length": 27,
+                    "confidence": 0.8,
+                    "detector": "postal_address"
+                }
+            ]
+        },
+        {
+            "case": "address: street with non-German capital",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "Šumavská 12\n6900 Bregenz",
+            "entities": [
+                {
+                    "type": "ADDRESS",
+                    "label": null,
+                    "value": "Šumavská 12\n6900 Bregenz",
+                    "offset": 0,
+                    "length": 24,
+                    "confidence": 0.8,
+                    "detector": "postal_address"
+                }
+            ]
+        },
+        {
+            "case": "address: single line letterhead kept",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "Hauptplatz 1, 6999 Musterstadt",
+            "entities": []
+        },
+        {
+            "case": "address: OCR blank line before city",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "Bahnhofstraße 7/3\n\n4020 Linz\n",
+            "entities": [
+                {
+                    "type": "ADDRESS",
+                    "label": null,
+                    "value": "Bahnhofstraße 7/3\n\n4020 Linz",
+                    "offset": 0,
+                    "length": 28,
+                    "confidence": 0.8,
+                    "detector": "postal_address"
+                }
+            ]
+        },
+        {
+            "case": "address: OCR two blank lines before city",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "Lindenweg 12\n\n\n6900 Bregenz",
+            "entities": [
+                {
+                    "type": "ADDRESS",
+                    "label": null,
+                    "value": "Lindenweg 12\n\n\n6900 Bregenz",
+                    "offset": 0,
+                    "length": 27,
+                    "confidence": 0.8,
+                    "detector": "postal_address"
+                }
+            ]
+        },
+        {
+            "case": "address: separate paragraphs are no address",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "Rechtsmittelfrist 14\n\n\n\n6900 Bregenz",
+            "entities": []
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "AtSvnrDetector",
+                "options": {}
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": [
+                {
+                    "type": "SVNR",
+                    "label": null,
+                    "value": "4568 150392",
+                    "offset": 46,
+                    "length": 11,
+                    "confidence": 1.0,
+                    "detector": "at_svnr"
+                }
+            ]
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "IbanDetector",
+                "options": {}
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": []
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "TaxNumberDetector",
+                "options": {}
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": []
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "EmailDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": [
+                {
+                    "type": "EMAIL",
+                    "label": null,
+                    "value": "maria@example.org",
+                    "offset": 65,
+                    "length": 17,
+                    "confidence": 1.0,
+                    "detector": "email"
+                }
+            ]
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "PhoneDetector",
+                "options": {
+                    "keepAuthorityContacts": true
+                }
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": []
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "BirthDateDetector",
+                "options": {}
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": []
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "FileNumberDetector",
+                "options": {}
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": []
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "LicensePlateDetector",
+                "options": {}
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": []
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "SalutationPersonDetector",
+                "options": {}
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": [
+                {
+                    "type": "PERSON",
+                    "label": null,
+                    "value": "Beispielmann",
+                    "offset": 27,
+                    "length": 12,
+                    "confidence": 0.6,
+                    "detector": "salutation_inline"
+                }
+            ]
+        },
+        {
+            "case": "code point offsets",
+            "detector": {
+                "class": "PostalAddressDetector",
+                "options": {}
+            },
+            "text": "😀 Grüße\nSehr geehrter Herr Beispielmann, SVNR 4568 150392, Mail 😀maria@example.org.",
+            "entities": []
+        }
+    ]
+}

@@ -1,0 +1,252 @@
+{
+    "generatedBy": "compat/export-fixtures.php",
+    "phpSource": "fa6d4b2adac98475fedb499c67cfa469016701ec",
+    "validators": {
+        "AtSvnrValidator": [
+            {
+                "case": "fixture 02",
+                "input": "4568 150392",
+                "valid": true
+            },
+            {
+                "case": "readme example",
+                "input": "1237 010180",
+                "valid": true
+            },
+            {
+                "case": "without space",
+                "input": "1237010180",
+                "valid": true
+            },
+            {
+                "case": "wrong check digit",
+                "input": "1234 010180",
+                "valid": false
+            },
+            {
+                "case": "check sum 10 is never valid",
+                "input": "1000 010180",
+                "valid": false
+            },
+            {
+                "case": "leading zero",
+                "input": "0237 010180",
+                "valid": false
+            },
+            {
+                "case": "too short",
+                "input": "1237 01018",
+                "valid": false
+            },
+            {
+                "case": "too long",
+                "input": "1237 0101801",
+                "valid": false
+            },
+            {
+                "case": "letters",
+                "input": "12A7 010180",
+                "valid": false
+            },
+            {
+                "case": "empty",
+                "input": "",
+                "valid": false
+            },
+            {
+                "case": "extra 1",
+                "input": "1237-010180",
+                "valid": true
+            },
+            {
+                "case": "extra 2",
+                "input": " 1237 010180",
+                "valid": true
+            },
+            {
+                "case": "extra 3",
+                "input": "1237\n010180",
+                "valid": true
+            },
+            {
+                "case": "extra 4",
+                "input": "１２３７０１０１８０",
+                "valid": false
+            }
+        ],
+        "IbanValidator": [
+            {
+                "case": "AT grouped (fixture 01)",
+                "input": "AT61 1904 3002 3457 3201",
+                "valid": true
+            },
+            {
+                "case": "AT compact",
+                "input": "AT611904300234573201",
+                "valid": true
+            },
+            {
+                "case": "DE",
+                "input": "DE89 3704 0044 0532 0130 00",
+                "valid": true
+            },
+            {
+                "case": "CH",
+                "input": "CH93 0076 2011 6238 5295 7",
+                "valid": true
+            },
+            {
+                "case": "lowercase",
+                "input": "at61 1904 3002 3457 3201",
+                "valid": true
+            },
+            {
+                "case": "wrong check digits",
+                "input": "AT62 1904 3002 3457 3201",
+                "valid": false
+            },
+            {
+                "case": "typo in account",
+                "input": "AT61 1904 3002 3457 3202",
+                "valid": false
+            },
+            {
+                "case": "too short",
+                "input": "AT61 1904",
+                "valid": false
+            },
+            {
+                "case": "no country code",
+                "input": "6119 0430 0234 5732 01",
+                "valid": false
+            },
+            {
+                "case": "special characters",
+                "input": "AT61-1904-3002-3457-3201",
+                "valid": false
+            },
+            {
+                "case": "leading character",
+                "input": "XAT61 1904 3002 3457 3201",
+                "valid": false
+            },
+            {
+                "case": "trailing character",
+                "input": "AT61 1904 3002 3457 3201 X",
+                "valid": false
+            },
+            {
+                "case": "empty",
+                "input": "",
+                "valid": false
+            },
+            {
+                "case": "extra 1",
+                "input": "AT61  1904 3002 3457 3201",
+                "valid": true
+            },
+            {
+                "case": "extra 2",
+                "input": "AT61\n1904 3002 3457 3201",
+                "valid": true
+            },
+            {
+                "case": "extra 3",
+                "input": "GB82 WEST 1234 5698 7654 32",
+                "valid": true
+            },
+            {
+                "case": "extra 4",
+                "input": "NO93 8601 1117 947",
+                "valid": true
+            },
+            {
+                "case": "extra 5",
+                "input": "MT84 MALT 0110 0001 2345 MTLC AST0 01S",
+                "valid": true
+            }
+        ],
+        "DeTaxIdValidator": [
+            {
+                "case": "one digit twice",
+                "input": "86095742719",
+                "valid": true
+            },
+            {
+                "case": "one digit three times",
+                "input": "65929970489",
+                "valid": true
+            },
+            {
+                "case": "grouped with spaces",
+                "input": "86 095 742 719",
+                "valid": true
+            },
+            {
+                "case": "check digit 10 becomes 0",
+                "input": "82511470930",
+                "valid": true
+            },
+            {
+                "case": "tenth digit is the repeated one",
+                "input": "24051867317",
+                "valid": true
+            },
+            {
+                "case": "wrong check digit",
+                "input": "86095742718",
+                "valid": false
+            },
+            {
+                "case": "leading zero",
+                "input": "06095742719",
+                "valid": false
+            },
+            {
+                "case": "no repeated digit",
+                "input": "12345678903",
+                "valid": false
+            },
+            {
+                "case": "too short",
+                "input": "8609574271",
+                "valid": false
+            },
+            {
+                "case": "letters",
+                "input": "8609574271A",
+                "valid": false
+            },
+            {
+                "case": "leading character",
+                "input": "x86095742719",
+                "valid": false
+            },
+            {
+                "case": "one digit too many",
+                "input": "860957427190",
+                "valid": false
+            },
+            {
+                "case": "empty",
+                "input": "",
+                "valid": false
+            },
+            {
+                "case": "extra 1",
+                "input": "86 0957 42719",
+                "valid": true
+            },
+            {
+                "case": "extra 2",
+                "input": "86-095-742-719",
+                "valid": false
+            },
+            {
+                "case": "extra 3",
+                "input": "11111111111",
+                "valid": false
+            }
+        ]
+    }
+}

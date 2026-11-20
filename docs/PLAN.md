@@ -13,6 +13,7 @@ Source of truth: the PHP package. Local copy: path in `CLAUDE.local.md` (read-on
 - **Stack:**
   - TypeScript, ESM only, Node >= 20.
   - Build with `tsup`, tests with `vitest`, `eslint` + `prettier`, `tsc --strict`.
+  - Tooling pinned to lines that still run on Node 20: `vitest` 4, `tsup` 8, TypeScript 6.0 (`typescript-eslint` does not support 6.1+/7 yet).
   - Core has zero runtime dependencies except `@noble/ciphers` (XChaCha20-Poly1305; Node crypto lacks it).
 - **Package layout:** one package with subpath exports; the bridge peer deps are optional.
   - `@waswrongassembled/pii-shield`: core.
@@ -32,6 +33,7 @@ Source of truth: the PHP package. Local copy: path in `CLAUDE.local.md` (read-on
    - AAD is the vault id; the plaintext is the JSON object `{placeholder: original}`.
    - The key is 32 raw bytes, base64 as a secret.
    - Test: decrypt a payload produced by PHP (fixture), and PHP decrypts a Node payload (script in `compat/`).
+   - PHP encodes an empty mapping as `[]`, not `{}`. Node must accept both when reading; PHP reads `{}` fine.
 4. **Learned types:** the JSON file has the same shape as `JsonFileCustomEntityStore` / `CustomEntityType::toArray()`, with the same limits and validation messages.
 5. **Offsets:** PHP reports `Entity.offset` in code points (`mb_*`, see `TextSpans.php`). JS strings count in UTF-16 units, so emoji and other characters outside the BMP count twice. Node keeps the semantics: offset and length are code points as well, for identical results on both sides. The README notes how to convert for `String.prototype.slice`. Internally the regex engine works on UTF-16 indices: convert at the API boundary (preg also gives byte offsets internally; PHP converts them as well).
 
@@ -55,6 +57,7 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
   - Named groups `(?<n>)` are fine; atomic or possessive groups were not found (re-check per file).
   - `preg_split` / `preg_replace` semantics (limits, empty matches, `PREG_SPLIT_*` flags) must be replicated exactly.
 - **PatternGrammar** checks user patterns (safe subset, at most one unbounded quantifier, length limit) and compiles them to PCRE `~(?:…)~u`. In TS they become `new RegExp('(?:…)', 'u')`. The grammar must reject everything that behaves differently in PCRE and JS, so the same pattern means the same thing on both sides. This is a safety and parity risk: test it most thoroughly.
+- **PCRE vs. JS character classes** (seen in `fixtures/learning.json`, grammar probes): with `/u`, PCRE `\s` matches U+00A0 and U+2028 but not U+FEFF, JS `\s` matches all three; PCRE `.` matches U+2028, JS `.` does not. `[]a]` is a valid class in PCRE and a syntax error in JS. Learned patterns must translate these, or the grammar must reject them.
 - **String functions:** use `mb_*` → code-point aware (`[...s]`, `Intl.Segmenter` only if PHP uses graphemes). `strtoupper` is ASCII-only in PHP; `toUpperCase()` is not, so for type names use an ASCII-only helper.
 - **Checksums:** use integer arithmetic for the IBAN mod 97 (BigInt or chunked), SVNR and tax ID.
 - **Secrets:** wipe buffers after use (`buf.fill(0)`) instead of `sodium_memzero`. Keep the key out of logs and errors.
@@ -62,7 +65,7 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
 
 ## Phases (each phase: tests green, lint green, own PR)
 
-0. **Scaffold:** repo, tsconfig, tsup, vitest, eslint, CI (GitHub Actions on Node 20/22/24), LICENSE, README skeleton. Write `compat/export-fixtures.php` and generate fixtures.
+0. **Scaffold** (done): repo, tsconfig, tsup, vitest, eslint, CI (GitHub Actions on Node 20/22/24), LICENSE, README skeleton. Write `compat/export-fixtures.php` and generate fixtures.
 1. **Validators:** `AtSvnrValidator`, `IbanValidator`, `DeTaxIdValidator`.
 2. **Detectors:**
    - `RegexMatcher`, `AuthorityContext`;

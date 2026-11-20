@@ -1,0 +1,153 @@
+{
+    "generatedBy": "compat/export-fixtures.php",
+    "phpSource": "fa6d4b2adac98475fedb499c67cfa469016701ec",
+    "note": "The key is a published test key. Never use it for real data.",
+    "key": "obi5jfaIIYizG5L9SsLwZcKiTq8T66coeawtjD63KD8=",
+    "payloads": [
+        {
+            "case": "letter",
+            "id": "f3a1c0de5eed0000000000000000beef",
+            "mapping": {
+                "⟦PERSON_1⟧": "Maria Musterfrau",
+                "⟦ADDRESS_1⟧": "Lindenweg 12\n6900 Bregenz",
+                "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201",
+                "⟦SVNR_1⟧": "4568 150392"
+            },
+            "plaintext": "{\"\\u27e6PERSON_1\\u27e7\":\"Maria Musterfrau\",\"\\u27e6ADDRESS_1\\u27e7\":\"Lindenweg 12\\n6900 Bregenz\",\"\\u27e6IBAN_1\\u27e7\":\"AT61 1904 3002 3457 3201\",\"\\u27e6SVNR_1\\u27e7\":\"4568 150392\"}",
+            "payload": "82ojHswW5lNTwM46OF36VqShqlCyHBSp33LJiQgtHBww3nlEjdGzgK3F0pX0XRSfFq/6nxGVdLclZZGxpGrJFbkJm/mfXuybROsbEVDrJ7qQ2S87boJzr3ooQMt5cNXtnPPKyyQx6goMUsTum1Tdm0yGnaE81DZ6JSViM3MMbs0oToLRtsc4RjIluNCQsMsJD7zlvgaIqpLuYteZDrQrjKMuKBVZ08TQLXnpfxVtftezv2NfHYIOfCP9LFB5jh0PDly9noWwLDfkPMq1oj7z3Yboa6ScOwGXsYZl"
+        },
+        {
+            "case": "empty mapping",
+            "id": "00000000000000000000000000000001",
+            "mapping": {},
+            "plaintext": "[]",
+            "payload": "cacCJMhlIzkj2lxZ7ftIdAR4Um1vKSQdCdORNnxFD+nRiLR+0a8uJ6o4"
+        },
+        {
+            "case": "escaping",
+            "id": "00000000000000000000000000000002",
+            "mapping": {
+                "⟦OTHER_1⟧": "\"quoted\" / back\\slash \u2028 <tag> é 😀 \t"
+            },
+            "plaintext": "{\"\\u27e6OTHER_1\\u27e7\":\"\\\"quoted\\\" \\/ back\\\\slash \\u2028 <tag> \\u00e9 \\ud83d\\ude00 \\t\"}",
+            "payload": "kBhmPEu/4NH88s+Dv5QjXHZCUIEKhxY+NtBsvroaHXi+Wj3SF9w/A3+NKZ80gxZ0WaKx4ON5SHQq9/PvfSW67X8xRcTgSzZuIFsrrnshGwpkJyvLOhF2YmCaz47D160tTX8atk8U4La5UXhtbCumRhoaW/mdAFnIlD1vjX9+Gg=="
+        }
+    ],
+    "failures": [
+        {
+            "case": "wrong id (AAD)",
+            "id": "00000000000000000000000000000099",
+            "payload": "82ojHswW5lNTwM46OF36VqShqlCyHBSp33LJiQgtHBww3nlEjdGzgK3F0pX0XRSfFq/6nxGVdLclZZGxpGrJFbkJm/mfXuybROsbEVDrJ7qQ2S87boJzr3ooQMt5cNXtnPPKyyQx6goMUsTum1Tdm0yGnaE81DZ6JSViM3MMbs0oToLRtsc4RjIluNCQsMsJD7zlvgaIqpLuYteZDrQrjKMuKBVZ08TQLXnpfxVtftezv2NfHYIOfCP9LFB5jh0PDly9noWwLDfkPMq1oj7z3Yboa6ScOwGXsYZl",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry cannot be decrypted (wrong key or tampered data)."
+            }
+        },
+        {
+            "case": "tampered ciphertext",
+            "id": "f3a1c0de5eed0000000000000000beef",
+            "payload": "82ojHswW5lNTwM46OF36VqShqlCyHBSp33LJiQgtHRww3nlEjdGzgK3F0pX0XRSfFq/6nxGVdLclZZGxpGrJFbkJm/mfXuybROsbEVDrJ7qQ2S87boJzr3ooQMt5cNXtnPPKyyQx6goMUsTum1Tdm0yGnaE81DZ6JSViM3MMbs0oToLRtsc4RjIluNCQsMsJD7zlvgaIqpLuYteZDrQrjKMuKBVZ08TQLXnpfxVtftezv2NfHYIOfCP9LFB5jh0PDly9noWwLDfkPMq1oj7z3Yboa6ScOwGXsYZl",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry cannot be decrypted (wrong key or tampered data)."
+            }
+        },
+        {
+            "case": "nonce only",
+            "id": "f3a1c0de5eed0000000000000000beef",
+            "payload": "82ojHswW5lNTwM46OF36VqShqlCyHBSp",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry cannot be decrypted (wrong key or tampered data)."
+            }
+        },
+        {
+            "case": "empty payload",
+            "id": "f3a1c0de5eed0000000000000000beef",
+            "payload": "",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry cannot be decrypted (wrong key or tampered data)."
+            }
+        },
+        {
+            "case": "wrong key",
+            "id": "f3a1c0de5eed0000000000000000beef",
+            "payload": "82ojHswW5lNTwM46OF36VqShqlCyHBSp33LJiQgtHBww3nlEjdGzgK3F0pX0XRSfFq/6nxGVdLclZZGxpGrJFbkJm/mfXuybROsbEVDrJ7qQ2S87boJzr3ooQMt5cNXtnPPKyyQx6goMUsTum1Tdm0yGnaE81DZ6JSViM3MMbs0oToLRtsc4RjIluNCQsMsJD7zlvgaIqpLuYteZDrQrjKMuKBVZ08TQLXnpfxVtftezv2NfHYIOfCP9LFB5jh0PDly9noWwLDfkPMq1oj7z3Yboa6ScOwGXsYZl",
+            "key": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry cannot be decrypted (wrong key or tampered data)."
+            }
+        },
+        {
+            "case": "corrupt: not an object",
+            "id": "0000000000000000000000000000c0de",
+            "payload": "fqLzQBnKpCTlRXf5pN6kDusAXXOZfX5Aa202MfLy7ucn6K0T8MM/pV6mZs/uIA==",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry is corrupt."
+            }
+        },
+        {
+            "case": "corrupt: nested value",
+            "id": "0000000000000000000000000000c0de",
+            "payload": "P4sKbvO6aSMqSIGqnNv1Zrxlt8etotUi6SAjFACvwMeenijxN6A0KCi0VGy0EEIh152pTuQUwGfYqJtQzLIyZ3QDmkY=",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry is corrupt."
+            }
+        },
+        {
+            "case": "corrupt: number value",
+            "id": "0000000000000000000000000000c0de",
+            "payload": "NzeIgTDSc5q3kBLKgCfplcYwhCpGYzJjoOfW2l4wJFuGOcLPcmz6aSlkMLLosHV3KJHuXBrExQdLYAyO",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry is corrupt."
+            }
+        },
+        {
+            "case": "corrupt: list",
+            "id": "0000000000000000000000000000c0de",
+            "payload": "ozA5XMClOtEgdzZUav/0c1lAk3Vku/dcbWbNecDacU+7++2DRGiLND9Dzh3ZCWEfMw==",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry is corrupt."
+            }
+        },
+        {
+            "case": "corrupt: invalid json",
+            "id": "0000000000000000000000000000c0de",
+            "payload": "nh/0J17hMA3jUEVr2z1j16ZuVl9lGB6PvmkZ1jltAC3r60cOnpRcHTo=",
+            "error": {
+                "class": "VaultException",
+                "code": 0,
+                "message": "Vault entry is corrupt."
+            }
+        }
+    ],
+    "keyLength": {
+        "error": {
+            "class": "InvalidArgumentException",
+            "code": 0,
+            "message": "The key must be 32 bytes long."
+        }
+    },
+    "ttl": {
+        "error": {
+            "class": "InvalidArgumentException",
+            "code": 0,
+            "message": "The TTL must be positive."
+        }
+    }
+}
