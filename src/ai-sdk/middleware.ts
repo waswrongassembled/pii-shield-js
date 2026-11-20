@@ -53,6 +53,12 @@ export interface PiiShieldMiddlewareOptions {
   onRedact?: (event: RedactEvent) => void;
   /** Called with the placeholders the model invented (PHP: result metadata `pii_shield.unknown_placeholders`). */
   onRestore?: (event: RestoreEvent) => void;
+  /**
+   * Send file, reasoning-file and custom parts of assistant messages unchanged. They cannot be redacted, and
+   * the caller controls the history, so by default they are rejected (fail closed). Enable this only if such
+   * parts come from the model itself and never carry personal data the provider has not seen.
+   */
+  allowOpaqueAssistantParts?: boolean;
 }
 
 /** Joins all texts of a prompt for one consistent redaction; contains no character any detector matches. */
@@ -83,7 +89,7 @@ export function piiShieldMiddleware(
   shield: Redactor | VaultRedactor,
   options: PiiShieldMiddlewareOptions = {},
 ): LanguageModelMiddleware {
-  const { vault = false, onRedact, onRestore } = options;
+  const { vault = false, onRedact, onRestore, allowOpaqueAssistantParts = false } = options;
   if (vault && !('redactToVault' in shield)) {
     throw new TypeError('The vault option needs a shield with redactToVault() (a PiiShield with a vault).');
   }
@@ -103,11 +109,15 @@ export function piiShieldMiddleware(
 
     transformParams: async ({ params }) => {
       const texts: string[] = [];
-      mapPromptTexts(params.prompt, (text) => {
-        texts.push(text);
+      mapPromptTexts(
+        params.prompt,
+        (text) => {
+          texts.push(text);
 
-        return text;
-      });
+          return text;
+        },
+        allowOpaqueAssistantParts,
+      );
       if (texts.length === 0) {
         return params;
       }
@@ -124,7 +134,7 @@ export function piiShieldMiddleware(
       }
 
       let next = 0;
-      const prompt = mapPromptTexts(params.prompt, () => redactedTexts[next++] ?? '');
+      const prompt = mapPromptTexts(params.prompt, () => redactedTexts[next++] ?? '', allowOpaqueAssistantParts);
       const redacted: CallOptions = { ...params, prompt };
       redactions.set(redacted, redaction);
       onRedact?.({
@@ -341,9 +351,10 @@ function isJsonMode(params: CallOptions): boolean {
 /**
  * Returns a copy of the prompt with every redactable text replaced by `replace(text)`, called in prompt order.
  *
- * @throws UnsupportedContentError for files in user and tool messages
+ * @throws UnsupportedContentError for files in user and tool messages, and for file, reasoning-file and
+ *   custom parts of assistant messages unless `allowOpaque` is set
  */
-function mapPromptTexts(prompt: Prompt, replace: (text: string) => string): Prompt {
+function mapPromptTexts(prompt: Prompt, replace: (text: string) => string, allowOpaque: boolean): Prompt {
   return prompt.map((message): Message => {
     switch (message.role) {
       case 'system':
@@ -371,8 +382,18 @@ function mapPromptTexts(prompt: Prompt, replace: (text: string) => string): Prom
                 return { ...part, input: mapStrings(part.input, replace) };
               case 'tool-result':
                 return { ...part, output: mapToolOutput(part.output, replace) };
-              default:
-                return part;
+              case 'file':
+              case 'reasoning-file':
+              case 'custom':
+                if (allowOpaque) {
+                  return part;
+                }
+                throw unsupported(part.type);
+              default: {
+                // Fail closed on part types added by later AI SDK versions.
+                const unknownPart: { type: string } = part;
+                throw unsupported(unknownPart.type);
+              }
             }
           }),
         };
@@ -416,9 +437,12 @@ function mapToolOutput(output: ToolResultOutput, replace: (text: string) => stri
 }
 
 /**
- * Applies `replace` to every string in arrays and plain objects (JSON values), depth-first in key order;
- * keys stay. Returns the same reference when nothing changed (PHP's StructuredRestorer); other values
- * (numbers, dates, class instances) are left as they are.
+ * Applies `replace` to every string in arrays and plain objects (JSON values), depth-first in key order,
+ * each key before its value: keys can carry personal data too (e.g. `{"Maria Musterfrau": 3}`). Returns the
+ * same reference when nothing changed (PHP's StructuredRestorer, which keeps keys); other values (numbers,
+ * dates, class instances) are left as they are.
+ *
+ * @throws UnsupportedContentError if two keys of one object map to the same key
  */
 function mapStrings<T>(value: T, replace: (text: string) => string): T {
   if (typeof value === 'string') {
@@ -432,10 +456,16 @@ function mapStrings<T>(value: T, replace: (text: string) => string): T {
   if (isPlainObject(value)) {
     let changed = false;
     const entries: [string, unknown][] = [];
+    const keys = new Set<string>();
     for (const [key, item] of Object.entries(value)) {
+      const mappedKey = replace(key);
+      if (keys.has(mappedKey)) {
+        throw new UnsupportedContentError('Two keys of a JSON object map to the same key; it cannot be redacted.');
+      }
+      keys.add(mappedKey);
       const mapped = mapStrings(item, replace);
-      changed ||= mapped !== item;
-      entries.push([key, mapped]);
+      changed ||= mappedKey !== key || mapped !== item;
+      entries.push([mappedKey, mapped]);
     }
 
     return (changed ? Object.fromEntries(entries) : value) as T;
