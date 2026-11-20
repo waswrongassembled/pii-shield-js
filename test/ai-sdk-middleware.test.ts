@@ -278,7 +278,7 @@ describe('piiShieldMiddleware: prompt', () => {
       expect.objectContaining({ type: 'reasoning', text: 'Die IBAN ⟦IBAN_1⟧ prüfen.' }),
       expect.objectContaining({
         type: 'tool-call',
-        input: { iban: '⟦IBAN_1⟧', 'AT61 1904 3002 3457 3201': 1 },
+        input: { iban: '⟦IBAN_1⟧', '⟦IBAN_1⟧': 1 },
       }),
     ]);
     expect(prompt?.[2]?.content).toEqual([
@@ -355,8 +355,26 @@ describe('piiShieldMiddleware: prompt', () => {
     expect(mock.doGenerateCalls).toEqual([]);
   });
 
-  it('passes files of assistant messages unchanged (they came from the model)', async () => {
+  it.each([
+    ['file', { type: 'file', data: 'AAAA', mediaType: 'image/png' }],
+    ['reasoning-file', { type: 'reasoning-file', data: 'AAAA', mediaType: 'image/png' }],
+    ['custom', { type: 'custom', kind: 'test.custom' }],
+  ] as const)('rejects %s parts of assistant messages by default (fail closed)', async (type, part) => {
     const { mock, model } = setup([text('ok')]);
+
+    await expect(
+      model.doGenerate({
+        prompt: [
+          { role: 'user', content: [{ type: 'text', text: 'Male ein Bild.' }] },
+          { role: 'assistant', content: [part as never] },
+        ],
+      }),
+    ).rejects.toMatchObject({ code: 'UNSUPPORTED_CONTENT', message: expect.stringContaining(`"${type}"`) as string });
+    expect(mock.doGenerateCalls).toEqual([]);
+  });
+
+  it('passes files of assistant messages unchanged when allowed', async () => {
+    const { mock, model } = setup([text('ok')], { allowOpaqueAssistantParts: true });
 
     await generateText({
       model,
@@ -369,6 +387,38 @@ describe('piiShieldMiddleware: prompt', () => {
     expect(mock.doGenerateCalls[0]?.prompt[1]?.content).toEqual([
       expect.objectContaining({ type: 'file', mediaType: 'image/png' }),
     ]);
+  });
+
+  it('redacts keys of JSON tool outputs and tool call inputs', async () => {
+    const { mock, model } = setup([text('ok')]);
+
+    await model.doGenerate({
+      prompt: [
+        { role: 'user', content: [{ type: 'text', text: 'Wer ist das?' }] },
+        {
+          role: 'assistant',
+          content: [
+            { type: 'tool-call', toolCallId: 'c1', toolName: 'lookup', input: { 'AT61 1904 3002 3457 3201': 'IBAN' } },
+          ],
+        },
+        {
+          role: 'tool',
+          content: [
+            {
+              type: 'tool-result',
+              toolCallId: 'c1',
+              toolName: 'lookup',
+              output: { type: 'json', value: { 'SVNR 4568 150392': { iban: 'AT61 1904 3002 3457 3201' } } },
+            },
+          ],
+        },
+      ],
+    });
+
+    const sent = JSON.stringify(mock.doGenerateCalls[0]?.prompt);
+    expect(sent).not.toContain('AT61 1904');
+    expect(sent).not.toContain('150392');
+    expect(sent).toContain('⟦IBAN_1⟧');
   });
 
   it('keeps the mapping out of the call options and redacts every step of a tool loop', async () => {
@@ -481,7 +531,7 @@ describe('piiShieldMiddleware: prompt', () => {
 });
 
 describe('piiShieldMiddleware: generate answer', () => {
-  it('restores reasoning, tool call inputs (values only) and provider tool results; keeps metadata', async () => {
+  it('restores reasoning, tool call inputs (keys and values) and provider tool results; keeps metadata', async () => {
     const providerMetadata = { mock: { signature: '⟦PERSON_1⟧' } };
     const { model, middleware } = setup([]);
     const answer = generated(
@@ -519,7 +569,8 @@ describe('piiShieldMiddleware: generate answer', () => {
         toolName: 'pay',
         input: JSON.stringify({
           iban: 'AT61 1904 3002 3457 3201',
-          '⟦IBAN_1⟧': ['Bahnhofstraße 7/3\n4020 Linz', 1, null],
+          // Keys are restored too.
+          'AT61 1904 3002 3457 3201': ['Bahnhofstraße 7/3\n4020 Linz', 1, null],
         }),
       },
       { type: 'tool-call', toolCallId: 'c2', toolName: 'pay', input: '{"amount": 1}' },
