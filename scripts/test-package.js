@@ -1,5 +1,5 @@
 /*
- * Smoke test of the published package: packs it, installs the tarball into a temp project (offline, from
+ * Smoke test of the published package: packs it, installs the tarball into a temp project (preferring the npm cache, from
  * the npm cache that `npm ci` filled) and checks that every export subpath loads with `import` and
  * `require()` (require(esm), Node >= 22.12), that the types resolve with `tsc` (NodeNext), that the
  * server finds docs/openapi.yaml from the installed path and that `npx pii-shield --help` runs.
@@ -51,7 +51,7 @@ try {
   const project = join(dir, 'project');
   run('mkdir', ['-p', project], dir);
   writeFileSync(join(project, 'package.json'), JSON.stringify({ name: 'smoke', private: true, type: 'module' }));
-  run(npm, ['install', '--offline', '--no-audit', '--no-fund', '--no-package-lock', tarball, ...peers], project);
+  run(npm, ['install', '--prefer-offline', '--no-audit', '--no-fund', '--no-package-lock', tarball, ...peers], project);
 
   writeFileSync(
     join(project, 'esm.js'),

@@ -145,7 +145,7 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
 11. **HTTP service** (done): `ServiceApi` (`src/service/`, shared by HTTP and MCP) with the endpoints, JSON shapes, status codes and messages of `docs/openapi.yaml` (contract test validates every response against the spec), `startServer()` / `createRequestListener()` on plain `node:http` with PHP's RequestGuard rules, graceful shutdown; `pii-shield serve` / `pii-shield mcp [--http]` CLI configured from PHP's env names (docs/server.md).
 12. **Release** (prepared; the first publish is still to do, see docs/RELEASING.md):
     - README (quick start, interop, offsets, limits; its `ts` examples are type-checked by `test/readme-examples.test.ts`) and CHANGELOG;
-    - package checks: `npm run check:package` (publint, are-the-types-wrong with the ESM-only profile), `npm run test:package` (installs the packed tarball offline and imports every subpath via `import` and `require()`, type-checks them, runs the bin), both in CI;
+    - package checks: `npm run check:package` (publint, are-the-types-wrong with the ESM-only profile), `npm run test:package` (installs the packed tarball, preferring the npm cache, and imports every subpath via `import` and `require()`, type-checks them, runs the bin), both in CI;
     - `npm publish --provenance` via GitHub Actions (`.github/workflows/release.yml`, trusted publishing, tag must match the version);
     - version 0.1.0; a Dockerfile for the service (docs/server.md).
 
