@@ -17,7 +17,26 @@ export { TaxNumberDetector } from './detectors/tax-number.js';
 export { createEntity, typeName, type Entity } from './entity.js';
 export { defaultDetectors, EntityExtractor, surname, type EntityExtractorOptions } from './entity-extractor.js';
 export { ENTITY_TYPES, EntityType, isEntityType } from './entity-type.js';
-export { PiiShieldError, VaultError, type VaultErrorCode } from './errors.js';
+export { LearningError, type LearningErrorCode, PiiShieldError, VaultError, type VaultErrorCode } from './errors.js';
+export { CustomEntityDetector, LearnedTypesDetector } from './learning/custom-entity-detector.js';
+export {
+  CUSTOM_ENTITY_TYPE_LIMITS,
+  type CustomEntityType,
+  customEntityTypeFromJSON,
+  type CustomEntityTypeInit,
+  defineCustomEntityType,
+} from './learning/custom-entity-type.js';
+export { EntityLearner, type EntityLearnerOptions, type LearningResult } from './learning/entity-learner.js';
+export { JsonFileCustomEntityStore, type JsonFileCustomEntityStoreOptions } from './learning/json-file-store.js';
+export { patternViolation } from './learning/pattern-grammar.js';
+export { learnPattern } from './learning/pattern-learner.js';
+export {
+  type CustomEntityStore,
+  InMemoryCustomEntityStore,
+  KeyValueCustomEntityStore,
+  type KeyValueCustomEntityStoreOptions,
+  type KeyValueStore,
+} from './learning/store.js';
 export { PartialMask, type PartialMaskOptions } from './masking/partial-mask.js';
 export type { Masker, MaskingFunction, MaskingStrategy } from './masking/strategy.js';
 export { TypeLabelMask, type TypeLabelMaskOptions } from './masking/type-label-mask.js';

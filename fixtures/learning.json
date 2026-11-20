@@ -1830,5 +1830,932 @@
                 }
             ]
         }
-    }
+    },
+    "grammarExtra": {
+        "probes": [
+            "a",
+            "b",
+            "c",
+            "z",
+            "-",
+            "!",
+            "/",
+            "]",
+            "^",
+            "~",
+            "\\~",
+            "\r",
+            "",
+            "᠎",
+            "\u2029",
+            "﻿",
+            "١",
+            "́",
+            "é",
+            "‿",
+            "_",
+            "ſ",
+            "K",
+            "²",
+            "Ⅻ",
+            "😀",
+            "",
+            "aa",
+            "ab"
+        ],
+        "cases": [
+            {
+                "pattern": "[a-\\d]",
+                "violation": null,
+                "compiles": false,
+                "fullMatches": null
+            },
+            {
+                "pattern": "[\\s-z]",
+                "violation": null,
+                "compiles": false,
+                "fullMatches": null
+            },
+            {
+                "pattern": "[a-\\-]",
+                "violation": null,
+                "compiles": false,
+                "fullMatches": null
+            },
+            {
+                "pattern": "[!-\\-]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "-",
+                    "!"
+                ]
+            },
+            {
+                "pattern": "[\\--\\/]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "-",
+                    "/"
+                ]
+            },
+            {
+                "pattern": "[]-a]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "]",
+                    "^",
+                    "_"
+                ]
+            },
+            {
+                "pattern": "[a-b-c]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "b",
+                    "c",
+                    "-"
+                ]
+            },
+            {
+                "pattern": "[\\W]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "-",
+                    "!",
+                    "/",
+                    "]",
+                    "^",
+                    "~",
+                    "\r",
+                    "",
+                    "᠎",
+                    "\u2029",
+                    "﻿",
+                    "😀"
+                ]
+            },
+            {
+                "pattern": "[a\\W]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "-",
+                    "!",
+                    "/",
+                    "]",
+                    "^",
+                    "~",
+                    "\r",
+                    "",
+                    "᠎",
+                    "\u2029",
+                    "﻿",
+                    "😀"
+                ]
+            },
+            {
+                "pattern": "[^\\W]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "b",
+                    "c",
+                    "z",
+                    "١",
+                    "́",
+                    "‿",
+                    "_",
+                    "ſ",
+                    "K",
+                    "²",
+                    "Ⅻ"
+                ]
+            },
+            {
+                "pattern": "[\\S\\d]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "b",
+                    "c",
+                    "z",
+                    "-",
+                    "!",
+                    "/",
+                    "]",
+                    "^",
+                    "~",
+                    "﻿",
+                    "١",
+                    "́",
+                    "‿",
+                    "_",
+                    "ſ",
+                    "K",
+                    "²",
+                    "Ⅻ",
+                    "😀"
+                ]
+            },
+            {
+                "pattern": "[^\\s\\S]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": []
+            },
+            {
+                "pattern": "[\\s\\W]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "-",
+                    "!",
+                    "/",
+                    "]",
+                    "^",
+                    "~",
+                    "\r",
+                    "",
+                    "᠎",
+                    "\u2029",
+                    "﻿",
+                    "😀"
+                ]
+            },
+            {
+                "pattern": "[^a\\W]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "b",
+                    "c",
+                    "z",
+                    "١",
+                    "́",
+                    "‿",
+                    "_",
+                    "ſ",
+                    "K",
+                    "²",
+                    "Ⅻ"
+                ]
+            },
+            {
+                "pattern": "[\\-]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "-"
+                ]
+            },
+            {
+                "pattern": "\\-",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "-"
+                ]
+            },
+            {
+                "pattern": "[\\^]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "^"
+                ]
+            },
+            {
+                "pattern": "[\\]]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "]"
+                ]
+            },
+            {
+                "pattern": "a~b",
+                "violation": null,
+                "compiles": false,
+                "fullMatches": null
+            },
+            {
+                "pattern": "[~]",
+                "violation": null,
+                "compiles": false,
+                "fullMatches": null
+            },
+            {
+                "pattern": "\\\\~",
+                "violation": null,
+                "compiles": false,
+                "fullMatches": null
+            },
+            {
+                "pattern": "\\~",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "~"
+                ]
+            },
+            {
+                "pattern": ".",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "b",
+                    "c",
+                    "z",
+                    "-",
+                    "!",
+                    "/",
+                    "]",
+                    "^",
+                    "~",
+                    "\r",
+                    "",
+                    "᠎",
+                    "\u2029",
+                    "﻿",
+                    "١",
+                    "́",
+                    "‿",
+                    "_",
+                    "ſ",
+                    "K",
+                    "²",
+                    "Ⅻ",
+                    "😀"
+                ]
+            },
+            {
+                "pattern": "\\s",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "\r",
+                    "",
+                    "᠎",
+                    "\u2029"
+                ]
+            },
+            {
+                "pattern": "\\S",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "b",
+                    "c",
+                    "z",
+                    "-",
+                    "!",
+                    "/",
+                    "]",
+                    "^",
+                    "~",
+                    "﻿",
+                    "١",
+                    "́",
+                    "‿",
+                    "_",
+                    "ſ",
+                    "K",
+                    "²",
+                    "Ⅻ",
+                    "😀"
+                ]
+            },
+            {
+                "pattern": "\\w",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "b",
+                    "c",
+                    "z",
+                    "١",
+                    "́",
+                    "‿",
+                    "_",
+                    "ſ",
+                    "K",
+                    "²",
+                    "Ⅻ"
+                ]
+            },
+            {
+                "pattern": "\\W",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "-",
+                    "!",
+                    "/",
+                    "]",
+                    "^",
+                    "~",
+                    "\r",
+                    "",
+                    "᠎",
+                    "\u2029",
+                    "﻿",
+                    "😀"
+                ]
+            },
+            {
+                "pattern": "\\d",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "١"
+                ]
+            },
+            {
+                "pattern": "\\D",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "b",
+                    "c",
+                    "z",
+                    "-",
+                    "!",
+                    "/",
+                    "]",
+                    "^",
+                    "~",
+                    "\r",
+                    "",
+                    "᠎",
+                    "\u2029",
+                    "﻿",
+                    "́",
+                    "‿",
+                    "_",
+                    "ſ",
+                    "K",
+                    "²",
+                    "Ⅻ",
+                    "😀"
+                ]
+            },
+            {
+                "pattern": "[\\w]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "b",
+                    "c",
+                    "z",
+                    "١",
+                    "́",
+                    "‿",
+                    "_",
+                    "ſ",
+                    "K",
+                    "²",
+                    "Ⅻ"
+                ]
+            },
+            {
+                "pattern": "[\\s]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "\r",
+                    "",
+                    "᠎",
+                    "\u2029"
+                ]
+            },
+            {
+                "pattern": "[\\d]",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "١"
+                ]
+            },
+            {
+                "pattern": "|a",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    ""
+                ]
+            },
+            {
+                "pattern": "x{0}|a",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    ""
+                ]
+            },
+            {
+                "pattern": "a{0,1}",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    ""
+                ]
+            },
+            {
+                "pattern": "a{1,}",
+                "violation": null,
+                "compiles": true,
+                "fullMatches": [
+                    "a",
+                    "aa"
+                ]
+            }
+        ]
+    },
+    "search": [
+        {
+            "pattern": "VN-\\d{4}-\\d{6}",
+            "example": "VN-2026-000417",
+            "text": "VN-2026-000417 XVN-2026-000417 VN-2026-0004171 _VN-2026-000417 VN-2026-000417_ é VN-2026-000417é",
+            "result": [
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "VN-2026-000417",
+                    "offset": 0,
+                    "length": 14,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "VN-2026-000417",
+                    "offset": 48,
+                    "length": 14,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "VN-2026-000417",
+                    "offset": 63,
+                    "length": 14,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                }
+            ]
+        },
+        {
+            "pattern": "x{0}|VN-\\d+",
+            "example": "VN-1",
+            "text": "a VN-12 b VN-3",
+            "result": [
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "VN-12",
+                    "offset": 2,
+                    "length": 5,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "VN-3",
+                    "offset": 10,
+                    "length": 4,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                }
+            ]
+        },
+        {
+            "pattern": "|VN-\\d+",
+            "example": "VN-1",
+            "text": "VN-12, VN-3",
+            "result": [
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "VN-12",
+                    "offset": 0,
+                    "length": 5,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "VN-3",
+                    "offset": 7,
+                    "length": 4,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                }
+            ]
+        },
+        {
+            "pattern": "\\d{2}",
+            "example": "12",
+            "text": "12 123 ١٢ 1٢ 😀12😀 12",
+            "result": [
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "12",
+                    "offset": 0,
+                    "length": 2,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "١٢",
+                    "offset": 7,
+                    "length": 2,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "1٢",
+                    "offset": 10,
+                    "length": 2,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "12",
+                    "offset": 14,
+                    "length": 2,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "12",
+                    "offset": 18,
+                    "length": 2,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                }
+            ]
+        },
+        {
+            "pattern": "[A-Z]{2}\\s\\d{2}",
+            "example": "AB 12",
+            "text": "AB 12 AB 12 AB\u202812 AB﻿12 AB\n12",
+            "result": [
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "AB 12",
+                    "offset": 0,
+                    "length": 5,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "AB 12",
+                    "offset": 6,
+                    "length": 5,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "AB\u202812",
+                    "offset": 12,
+                    "length": 5,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "AB\n12",
+                    "offset": 24,
+                    "length": 5,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                }
+            ]
+        },
+        {
+            "pattern": "a.c",
+            "example": "abc",
+            "text": "abc a\nc a\u2028c a\rc",
+            "result": [
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "abc",
+                    "offset": 0,
+                    "length": 3,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "a\u2028c",
+                    "offset": 8,
+                    "length": 3,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "a\rc",
+                    "offset": 12,
+                    "length": 3,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                }
+            ]
+        },
+        {
+            "pattern": "\\w+",
+            "example": "ab",
+            "text": "ab éx a‿b",
+            "result": [
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "ab",
+                    "offset": 0,
+                    "length": 2,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "éx",
+                    "offset": 3,
+                    "length": 3,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                },
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "a‿b",
+                    "offset": 7,
+                    "length": 3,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                }
+            ]
+        },
+        {
+            "pattern": "\\s+-",
+            "example": " -",
+            "text": "   - x",
+            "result": [
+                {
+                    "type": "OTHER",
+                    "label": "SOME_NUMBER",
+                    "value": "   -",
+                    "offset": 0,
+                    "length": 4,
+                    "confidence": 0.75,
+                    "detector": "custom"
+                }
+            ]
+        }
+    ],
+    "budget": [
+        {
+            "pattern": ".{0,45}.{0,45}.{0,45}",
+            "example": "a",
+            "result": ".{0,45}.{0,45}.{0,45}"
+        },
+        {
+            "pattern": ".{0,46}.{0,46}.{0,46}",
+            "example": "a",
+            "error": {
+                "class": "LearningFailedException",
+                "code": 0,
+                "message": "The pattern .{0,46}.{0,46}.{0,46} is not allowed: it takes too long on adversarial input."
+            }
+        },
+        {
+            "pattern": ".{0,100}.{0,100}",
+            "example": "a",
+            "result": ".{0,100}.{0,100}"
+        },
+        {
+            "pattern": ".{0,100}.{0,100}.{0,100}",
+            "example": "a",
+            "error": {
+                "class": "LearningFailedException",
+                "code": 0,
+                "message": "The pattern .{0,100}.{0,100}.{0,100} is not allowed: it takes too long on adversarial input."
+            }
+        },
+        {
+            "pattern": "(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)",
+            "example": "aaaaaaaaaaaaaaa",
+            "result": "(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)"
+        },
+        {
+            "pattern": "(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)",
+            "example": "aaaaaaaaaaaaaaaa",
+            "error": {
+                "class": "LearningFailedException",
+                "code": 0,
+                "message": "The pattern (?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a)(?:a|a) is not allowed: it takes too long on adversarial input."
+            }
+        },
+        {
+            "pattern": "\\d{0,100}\\d{0,100}\\d{0,100}",
+            "example": "1",
+            "error": {
+                "class": "LearningFailedException",
+                "code": 0,
+                "message": "The pattern \\d{0,100}\\d{0,100}\\d{0,100} is not allowed: it takes too long on adversarial input."
+            }
+        },
+        {
+            "pattern": "\\s{0,100}\\s{0,100}x",
+            "example": " x",
+            "result": "\\s{0,100}\\s{0,100}x"
+        },
+        {
+            "pattern": "\\w+\\w{0,99}",
+            "example": "a",
+            "result": "\\w+\\w{0,99}"
+        },
+        {
+            "pattern": ".*.{0,100}",
+            "example": "a",
+            "result": ".*.{0,100}"
+        },
+        {
+            "pattern": "\\S+@x\\.at",
+            "example": "a@x.at",
+            "result": "\\S+@x\\.at"
+        },
+        {
+            "pattern": "\\s+X",
+            "example": " X",
+            "result": "\\s+X"
+        },
+        {
+            "pattern": "\\s+\\d",
+            "example": " 1",
+            "result": "\\s+\\d"
+        },
+        {
+            "pattern": "[a\\W]{0,50}[a\\W]{0,50}[a\\W]{0,50}",
+            "example": "a",
+            "error": {
+                "class": "LearningFailedException",
+                "code": 0,
+                "message": "The pattern [a\\W]{0,50}[a\\W]{0,50}[a\\W]{0,50} is not allowed: it takes too long on adversarial input."
+            }
+        },
+        {
+            "pattern": "\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}",
+            "example": "12345678",
+            "result": "\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}\\d{1,3}"
+        },
+        {
+            "pattern": "\\d{0,100}\\d{0,100}\\d{0,100}X",
+            "example": "1X",
+            "result": "\\d{0,100}\\d{0,100}\\d{0,100}X"
+        }
+    ],
+    "learnerEscapes": [
+        {
+            "examples": [
+                "AB:12"
+            ],
+            "error": {
+                "class": "LearningFailedException",
+                "code": 0,
+                "message": "The pattern [A-Z]{2}\\:\\d{2} is not allowed: the escape \\: is not allowed (use \\d \\w \\s or escape a special character)."
+            }
+        },
+        {
+            "examples": [
+                "AB=12"
+            ],
+            "error": {
+                "class": "LearningFailedException",
+                "code": 0,
+                "message": "The pattern [A-Z]{2}\\=\\d{2} is not allowed: the escape \\= is not allowed (use \\d \\w \\s or escape a special character)."
+            }
+        },
+        {
+            "examples": [
+                "AB!12"
+            ],
+            "error": {
+                "class": "LearningFailedException",
+                "code": 0,
+                "message": "The pattern [A-Z]{2}\\!\\d{2} is not allowed: the escape \\! is not allowed (use \\d \\w \\s or escape a special character)."
+            }
+        },
+        {
+            "examples": [
+                "AB#12"
+            ],
+            "result": "[A-Z]{2}\\#\\d{2}"
+        },
+        {
+            "examples": [
+                "AB~12"
+            ],
+            "result": "[A-Z]{2}\\~\\d{2}"
+        },
+        {
+            "examples": [
+                "AB.12"
+            ],
+            "result": "[A-Z]{2}\\.\\d{2}"
+        },
+        {
+            "examples": [
+                "١٢-AB"
+            ],
+            "result": "١٢-[A-Z]{2}"
+        },
+        {
+            "examples": [
+                "AB 12"
+            ],
+            "result": "[A-Z]{2} \\d{2}"
+        }
+    ]
 }
