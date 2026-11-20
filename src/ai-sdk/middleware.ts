@@ -61,8 +61,20 @@ export interface PiiShieldMiddlewareOptions {
   allowOpaqueAssistantParts?: boolean;
 }
 
-/** Joins all texts of a prompt for one consistent redaction; contains no character any detector matches. */
-const SEPARATOR = '\n\u{2063}\u{2063}\u{2063}\n';
+/**
+ * Joins all texts of a prompt for one consistent redaction: PHP's separator, contains no character any
+ * detector matches. PHP throws when a text contains it (clarifile/pii-shield, PiiShieldProcessor); here it
+ * gets longer until splitting the joined text gives the texts back (docs/DEVIATIONS.md).
+ */
+function joinTexts(texts: readonly string[]): { joined: string; separator: string } {
+  for (let marks = 3; ; marks++) {
+    const separator = `\n${'\u{2063}'.repeat(marks)}\n`;
+    const joined = texts.join(separator);
+    if (joined.split(separator).length === texts.length) {
+      return { joined, separator };
+    }
+  }
+}
 
 /**
  * AI SDK language model middleware: the provider only ever sees placeholders, the caller gets the answer
@@ -122,13 +134,13 @@ export function piiShieldMiddleware(
         return params;
       }
 
-      const joined = texts.join(SEPARATOR);
+      const { joined, separator } = joinTexts(texts);
       const detectOptions = params.abortSignal === undefined ? {} : { signal: params.abortSignal };
       const redaction =
         vault && 'redactToVault' in shield
           ? await shield.redactToVault(joined, detectOptions)
           : await shield.redactAsync(joined, detectOptions);
-      const redactedTexts = redaction.redactedText.split(SEPARATOR);
+      const redactedTexts = redaction.redactedText.split(separator);
       if (redactedTexts.length !== texts.length) {
         throw new Error('Redaction changed the message structure.');
       }

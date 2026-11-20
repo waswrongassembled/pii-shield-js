@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 First release: a TypeScript port of [`clarifile/pii-shield`](https://github.com/massiveart/clarifile/tree/main/packages/pii-shield) (PHP), wire-compatible with it. Intended differences are listed in [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
 
+Privacy and crash bugs of the PHP package are fixed rather than reproduced: names with characters such as ř or Cyrillic letters are no longer dropped by the model detector (as in clarifile PR #95), SVNRs, tax IDs, phone numbers and IBANs written with non-ASCII digits are redacted, tool results of every agent step are redacted, a prompt containing the internal separator no longer fails, and long digit runs, crafted placeholders and learned patterns cannot block or crash redaction. See "PHP bugs fixed in the port" in [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
+
 ### Added
 
 - Validators with checksums: `isValidAtSvnr()`, `isValidIban()`, `isValidDeTaxId()`.

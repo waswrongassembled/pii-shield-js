@@ -177,10 +177,54 @@ export const FIXTURE_NAMES = [
   'model',
 ] as const satisfies readonly (keyof FixtureFiles)[];
 
+/**
+ * Fixture cases whose PHP result is a privacy or crash bug the port fixes instead of reproducing
+ * (docs/DEVIATIONS.md, "PHP bugs fixed in the port"). loadFixture() leaves them out of the parity tests;
+ * test/php-bugs-fixed.test.ts checks the port's result. An entry matches a case whose "<list key>: <case>"
+ * ends with it.
+ */
+export const FIXED_IN_PORT = [
+  'AtSvnrValidator: extra 4',
+  'AtSvnrValidator: extra 5',
+  'pcre: fullwidth SVNR',
+  'pcre: phone with Unicode digits only',
+  'pcre: fullwidth tax id',
+  'pcre: IBAN with a Unicode digit',
+  'file number with Unicode digits only',
+] as const;
+
+/** The parsed fixture file without the FIXED_IN_PORT cases. */
 export function loadFixture<K extends keyof FixtureFiles>(name: K): FixtureFiles[K] {
+  return withoutFixedCases(loadRawFixture(name), '') as FixtureFiles[K];
+}
+
+/** The parsed fixture file as PHP wrote it. */
+export function loadRawFixture<K extends keyof FixtureFiles>(name: K): FixtureFiles[K] {
   const url = new URL(`../../fixtures/${name}.json`, import.meta.url);
 
   return JSON.parse(readFileSync(url, 'utf8')) as FixtureFiles[K];
+}
+
+/** Whether a fixture case of the list under `key` is one of FIXED_IN_PORT. */
+export function isFixedInPort(key: string, name: string): boolean {
+  return FIXED_IN_PORT.some((entry) => `${key}: ${name}`.endsWith(entry));
+}
+
+function withoutFixedCases(value: unknown, key: string): unknown {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item) => !(isRecord(item) && typeof item['case'] === 'string' && isFixedInPort(key, item['case'])))
+      .map((item) => withoutFixedCases(item, key));
+  }
+  if (isRecord(value)) {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, withoutFixedCases(v, k)]));
+  }
+
+  return value;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /** Substring by code point offset and length, the way PHP's mb_substr() counts. */

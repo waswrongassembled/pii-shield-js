@@ -295,7 +295,7 @@ export class ModelDetector implements AsyncDetector {
       if (type === EntityType.Other && DATE_OR_TIME.test(value)) {
         continue; // dates and times must survive; only birth dates are personal (BIRTH_DATE, keyword check)
       }
-      if (type === EntityType.FileNumber && !/[0-9]/.test(value)) {
+      if (type === EntityType.FileNumber && !/\p{Nd}/u.test(value)) {
         continue; // document titles such as "ANONYMVERFÜGUNG"
       }
       for (const match of text.matchAll(groundingPattern(value))) {
