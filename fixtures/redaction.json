@@ -3864,6 +3864,117 @@
                 ]
             },
             "mask": "Herrn\n[PERSON]\n\n[PERSON] und Muster"
+        },
+        {
+            "case": "extra: two full names with the same surname",
+            "text": "Herrn\nJohann Beispielmann\n\nFrau\nMaria Beispielmann\nLindenweg 12\n6900 Bregenz\n\nSehr geehrter Herr Beispielmann, Beispielmann",
+            "redaction": {
+                "redactedText": "Herrn\n⟦PERSON_1⟧\n\nFrau\n⟦PERSON_2⟧\n⟦ADDRESS_1⟧\n\nSehr geehrter Herr ⟦PERSON_1⟧, ⟦PERSON_1⟧",
+                "vault": {
+                    "⟦PERSON_1⟧": "Johann Beispielmann",
+                    "⟦PERSON_2⟧": "Maria Beispielmann",
+                    "⟦ADDRESS_1⟧": "Lindenweg 12\n6900 Bregenz"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Johann Beispielmann",
+                        "offset": 6,
+                        "length": 19,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Beispielmann",
+                        "offset": 32,
+                        "length": 18,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "ADDRESS",
+                        "label": null,
+                        "value": "Lindenweg 12\n6900 Bregenz",
+                        "offset": 51,
+                        "length": 25,
+                        "confidence": 0.8,
+                        "detector": "postal_address"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann",
+                        "offset": 97,
+                        "length": 12,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Beispielmann",
+                        "offset": 111,
+                        "length": 12,
+                        "confidence": 0.5,
+                        "detector": "propagation"
+                    }
+                ]
+            },
+            "mask": "Herrn\n[PERSON]\n\nFrau\n[PERSON]\n[ADDRESS]\n\nSehr geehrter Herr [PERSON], [PERSON]"
+        },
+        {
+            "case": "extra: surname alias with different type counters",
+            "text": "Sehr geehrte Frau Musterfrau, IBAN AT61 1904 3002 3457 3201.\n\nFrau\nMaria Musterfrau\n\nHerrn\nJohann Beispielmann",
+            "redaction": {
+                "redactedText": "Sehr geehrte Frau ⟦PERSON_1⟧, IBAN ⟦IBAN_1⟧.\n\nFrau\n⟦PERSON_1⟧\n\nHerrn\n⟦PERSON_2⟧",
+                "vault": {
+                    "⟦PERSON_1⟧": "Maria Musterfrau",
+                    "⟦PERSON_2⟧": "Johann Beispielmann",
+                    "⟦IBAN_1⟧": "AT61 1904 3002 3457 3201"
+                },
+                "entities": [
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Musterfrau",
+                        "offset": 18,
+                        "length": 10,
+                        "confidence": 0.6,
+                        "detector": "salutation_inline"
+                    },
+                    {
+                        "type": "IBAN",
+                        "label": null,
+                        "value": "AT61 1904 3002 3457 3201",
+                        "offset": 35,
+                        "length": 24,
+                        "confidence": 1.0,
+                        "detector": "iban"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Maria Musterfrau",
+                        "offset": 67,
+                        "length": 16,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    },
+                    {
+                        "type": "PERSON",
+                        "label": null,
+                        "value": "Johann Beispielmann",
+                        "offset": 91,
+                        "length": 19,
+                        "confidence": 0.8,
+                        "detector": "salutation_block"
+                    }
+                ]
+            },
+            "mask": "Sehr geehrte Frau [PERSON], IBAN AT61 **** **** **** 3201.\n\nFrau\n[PERSON]\n\nHerrn\n[PERSON]"
         }
     ],
     "configured": [
@@ -4185,6 +4296,272 @@
                 "unusedPlaceholders": [
                     "⟦PERSON_1⟧",
                     "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "no-break space before number",
+                "text": "An ⟦PERSON 1⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦PERSON 1⟧"
+                    }
+                ],
+                "restored": "An Maria Musterfrau.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "unicode spaces around type",
+                "text": "An ⟦ PERSON_1　⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦ PERSON_1　⟧"
+                    }
+                ],
+                "restored": "An Maria Musterfrau.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "no-break space inside type stays (replacement without /u)",
+                "text": "An ⟦INSURANCE NUMBER_2⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦INSURANCE NUMBER_2⟧",
+                        "original": "⟦INSURANCE NUMBER_2⟧"
+                    }
+                ],
+                "restored": "An ⟦INSURANCE NUMBER_2⟧.",
+                "unknownPlaceholders": [
+                    "⟦INSURANCE NUMBER_2⟧"
+                ],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": false
+            },
+            {
+                "case": "NEL inside type stays",
+                "text": "An ⟦INSURANCENUMBER_2⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦INSURANCENUMBER_2⟧",
+                        "original": "⟦INSURANCENUMBER_2⟧"
+                    }
+                ],
+                "restored": "An ⟦INSURANCENUMBER_2⟧.",
+                "unknownPlaceholders": [
+                    "⟦INSURANCENUMBER_2⟧"
+                ],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": false
+            },
+            {
+                "case": "line separator inside type stays",
+                "text": "An ⟦INSURANCE\u2028NUMBER_2⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦INSURANCE\u2028NUMBER_2⟧",
+                        "original": "⟦INSURANCE\u2028NUMBER_2⟧"
+                    }
+                ],
+                "restored": "An ⟦INSURANCE\u2028NUMBER_2⟧.",
+                "unknownPlaceholders": [
+                    "⟦INSURANCE\u2028NUMBER_2⟧"
+                ],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": false
+            },
+            {
+                "case": "vertical tab and form feed inside type",
+                "text": "An ⟦INSURANCE\u000bNUMBER_2⟧ und ⟦INSURANCE\fNUMBER_2⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦INSURANCE_NUMBER_2⟧",
+                        "original": "⟦INSURANCE\u000bNUMBER_2⟧"
+                    },
+                    {
+                        "canonical": "⟦INSURANCE_NUMBER_2⟧",
+                        "original": "⟦INSURANCE\fNUMBER_2⟧"
+                    }
+                ],
+                "restored": "An VN-2025-998812 und VN-2025-998812.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "BOM is no whitespace",
+                "text": "An ⟦﻿PERSON_1⟧.",
+                "placeholders": [],
+                "restored": "An ⟦﻿PERSON_1⟧.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "Unicode digits in number",
+                "text": "An ⟦PERSON_١⟧ und ⟦PERSON_１⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_١⟧",
+                        "original": "⟦PERSON_١⟧"
+                    },
+                    {
+                        "canonical": "⟦PERSON_１⟧",
+                        "original": "⟦PERSON_１⟧"
+                    }
+                ],
+                "restored": "An ⟦PERSON_١⟧ und ⟦PERSON_１⟧.",
+                "unknownPlaceholders": [
+                    "⟦PERSON_١⟧",
+                    "⟦PERSON_１⟧"
+                ],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": false
+            },
+            {
+                "case": "leading zero in number",
+                "text": "An ⟦PERSON_01⟧.",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_01⟧",
+                        "original": "⟦PERSON_01⟧"
+                    }
+                ],
+                "restored": "An ⟦PERSON_01⟧.",
+                "unknownPlaceholders": [
+                    "⟦PERSON_01⟧"
+                ],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": false
+            },
+            {
+                "case": "Kelvin sign and long s are no letters",
+                "text": "An ⟦KEY_1⟧ und ⟦PERſON_1⟧.",
+                "placeholders": [],
+                "restored": "An ⟦KEY_1⟧ und ⟦PERſON_1⟧.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "nested and tripled brackets",
+                "text": "An ⟦⟦PERSON_1⟧⟧ und [[[IBAN_1]]].",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦PERSON_1⟧"
+                    },
+                    {
+                        "canonical": "⟦IBAN_1⟧",
+                        "original": "[[IBAN_1]]"
+                    }
+                ],
+                "restored": "An ⟦Maria Musterfrau⟧ und [AT61 1904 3002 3457 3201].",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "double backslash, double underscore, trailing separator",
+                "text": "An ⟦PERSON\\\\_1⟧, ⟦INSURANCE__NUMBER_2⟧, ⟦PERSON_1_⟧.",
+                "placeholders": [],
+                "restored": "An ⟦PERSON\\\\_1⟧, ⟦INSURANCE__NUMBER_2⟧, ⟦PERSON_1_⟧.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "escaped space and mixed separators",
+                "text": "An ⟦INSURANCE\\ NUMBER_2⟧ und ⟦INSURANCE_ NUMBER _2⟧.",
+                "placeholders": [],
+                "restored": "An ⟦INSURANCE\\ NUMBER_2⟧ und ⟦INSURANCE_ NUMBER _2⟧.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
+                    "⟦PERSON_1⟧",
+                    "⟦IBAN_1⟧",
+                    "⟦INSURANCE_NUMBER_2⟧",
+                    "⟦VN2_NUMBER_3_1⟧"
+                ],
+                "isClean": true
+            },
+            {
+                "case": "astral characters around placeholders",
+                "text": "An 😀⟦PERSON_1⟧😀 und 𝐀[[iban 1]].",
+                "placeholders": [
+                    {
+                        "canonical": "⟦PERSON_1⟧",
+                        "original": "⟦PERSON_1⟧"
+                    },
+                    {
+                        "canonical": "⟦IBAN_1⟧",
+                        "original": "[[iban 1]]"
+                    }
+                ],
+                "restored": "An 😀Maria Musterfrau😀 und 𝐀AT61 1904 3002 3457 3201.",
+                "unknownPlaceholders": [],
+                "unusedPlaceholders": [
                     "⟦INSURANCE_NUMBER_2⟧",
                     "⟦VN2_NUMBER_3_1⟧"
                 ],

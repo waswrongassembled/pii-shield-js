@@ -17,6 +17,20 @@ export { TaxNumberDetector } from './detectors/tax-number.js';
 export { createEntity, typeName, type Entity } from './entity.js';
 export { defaultDetectors, EntityExtractor, surname, type EntityExtractorOptions } from './entity-extractor.js';
 export { ENTITY_TYPES, EntityType, isEntityType } from './entity-type.js';
+export { PartialMask, type PartialMaskOptions } from './masking/partial-mask.js';
+export type { Masker, MaskingFunction, MaskingStrategy } from './masking/strategy.js';
+export { TypeLabelMask, type TypeLabelMaskOptions } from './masking/type-label-mask.js';
+export { defaultMaskingStrategies, PiiMasker, type PiiMaskerOptions } from './pii-masker.js';
+export { NullPiiShield, PiiShield, type PiiShieldOptions } from './pii-shield.js';
+export { formatPlaceholder, replacePlaceholders } from './placeholder.js';
+export {
+  foundTypes,
+  type PlaceholderMapping,
+  type RedactionResult,
+  type Redactor,
+  restorePlaceholders,
+  type RestoreResult,
+} from './redaction.js';
 export { isValidAtSvnr } from './validators/at-svnr.js';
 export { isValidDeTaxId } from './validators/de-tax-id.js';
 export { isValidIban } from './validators/iban.js';
