@@ -13,7 +13,8 @@ const USAGE = `Usage:
   pii-shield mcp                                      MCP server over STDIO
   pii-shield mcp --http [--port <port>] [--host <host>]   MCP server over Streamable HTTP (/mcp)
 
-Configuration: environment variables, see docs/server.md (PII_SERVICE_TOKEN, PII_SERVICE_VAULT_KEY, ...).`;
+Configuration: environment variables (PII_SERVICE_TOKEN, PII_SERVICE_VAULT_KEY, ...), see
+https://github.com/waswrongassembled/pii-shield-js/blob/main/docs/server.md`;
 
 /** Runs the CLI; resolves with the exit code once a server stops (or at once on an error). */
 export async function main(

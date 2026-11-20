@@ -1,0 +1,56 @@
+name: Release
+
+# Publishes to npm with Trusted Publishing (OIDC, no NPM_TOKEN) and provenance. One-time setup and the
+# release steps: docs/RELEASING.md. No dependency cache here: a release must not build from a cache that
+# other workflows can write.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: # run it on a tag (pick the tag in "Use workflow from")
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Tag matches package.json version
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          if [ "$GITHUB_REF_TYPE" != tag ] || [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Run on tag v$version (got $GITHUB_REF_TYPE '$GITHUB_REF_NAME')"
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run check
+      - run: npm run check:package
+      - run: npm run test:package
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing and provenance
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: npm supports Trusted Publishing (>= 11.5.1)
+        run: |
+          npm --version
+          node -e 'const [a, b, c] = process.argv[1].split(".").map(Number); process.exit(a > 11 || (a === 11 && (b > 5 || (b === 5 && c >= 1))) ? 0 : 1)' "$(npm --version)"
+      - run: npm ci
+      - run: npm publish --provenance --access public # prepublishOnly builds dist
