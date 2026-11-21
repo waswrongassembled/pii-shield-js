@@ -35,7 +35,7 @@ jobs:
         image: postgres:17
         env:
           POSTGRES_USER: pii_shield
-          POSTGRES_PASSWORD: pii_shield
+          POSTGRES_PASSWORD: ci-only-secret # not a substring of table names: the service masks the password in messages
           POSTGRES_DB: pii_shield_test
         ports:
           - 5432:5432
@@ -45,7 +45,7 @@ jobs:
           --health-timeout 5s
           --health-retries 15
     env:
-      PII_TEST_DATABASE_URL: postgres://pii_shield:pii_shield@127.0.0.1:5432/pii_shield_test
+      PII_TEST_DATABASE_URL: postgres://pii_shield:ci-only-secret@127.0.0.1:5432/pii_shield_test
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
