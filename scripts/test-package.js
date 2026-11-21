@@ -2,7 +2,8 @@
  * Smoke test of the published package: packs it, installs the tarball into a temp project (preferring the npm cache, from
  * the npm cache that `npm ci` filled) and checks that every export subpath loads with `import` and
  * `require()` (require(esm), Node >= 22.12), that the types resolve with `tsc` (NodeNext), that the
- * server finds docs/openapi.yaml from the installed path and that `npx pii-shield --help` runs.
+ * server finds docs/openapi.yaml from the installed path, that the conformance suites run on the
+ * built-in memory stores and that `npx pii-shield --help` runs.
  *
  * Usage: npm run test:package (builds first). PII_SHIELD_KEEP_TMP=1 keeps the temp project.
  * All data is synthetic.
@@ -68,6 +69,12 @@ assert.equal(result.redactedText, 'IBAN \\u{27E6}IBAN_1\\u{27E7}');
 assert.equal(shield.restore(result.redactedText, result).text, 'IBAN AT61 1904 3002 3457 3201');
 const { openapiDocument } = await import(${JSON.stringify(`${pkg.name}/server`)});
 assert.match(await openapiDocument(), /^openapi: /m);
+const { postgresSchema } = await import(${JSON.stringify(`${pkg.name}/postgres`)});
+assert.match(postgresSchema(), /CREATE TABLE IF NOT EXISTS "pii_shield_vault"/);
+const { verifyCustomEntityStore, verifyVaultStorage } = await import(${JSON.stringify(`${pkg.name}/testing`)});
+const { InMemoryCustomEntityStore, MemoryVaultStorage } = await import(${JSON.stringify(pkg.name)});
+await verifyVaultStorage(() => new MemoryVaultStorage());
+await verifyCustomEntityStore(() => new InMemoryCustomEntityStore());
 console.log('esm ok');
 `,
   );

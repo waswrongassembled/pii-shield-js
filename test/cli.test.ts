@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { main } from '../src/cli.js';
 import { generateVaultKey, ModelLocation, type ModelPrompt } from '../src/index.js';
+import { postgresSchema } from '../src/postgres/index.js';
 import { ConfigError, serviceFromEnv } from '../src/server/config.js';
 import { providerModel, validEndpoint } from '../src/server/model-providers.js';
 import { postJson, rawRequest } from './support/http.js';
@@ -77,7 +78,7 @@ describe('serviceFromEnv', () => {
 
   it.each([
     [{ PII_SERVICE_VAULT_KEY: 'too short' }, 'PII_SERVICE_VAULT_KEY must be 32 bytes, base64-encoded.'],
-    [{ PII_SERVICE_VAULT_STORE: 'filesystem' }, 'PII_SERVICE_VAULT_STORE must be "memory" or "redis".'],
+    [{ PII_SERVICE_VAULT_STORE: 'filesystem' }, 'PII_SERVICE_VAULT_STORE must be "memory", "redis" or "postgres".'],
     [
       { PII_SERVICE_VAULT_STORE: 'redis' },
       'The redis vault store needs PII_SERVICE_VAULT_KEY, or mappings cannot be read after a restart.',
@@ -87,7 +88,26 @@ describe('serviceFromEnv', () => {
       'Set PII_SERVICE_REDIS_URL to use the redis store.',
     ],
     [{ PII_SERVICE_LEARNED_STORE: 'file' }, 'Set PII_SERVICE_LEARNED_TYPES to the JSON file of learned types.'],
-    [{ PII_SERVICE_LEARNED_STORE: 'sqlite' }, 'PII_SERVICE_LEARNED_STORE must be "file", "memory" or "redis".'],
+    [
+      { PII_SERVICE_LEARNED_STORE: 'sqlite' },
+      'PII_SERVICE_LEARNED_STORE must be "file", "memory", "redis" or "postgres".',
+    ],
+    [
+      { PII_SERVICE_VAULT_STORE: 'postgres' },
+      'The postgres vault store needs PII_SERVICE_VAULT_KEY, or mappings cannot be read after a restart.',
+    ],
+    [
+      { PII_SERVICE_VAULT_STORE: 'postgres', PII_SERVICE_VAULT_KEY: KEY },
+      'Set PII_SERVICE_DATABASE_URL to use the postgres store.',
+    ],
+    [
+      { PII_SERVICE_LEARNED_STORE: 'postgres', PII_SERVICE_DATABASE_URL: 'mysql://app:s3cret-pw@db/app' },
+      'PII_SERVICE_DATABASE_URL must be a postgres:// or postgresql:// URL.',
+    ],
+    [
+      { PII_SERVICE_LEARNED_STORE: 'postgres', PII_SERVICE_DATABASE_URL: 'postgres://app:s3cret-pw@[db/app' },
+      'PII_SERVICE_DATABASE_URL must be a postgres:// or postgresql:// URL.',
+    ],
     [{ PII_SERVICE_PORT: '80a' }, 'PII_SERVICE_PORT must be an integer of at least 0.'],
     [{ PII_SERVICE_VAULT_TTL: '0' }, 'PII_SERVICE_VAULT_TTL must be an integer of at least 1.'],
     [
@@ -115,7 +135,25 @@ describe('serviceFromEnv', () => {
     const error = await serviceFromEnv(env).catch((e: unknown) => e);
 
     expect(error).toBeInstanceOf(ConfigError);
-    expect((error as Error).message).toBe(message);
+    expect((error as Error).message).toMatch(message);
+  });
+
+  it('never puts the database URL or its password into an error', async () => {
+    // Port 1: the connection is refused at once.
+    const url = 'postgres://app:s3cret%2Dpw@127.0.0.1:1/app';
+    for (const env of [
+      { PII_SERVICE_VAULT_STORE: 'postgres', PII_SERVICE_VAULT_KEY: KEY, PII_SERVICE_DATABASE_URL: url },
+      { PII_SERVICE_LEARNED_STORE: 'postgres', PII_SERVICE_DATABASE_URL: url },
+    ]) {
+      const error = await serviceFromEnv(env).catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(ConfigError);
+      expect((error as Error).message).toMatch(/cannot be read: .*ECONNREFUSED/);
+      expect(JSON.stringify({ message: (error as Error).message, stack: (error as Error).stack })).not.toMatch(
+        /s3cret|postgres:\/\//,
+      );
+      expect((error as Error).cause).toBeUndefined();
+    }
   });
 
   it('configures model detection from the environment', async () => {
@@ -292,6 +330,18 @@ describe('pii-shield CLI', () => {
 
     expect(await main(argv, {})).toBe(2);
     expect(stderr.join('')).toMatch(/Usage:|--port must be/);
+  });
+
+  it('prints the Postgres DDL', async () => {
+    const stdout: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      stdout.push(String(chunk));
+
+      return true;
+    });
+
+    expect(await main(['db-schema'], {})).toBe(0);
+    expect(stdout.join('')).toBe(postgresSchema());
   });
 
   it('prints help', async () => {

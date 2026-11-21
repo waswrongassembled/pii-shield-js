@@ -27,6 +27,34 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  # The Postgres stores, the conformance suite and the service on a real database (skipped elsewhere).
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: pii_shield
+          POSTGRES_PASSWORD: pii_shield
+          POSTGRES_DB: pii_shield_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pii_shield -d pii_shield_test"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      PII_TEST_DATABASE_URL: postgres://pii_shield:pii_shield@127.0.0.1:5432/pii_shield_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run test/postgres.test.ts test/conformance.test.ts test/server-postgres.test.ts
+
   package:
     runs-on: ubuntu-latest
     steps:
