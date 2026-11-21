@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `@waswrongassembled/pii-shield/postgres`: `PostgresVaultStorage` and `PostgresCustomEntityStore` keep the vault and the learned types in PostgreSQL. They take a driver-agnostic `query(text, params)` function (a `pg` `Pool` or `PoolClient` fits) and work inside the caller's transaction. Vault ids are hashed, expiry uses the database clock, and `purgeExpired()` deletes expired rows. Learned types are stored one row per type. `postgresSchema()` returns idempotent DDL for your migrations; the library never runs DDL itself.
+- `@waswrongassembled/pii-shield/testing`: `verifyVaultStorage()` and `verifyCustomEntityStore()` check a store against the contracts, with `node:assert` only, under any test runner. Every built-in store passes them.
+- Service: `PII_SERVICE_VAULT_STORE=postgres`, `PII_SERVICE_LEARNED_STORE=postgres` and `PII_SERVICE_DATABASE_URL` (optional peer `pg` 8). Expired vault rows are purged at start and every `PII_SERVICE_VAULT_PURGE_INTERVAL` seconds (default 300). `pii-shield db-schema` prints the DDL. `serviceFromEnv()` takes an `onError` hook for background errors.
+- docs/stores.md: the store contracts, writing your own adapter, PostgreSQL and data protection.
+
+### Changed
+
+- The contracts of `VaultStorage` and `CustomEntityStore` are documented in their TSDoc: expired entries read as `null`, `put()`/`save()` overwrite, removing an unknown id or name is a no-op, payloads are binary-safe, `all()` is sorted in byte order, and concurrent writes of different names are kept. `KeyValueCustomEntityStore` does not keep the last rule across processes; its TSDoc now says so.
+
 ## [0.1.1] - 2026-11-21
 
 No changes to the library code. First release through the release workflow: staged on npm with Trusted Publishing and a provenance attestation, approved with 2FA (0.1.0 was published by hand without provenance).

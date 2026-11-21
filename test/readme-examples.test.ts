@@ -12,12 +12,15 @@ function tsBlocks(markdown: string): string[] {
   return [...markdown.matchAll(/^```ts\n([\s\S]*?)^```$/gm)].map((m) => m[1] ?? '');
 }
 
-describe('README examples', () => {
+describe('README and docs/stores.md examples', () => {
   it('type-check against the source', { timeout: 120_000 }, async () => {
-    const blocks = tsBlocks(await readFile(join(root, 'README.md'), 'utf8'));
-    expect(blocks.length).toBeGreaterThanOrEqual(8);
+    const readme = tsBlocks(await readFile(join(root, 'README.md'), 'utf8'));
+    const stores = tsBlocks(await readFile(join(root, 'docs', 'stores.md'), 'utf8'));
+    expect(readme.length).toBeGreaterThanOrEqual(8);
+    expect(stores.length).toBeGreaterThanOrEqual(3);
+    const blocks = [...readme, ...stores];
 
-    // Inside the repo, so that node_modules (ai, ioredis, the MCP SDK) resolve; ignored by git and lint.
+    // Inside the repo, so that node_modules (ai, ioredis, pg, the MCP SDK) resolve; ignored by git and lint.
     const dir = await mkdtemp(join(root, '.readme-examples-'));
     try {
       await Promise.all(

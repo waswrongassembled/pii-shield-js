@@ -148,7 +148,7 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
     - package checks: `npm run check:package` (publint, are-the-types-wrong with the ESM-only profile), `npm run test:package` (installs the packed tarball, preferring the npm cache, and imports every subpath via `import` and `require()`, type-checks them, runs the bin), both in CI;
     - `npm publish --provenance` via GitHub Actions (`.github/workflows/release.yml`, trusted publishing, tag must match the version);
     - version 0.1.0; a Dockerfile for the service (docs/server.md).
-13. **Store adapters, Postgres** (planned): a product that already runs Postgres keeps the vault and the learned types in its own database, in its own connection pool and, where it wants, in its own transactions. Not in PHP (it has PSR-6 cache and file stores only): a Node-only addition, listed in docs/DEVIATIONS.md.
+13. **Store adapters, Postgres** (done): a product that already runs Postgres keeps the vault and the learned types in its own database, in its own connection pool and, where it wants, in its own transactions. Not in PHP (it has PSR-6 cache and file stores only): a Node-only addition, listed in docs/DEVIATIONS.md.
     - **Store contracts first.** Write down in the TSDoc of `VaultStorage` and `CustomEntityStore` what every backend must do:
       - `get` of an unknown or expired id gives `null`. Expiry is checked on read, not left to a cleanup job.
       - `put` and `save` overwrite, `remove` of an unknown id is a no-op, payloads are binary-safe, and `all()` is sorted by name.
@@ -170,6 +170,14 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
         - The vault only ever stores ciphertext, so the key stays outside the database.
         - Learned types (`examples`, `counterExamples`) are plaintext and can hold real personal data. Treat their table as personal data: access rights, backups, deletion through `forget`.
         - Expired vault rows must really be deleted (storage limitation, Art. 5(1)(e) GDPR), not just hidden by the read filter: run `purgeExpired()` regularly.
+    - **Deviations from this plan, found while building it:**
+      - The conformance suites have no injectable clock. A database or Redis keeps its own time. Instead, an `expire(storage, id)` hook makes one entry expired (for Postgres: `UPDATE … SET expires_at = now() - interval '1 second'`); `realTimeExpiry: true` waits for a real 1 s TTL instead. Without either, the expiry rules are reported as skipped. `secondInstance` adds the rules that need two instances over one backend. The suites return `{ passed, skipped }`.
+      - The query function needs only `{ rows }`, no `rowCount`: `purgeExpired()` gets its count from `RETURNING` and `count(*)`, so wrappers around other drivers stay trivial. The purge locks with `FOR UPDATE SKIP LOCKED`, so purges of several servers neither block nor deadlock each other.
+      - `all()` sorts in JavaScript with `sortByName()`, not with `ORDER BY … COLLATE "C"`: one byte-order rule for every store, whatever the database collation.
+      - Table names are at most 48 characters per part, so the derived index name (`<table>_expires_at_idx`) stays within PostgreSQL's 63.
+      - The server never creates tables: `pii-shield db-schema` prints the DDL, and the service checks at start that both tables are readable. Silent DDL would need a privileged role and could create tables in the wrong database.
+      - No periodic `learner.refresh()` in the server: `ServiceApi` already refreshes the learned types before every detection request (as PHP reads its store each time), so shared stores are never stale there. docs/stores.md tells products that use `EntityLearner` directly to refresh per request or on a timer.
+      - Driver errors are not wrapped: products need their `code` (for example to retry `40001`). Errors from parsing stored data have fixed messages without `cause`. The docs say to log a pg error's `name` and `code` but not its `detail`. Error messages of `serviceFromEnv()` never contain the database URL or its password (validated with a fixed message, scrubbed from driver messages).
 
 ## Way of working
 
