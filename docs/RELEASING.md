@@ -1,6 +1,6 @@
 # Releasing
 
-Releases are published to npm as `@waswrongassembled/pii-shield` by `.github/workflows/release.yml` when a tag `v<version>` is pushed. The workflow uses npm Trusted Publishing (OIDC): there is no `NPM_TOKEN` secret, and every release gets a provenance attestation that links it to the commit and workflow run.
+Releases are staged on npm as `@waswrongassembled/pii-shield` by `.github/workflows/release.yml` when a tag `v<version>` is pushed, and go live when a maintainer approves them with 2FA ([staged publishing](https://docs.npmjs.com/staged-publishing)). The workflow uses npm Trusted Publishing (OIDC): there is no `NPM_TOKEN` secret, and every release gets a provenance attestation that links it to the commit and workflow run.
 
 ## One-time setup
 
@@ -11,6 +11,9 @@ Releases are published to npm as `@waswrongassembled/pii-shield` by `.github/wor
    - repository: `pii-shield-js`
    - workflow filename: `release.yml`
    - environment: `npm`
+   - permissions: `npm stage publish` only (the workflow runs `npm stage publish`; a plain `npm publish` from it is rejected)
+
+   A new configuration must be validated by a successful publish from the workflow within 2 days, otherwise it expires and has to be created again. The configuration for this package was created on 21.11.2026.
 
    If npmjs.com only offers these settings for a package that already exists, publish 0.1.0 once by hand from a clean checkout of the tagged commit (`npm ci && npm run check && npm publish --access public`, logged in as `waswrongassembled`), then configure the trusted publisher; every later release goes through the workflow. The workflow skips publishing a version that is already on npm, so the tag of a hand-published version still runs green (0.1.0 was published this way). Check the current npm documentation on trusted publishing for this.
 
@@ -29,7 +32,8 @@ Releases are published to npm as `@waswrongassembled/pii-shield` by `.github/wor
    git push origin v0.1.0
    ```
 
-4. The workflow checks that the tag equals `v` + the `package.json` version, runs all checks and the tarball smoke test, waits for the `npm` environment approval and publishes with `npm publish --provenance --access public`. A run started by hand (`workflow_dispatch`) must be started on the tag.
-5. Check the result: `npm view @waswrongassembled/pii-shield version`, and the provenance badge on npmjs.com. Create the GitHub release from the tag with the CHANGELOG section as notes.
+4. The workflow checks that the tag equals `v` + the `package.json` version and runs all checks and the tarball smoke test. Then it waits for the `npm` environment approval: Actions → the run → **Review deployments** → tick `npm` → **Approve and deploy**. It stages the version with `npm stage publish`. A run started by hand (`workflow_dispatch`) must be started on the tag.
+5. Approve the staged version with 2FA: npmjs.com → account settings → **Staged Packages** → **Approve**, or `npm stage list @waswrongassembled/pii-shield` and `npm stage approve <stage-id>`. Approving needs an interactive login, OIDC tokens cannot approve.
+6. Check the result: `npm view @waswrongassembled/pii-shield version`, and the provenance badge on npmjs.com. Create the GitHub release from the tag with the CHANGELOG section as notes.
 
 A version cannot be published twice. If the publish step fails after npm accepted the package, do not re-tag: fix forward with the next patch version.
