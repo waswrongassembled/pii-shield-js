@@ -148,6 +148,28 @@ Known gap: in PHP the vault sits behind PSR-6 (Symfony Cache adds a namespace an
     - package checks: `npm run check:package` (publint, are-the-types-wrong with the ESM-only profile), `npm run test:package` (installs the packed tarball, preferring the npm cache, and imports every subpath via `import` and `require()`, type-checks them, runs the bin), both in CI;
     - `npm publish --provenance` via GitHub Actions (`.github/workflows/release.yml`, trusted publishing, tag must match the version);
     - version 0.1.0; a Dockerfile for the service (docs/server.md).
+13. **Store adapters, Postgres** (planned): a product that already runs Postgres keeps the vault and the learned types in its own database, in its own connection pool and, where it wants, in its own transactions. Not in PHP (it has PSR-6 cache and file stores only): a Node-only addition, listed in docs/DEVIATIONS.md.
+    - **Store contracts first.** Write down in the TSDoc of `VaultStorage` and `CustomEntityStore` what every backend must do:
+      - `get` of an unknown or expired id gives `null`. Expiry is checked on read, not left to a cleanup job.
+      - `put` and `save` overwrite, `remove` of an unknown id is a no-op, payloads are binary-safe, and `all()` is sorted by name.
+      - Concurrent `save`/`remove` of different names must not lose each other's writes (the KeyValue store's read-modify-write does, see its TSDoc).
+    - **Conformance suites** in a new subpath `.../testing`: `verifyVaultStorage(factory)` and `verifyCustomEntityStore(factory)` check the contract with `node:assert` and an injectable clock where the backend allows it, so they run under any test runner without a vitest peer.
+      - Run them against every built-in store: memory, JSON file, KeyValue, Redis fake, Postgres.
+      - Custom adapters in a product run the same suite.
+    - **`.../postgres` subpath, no driver dependency:**
+      - `PostgresVaultStorage` and `PostgresCustomEntityStore` take a `query: (text, params) => Promise<{ rows }>` function. A `pg` `Pool`, a `PoolClient` inside a transaction, or a wrapper around another driver all fit.
+      - Table names are configurable and validated as identifiers, never interpolated unchecked. Values always go in as parameters.
+      - Schema: the vault table has `id text primary key, payload bytea, expires_at timestamptz` with an index on `expires_at`. Learned types get one row per name (`name text primary key, data jsonb`), so concurrent writes of different names do not conflict.
+      - The DDL is exported as SQL (`postgresSchema({ vaultTable, typesTable })`) for the product's own migrations. The library never runs migrations itself.
+      - Expiry uses the database clock (`now()`), not the app clock. `purgeExpired()` deletes expired rows, for a cron job or `pg_cron`.
+    - **Server:** `PII_SERVICE_VAULT_STORE=postgres` and `PII_SERVICE_LEARNED_STORE=postgres` with `PII_SERVICE_DATABASE_URL` in `serviceFromEnv` (optional peer `pg`, loaded lazily like `ioredis`). `ServiceApi` already takes any `Vault` and `EntityLearner` programmatically.
+    - **Tests:** unit tests over a fake `query`. Integration tests and the conformance suite run against a real Postgres: a CI service container, skipped locally without `PII_TEST_DATABASE_URL`.
+    - **docs/stores.md:**
+      - Write your own adapter: the contracts, the conformance suite, and a Postgres example in the product's transaction.
+      - Data protection:
+        - The vault only ever stores ciphertext, so the key stays outside the database.
+        - Learned types (`examples`, `counterExamples`) are plaintext and can hold real personal data. Treat their table as personal data: access rights, backups, deletion through `forget`.
+        - Expired vault rows must really be deleted (storage limitation, Art. 5(1)(e) GDPR), not just hidden by the read filter: run `purgeExpired()` regularly.
 
 ## Way of working
 
