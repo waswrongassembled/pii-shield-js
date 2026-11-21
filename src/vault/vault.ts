@@ -21,13 +21,29 @@ export interface Vault {
 }
 
 /**
- * Raw byte storage behind EncryptedVault (PHP's VaultStorageInterface). Only ever receives ciphertext.
- * Implement this to plug in any backend (Redis, database, files, ...).
+ * Raw byte storage behind EncryptedVault (PHP's VaultStorageInterface). Implement this to plug in any
+ * backend (Redis, a database, files, ...), and check it with `verifyVaultStorage()` from
+ * `@waswrongassembled/pii-shield/testing`.
+ *
+ * Behind EncryptedVault it only ever receives ciphertext: never use a storage on its own for mappings.
+ *
+ * Contract every implementation keeps:
+ * - Ids are arbitrary strings that may come from outside (a client's `vaultId`): map them to keys
+ *   safely, e.g. by hashing, never by building a path or a query from them.
+ * - Payloads are binary-safe (every byte value, any length) and copied: later changes to the array
+ *   passed to `put()` or returned by `get()` do not change the stored entry.
+ * - `put()` overwrites an existing entry, payload and expiry.
+ * - `get()` of an unknown or expired id gives `null`. Expiry is checked on read, not left to a cleanup
+ *   job; expired entries must still be deleted eventually (storage limitation, Art. 5(1)(e) GDPR).
+ * - `remove()` of an unknown id is a no-op.
+ * - A TTL that is not a positive integer rejects the Promise (see assertTtl()) before anything is stored.
  */
 export interface VaultStorage {
   /** @param ttlSeconds positive integer */
   put(id: string, payload: Uint8Array, ttlSeconds: number): Promise<void>;
+  /** @returns a copy of the payload, or null if the id is unknown or expired */
   get(id: string): Promise<Uint8Array | null>;
+  /** Deletes the entry; resolves also if there is none. */
   remove(id: string): Promise<void>;
 }
 
