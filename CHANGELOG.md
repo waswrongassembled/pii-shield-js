@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-21
+
 ### Added
 
 - `@waswrongassembled/pii-shield/postgres`: `PostgresVaultStorage` and `PostgresCustomEntityStore` keep the vault and the learned types in PostgreSQL. They take a driver-agnostic `query(text, params)` function (a `pg` `Pool` or `PoolClient` fits) and work inside the caller's transaction. Vault ids are hashed, expiry uses the database clock, and `purgeExpired()` deletes expired rows. Learned types are stored one row per type. `postgresSchema()` returns idempotent DDL for your migrations; the library never runs DDL itself.
@@ -44,6 +46,7 @@ Privacy and crash bugs of the PHP package are fixed rather than reproduced: name
 - `@waswrongassembled/pii-shield/mcp` (peer `@modelcontextprotocol/sdk`): the MCP tools `redact_text`, `restore_text`, `mask_text`, `learn_entity_type` and `list_entity_types` over STDIO and Streamable HTTP.
 - `pii-shield` CLI: `pii-shield serve`, `pii-shield mcp [--http]`, configured with PHP's environment variables.
 
-[Unreleased]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/waswrongassembled/pii-shield-js/releases/tag/v0.1.0
