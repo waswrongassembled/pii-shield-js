@@ -20,7 +20,8 @@
     "ai-sdk",
     "mcp",
     "iban",
-    "dach"
+    "dach",
+    "postgres"
   ],
   "repository": {
     "type": "git",
@@ -53,6 +54,14 @@
     "./mcp": {
       "types": "./dist/mcp/index.d.ts",
       "default": "./dist/mcp/index.js"
+    },
+    "./postgres": {
+      "types": "./dist/postgres/index.d.ts",
+      "default": "./dist/postgres/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -88,6 +97,7 @@
     "@eslint/js": "^10.0.1",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@types/node": "^22.20.5",
+    "@types/pg": "8.23.1",
     "@vitest/coverage-v8": "^5.1.1",
     "ai": "^7.0.177",
     "ajv": "^8.20.0",
@@ -95,6 +105,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.14.0",
     "ioredis": "^6.0.0",
+    "pg": "8.23.1",
     "prettier": "^3.10.1",
     "publint": "^0.3.25",
     "typescript": "~6.0.3",
@@ -108,7 +119,8 @@
   "peerDependencies": {
     "@modelcontextprotocol/sdk": "^1.32.0",
     "ai": "^7.0.0",
-    "ioredis": "^5.0.0 || ^6.0.0"
+    "ioredis": "^5.0.0 || ^6.0.0",
+    "pg": "^8.0.0"
   },
   "peerDependenciesMeta": {
     "@modelcontextprotocol/sdk": {
@@ -118,6 +130,9 @@
       "optional": true
     },
     "ioredis": {
+      "optional": true
+    },
+    "pg": {
       "optional": true
     }
   }

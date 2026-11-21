@@ -5,7 +5,7 @@ TypeScript port of [`clarifile/pii-shield`](https://github.com/massiveart/clarif
 
 Personal data in a text is replaced by placeholders (`⟦PERSON_1⟧`, `⟦IBAN_1⟧`) before the text goes to a language model; the answer gets the original values back. Detection runs locally (regular expressions plus checksums, optionally a model you choose), so the LLM provider only ever sees placeholders.
 
-**Status:** 0.1.0 (release prepared, see [docs/RELEASING.md](docs/RELEASING.md)), a feature-complete port of the PHP package: detection, redaction and restore, masking, an encrypted vault (in memory or Redis), learned entity types, a model-based detector, Vercel AI SDK middleware, an HTTP service, an MCP server and a CLI. See [CHANGELOG.md](CHANGELOG.md).
+**Status:** 0.1.0 (release prepared, see [docs/RELEASING.md](docs/RELEASING.md)), a feature-complete port of the PHP package: detection, redaction and restore, masking, an encrypted vault (in memory, Redis or PostgreSQL), learned entity types, a model-based detector, Vercel AI SDK middleware, an HTTP service, an MCP server and a CLI. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Install
 
@@ -15,13 +15,15 @@ npm install @waswrongassembled/pii-shield
 
 Requires Node >= 22.12. The package is ESM only; `require()` works on Node >= 22.12 (require(esm)). The core depends only on `@noble/ciphers`. Optional peer dependencies, needed only for their subpath:
 
-| Subpath                                     | Needs                        |
-| ------------------------------------------- | ---------------------------- |
-| `@waswrongassembled/pii-shield`             | -                            |
-| `@waswrongassembled/pii-shield/vault-redis` | `ioredis` (5 or 6)           |
-| `@waswrongassembled/pii-shield/ai-sdk`      | `ai` (7)                     |
-| `@waswrongassembled/pii-shield/mcp`         | `@modelcontextprotocol/sdk`  |
-| `@waswrongassembled/pii-shield/server`      | - (`/mcp` needs the MCP SDK) |
+| Subpath                                     | Needs                                         |
+| ------------------------------------------- | --------------------------------------------- |
+| `@waswrongassembled/pii-shield`             | -                                             |
+| `@waswrongassembled/pii-shield/vault-redis` | `ioredis` (5 or 6)                            |
+| `@waswrongassembled/pii-shield/postgres`    | - (any driver; `pg` fits)                     |
+| `@waswrongassembled/pii-shield/testing`     | -                                             |
+| `@waswrongassembled/pii-shield/ai-sdk`      | `ai` (7)                                      |
+| `@waswrongassembled/pii-shield/mcp`         | `@modelcontextprotocol/sdk`                   |
+| `@waswrongassembled/pii-shield/server`      | - (`/mcp` needs the MCP SDK, Postgres `pg` 8) |
 
 All examples use synthetic data. Every `ts` block in this README is type-checked against the source by `test/readme-examples.test.ts`.
 
@@ -95,7 +97,7 @@ const vault = new EncryptedVault({
 
 ## Learned entity types
 
-Teach a type from examples; a pattern is derived and checked against the counter-examples. Stores: `JsonFileCustomEntityStore` (same file format as PHP), `InMemoryCustomEntityStore`, `KeyValueCustomEntityStore`.
+Teach a type from examples; a pattern is derived and checked against the counter-examples. Stores: `JsonFileCustomEntityStore` (same file format as PHP), `InMemoryCustomEntityStore`, `KeyValueCustomEntityStore`, `PostgresCustomEntityStore` (see [docs/stores.md](docs/stores.md)).
 
 ```ts
 import { defaultDetectors, EntityLearner, JsonFileCustomEntityStore, PiiShield } from '@waswrongassembled/pii-shield';
@@ -111,6 +113,24 @@ type.pattern; // 'VN-\\d{4}-\\d{6}'
 const shield = new PiiShield({ detectors: [...defaultDetectors(), learner.detector()] });
 shield.redact('Polizze VN-2026-000999').redactedText; // 'Polizze ⟦INSURANCE_NUMBER_1⟧'
 ```
+
+## Stores: PostgreSQL and your own
+
+A product that already runs PostgreSQL can keep the vault and the learned types in its own database, in its own pool and, where it wants, in its own transactions. `@waswrongassembled/pii-shield/postgres` takes a `query(text, params)` function (a `pg` `Pool` or `PoolClient` fits) and never runs DDL: put `postgresSchema()` (or `pii-shield db-schema`) into your migrations.
+
+```ts
+import pg from 'pg';
+import { EncryptedVault, generateVaultKey } from '@waswrongassembled/pii-shield';
+import { PostgresCustomEntityStore, PostgresVaultStorage } from '@waswrongassembled/pii-shield/postgres';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const storage = new PostgresVaultStorage({ query: pool.query.bind(pool) });
+const vault = new EncryptedVault({ storage, key: generateVaultKey() }); // the database only sees ciphertext
+const store = new PostgresCustomEntityStore({ query: pool.query.bind(pool) });
+await storage.purgeExpired(); // run regularly: expired rows must really be deleted
+```
+
+The contracts every store keeps, the conformance suites for your own adapter (`verifyVaultStorage()`, `verifyCustomEntityStore()` from `@waswrongassembled/pii-shield/testing`, runner-agnostic), transactions, purging and data protection: [docs/stores.md](docs/stores.md).
 
 ## Model-based detection
 

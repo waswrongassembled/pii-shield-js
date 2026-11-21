@@ -4,6 +4,7 @@
  */
 import { parseArgs } from 'node:util';
 
+import { postgresSchema } from './postgres/index.js';
 import { ConfigError, serviceFromEnv } from './server/config.js';
 import { type McpHttpHandler, startServer } from './server/http-server.js';
 import type { ServiceApi } from './service/service-api.js';
@@ -12,6 +13,7 @@ const USAGE = `Usage:
   pii-shield serve [--port <port>] [--host <host>]   HTTP service: /v1 (and /mcp if @modelcontextprotocol/sdk is installed)
   pii-shield mcp                                      MCP server over STDIO
   pii-shield mcp --http [--port <port>] [--host <host>]   MCP server over Streamable HTTP (/mcp)
+  pii-shield db-schema                                SQL for the Postgres tables (stdout), e.g. | psql "$DATABASE_URL"
 
 Configuration: environment variables (PII_SERVICE_TOKEN, PII_SERVICE_VAULT_KEY, ...), see
 https://github.com/waswrongassembled/pii-shield-js/blob/main/docs/server.md`;
@@ -44,6 +46,12 @@ export async function main(
     process.stderr.write(`${USAGE}\n`);
 
     return values.help === true ? 0 : 2;
+  }
+  if (command === 'db-schema' && positionals.length === 1 && Object.keys(values).length === 0) {
+    // DDL is never run by the service itself: the operator (or the product's migrations) applies it.
+    process.stdout.write(postgresSchema());
+
+    return 0;
   }
   if (
     positionals.length > 1 ||

@@ -6,10 +6,10 @@ RUN npm ci --no-audit --no-fund
 COPY tsconfig.json tsconfig.build.json README.md LICENSE CHANGELOG.md ./
 COPY src ./src
 COPY docs/openapi.yaml ./docs/
-# The optional peers the service uses (/mcp, Redis), at the versions the repo tests against.
+# The optional peers the service uses (/mcp, Redis, Postgres), at the versions the repo tests against.
 RUN mkdir /out && npm run build \
   && npm pack --pack-destination /out \
-  && node -e "for (const p of ['@modelcontextprotocol/sdk', 'ioredis']) console.log(p + '@' + require('./node_modules/' + p + '/package.json').version)" > /out/peers.txt
+  && node -e "for (const p of ['@modelcontextprotocol/sdk', 'ioredis', 'pg']) console.log(p + '@' + require('./node_modules/' + p + '/package.json').version)" > /out/peers.txt
 
 FROM node:24-alpine
 ENV NODE_ENV=production \

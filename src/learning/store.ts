@@ -2,15 +2,32 @@ import { PiiShieldError } from '../errors.js';
 import { type CustomEntityType, customEntityTypeFromJSON } from './custom-entity-type.js';
 
 /**
- * Where learned entity types live. Default: JsonFileCustomEntityStore; any key-value backend
- * (Redis, a database) via KeyValueCustomEntityStore.
+ * Where learned entity types live. Built in: JsonFileCustomEntityStore, InMemoryCustomEntityStore,
+ * KeyValueCustomEntityStore (any key-value backend) and PostgresCustomEntityStore
+ * (`@waswrongassembled/pii-shield/postgres`). Check your own with `verifyCustomEntityStore()` from
+ * `@waswrongassembled/pii-shield/testing`.
+ *
+ * Examples and counter-examples are stored in plain text and may be personal data: treat the backend
+ * like any other store of personal data (access rights, backups, deletion through `remove()`).
+ *
+ * Contract every implementation keeps:
+ * - `all()` is sorted by name in byte order (sortByName(), PHP's strcmp()), independent of a
+ *   database collation.
+ * - `get()` of an unknown name gives `null`; `save()` replaces a type with the same name; `remove()` of
+ *   an unknown name is a no-op.
+ * - Types read back are validated (customEntityTypeFromJSON()) and equal to what was saved.
+ * - Concurrent `save()`/`remove()` calls for different names must not lose each other's writes.
+ *   KeyValueCustomEntityStore keeps this only for writes through one instance: its read-modify-write
+ *   of the whole list loses writes across processes unless you serialise them yourself.
  */
 export interface CustomEntityStore {
-  /** Sorted by name. */
+  /** Sorted by name (byte order). */
   all(): Promise<CustomEntityType[]>;
+  /** @returns null if there is no type with this name */
   get(name: string): Promise<CustomEntityType | null>;
   /** Adds the type or replaces the one with the same name. */
   save(type: CustomEntityType): Promise<void>;
+  /** Deletes the type; resolves also if there is none. */
   remove(name: string): Promise<void>;
 }
 
@@ -76,8 +93,10 @@ export interface KeyValueCustomEntityStoreOptions {
  * CacheCustomEntityStore). The value is the same JSON shape as the file store, not PHP's PSR-6
  * serialisation, so PHP and Node cannot share the key (docs/DEVIATIONS.md).
  *
- * save() and remove() read, change and write the whole list: serialise writers across processes
- * yourself (e.g. a Redis lock); writes through one instance are serialised.
+ * save() and remove() read, change and write the whole list: writes through one instance are
+ * serialised, but writes from several processes (or instances) can lose each other's changes. Serialise
+ * them yourself (e.g. a Redis lock), or use a store with one record per type such as
+ * PostgresCustomEntityStore.
  */
 export class KeyValueCustomEntityStore implements CustomEntityStore {
   readonly #kv: KeyValueStore;

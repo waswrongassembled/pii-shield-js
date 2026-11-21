@@ -7,6 +7,7 @@ import { ServiceApi } from '../service/service-api.js';
 import { EncryptedVault, generateVaultKey, parseVaultKey } from '../vault/encrypted-vault.js';
 import { MemoryVaultStorage } from '../vault/memory-vault-storage.js';
 import type { VaultStorage } from '../vault/vault.js';
+import type { PostgresQuery } from '../postgres/index.js';
 import { DEFAULT_MAX_BODY_BYTES } from './http-server.js';
 import { MODEL_PROVIDERS, type ModelProvider, providerModel } from './model-providers.js';
 
@@ -23,8 +24,20 @@ export interface EnvService {
   port: number;
   /** Notes for the operator (stderr), e.g. that mappings do not survive a restart. Never secrets. */
   notes: string[];
-  /** Closes connections the configuration opened (Redis). */
+  /** Stops background tasks (vault purge) and closes connections the configuration opened (Redis, Postgres). */
   close(): Promise<void>;
+}
+
+/** Background work of the service; its errors go to `onError`. */
+export type BackgroundTask = 'vault-purge' | 'database';
+
+export interface ServiceFromEnvOptions {
+  /**
+   * Errors of background work: the periodic vault purge and idle database connections. Default:
+   * name and code to stderr. The error may carry driver details (a pg error's `detail` can quote row
+   * values): log name and code, not the whole error.
+   */
+  onError?: (error: unknown, task: BackgroundTask) => void;
 }
 
 interface RedisLike {
@@ -35,6 +48,13 @@ interface RedisLike {
   quit(): Promise<unknown>;
 }
 
+/** The part of a `pg` Pool the service uses. */
+interface PoolLike {
+  query: PostgresQuery;
+  on(event: 'error', listener: (error: Error) => void): unknown;
+  end(): Promise<void>;
+}
+
 /**
  * Builds the service from environment variables (names as in the PHP service where they exist; see
  * docs/server.md). Used by the `pii-shield` CLI.
@@ -43,6 +63,7 @@ interface RedisLike {
  */
 export async function serviceFromEnv(
   env: Readonly<Record<string, string | undefined>> = process.env,
+  options: ServiceFromEnvOptions = {},
 ): Promise<EnvService> {
   const get = (name: string): string | undefined => {
     const value = env[name];
@@ -68,6 +89,59 @@ export async function serviceFromEnv(
 
     return redis;
   };
+  const onError =
+    options.onError ??
+    ((error: unknown, task: BackgroundTask) => {
+      const { name = 'Error', code } = (error ?? {}) as { name?: string; code?: unknown };
+      process.stderr.write(`pii-shield: ${task} failed (${name}${typeof code === 'string' ? ` ${code}` : ''})\n`);
+    });
+  let pool: PoolLike | undefined;
+  const databaseUrl = get('PII_SERVICE_DATABASE_URL');
+  const connectPostgres = async (): Promise<PostgresQuery> => {
+    if (databaseUrl === undefined) {
+      throw new ConfigError('Set PII_SERVICE_DATABASE_URL to use the postgres store.');
+    }
+    if (pool === undefined) {
+      if (!/^postgres(?:ql)?:\/\//.test(databaseUrl) || !URL.canParse(databaseUrl)) {
+        // Never quote the URL: it usually contains the password.
+        throw new ConfigError('PII_SERVICE_DATABASE_URL must be a postgres:// or postgresql:// URL.');
+      }
+      type PoolConstructor = new (config: { connectionString: string }) => PoolLike;
+      let Pool: PoolConstructor | undefined;
+      try {
+        const pg = (await import('pg')) as unknown as { Pool?: PoolConstructor; default?: { Pool?: PoolConstructor } };
+        Pool = pg.Pool ?? pg.default?.Pool;
+      } catch {
+        // reported below
+      }
+      if (Pool === undefined) {
+        throw new ConfigError('The postgres store needs the package "pg" (npm install pg).');
+      }
+      pool = new Pool({ connectionString: databaseUrl });
+      // An idle connection that fails (database restart) must not crash the process.
+      pool.on('error', (error) => {
+        onError(error, 'database');
+      });
+    }
+    const connected = pool;
+
+    return (text, params) => connected.query(text, params);
+  };
+  /** An error message for the operator, without the database URL or its password. */
+  const safeMessage = (e: unknown): string => {
+    let message = e instanceof Error ? e.message : String(e);
+    if (databaseUrl !== undefined) {
+      message = message.split(databaseUrl).join('<PII_SERVICE_DATABASE_URL>');
+      const password = URL.canParse(databaseUrl) ? decodeURIComponent(new URL(databaseUrl).password) : '';
+      if (password !== '') {
+        message = message.split(password).join('***');
+      }
+    }
+
+    return message;
+  };
+  let purgeTimer: NodeJS.Timeout | undefined;
+  let purging: Promise<void> | undefined;
 
   try {
     // Vault
@@ -87,16 +161,58 @@ export async function serviceFromEnv(
     if (vaultStore === 'memory') {
       storage = new MemoryVaultStorage();
       notes.push('Vault: in memory; mappings are lost on restart.');
-    } else if (vaultStore === 'redis') {
+    } else if (vaultStore === 'redis' || vaultStore === 'postgres') {
       if (keyBase64 === undefined) {
         throw new ConfigError(
-          'The redis vault store needs PII_SERVICE_VAULT_KEY, or mappings cannot be read after a restart.',
+          `The ${vaultStore} vault store needs PII_SERVICE_VAULT_KEY, or mappings cannot be read after a restart.`,
         );
       }
-      const { RedisVaultStorage } = await import('../vault-redis/index.js');
-      storage = new RedisVaultStorage({ client: await connectRedis() });
+      if (vaultStore === 'redis') {
+        const { RedisVaultStorage } = await import('../vault-redis/index.js');
+        storage = new RedisVaultStorage({ client: await connectRedis() });
+      } else {
+        const { PostgresVaultStorage } = await import('../postgres/index.js');
+        const postgres = new PostgresVaultStorage({ query: await connectPostgres() });
+        try {
+          await postgres.get('pii-shield-startup-check'); // fail at start: no connection, no table, no rights
+        } catch (e) {
+          throw new ConfigError(
+            `The vault table cannot be read: ${safeMessage(e)}. Create the tables with "pii-shield db-schema".`,
+          );
+        }
+        storage = postgres;
+        const interval = integer(
+          get('PII_SERVICE_VAULT_PURGE_INTERVAL'),
+          'PII_SERVICE_VAULT_PURGE_INTERVAL',
+          DEFAULT_PURGE_INTERVAL,
+          0,
+        );
+        if (interval > 86_400) {
+          throw new ConfigError('PII_SERVICE_VAULT_PURGE_INTERVAL must be at most 86400 (one day).');
+        }
+        if (interval === 0) {
+          notes.push('Vault: expired rows are not purged (PII_SERVICE_VAULT_PURGE_INTERVAL=0); delete them yourself.');
+        } else {
+          // Expired rows are personal data past their storage period (Art. 5(1)(e) GDPR): delete them.
+          const purge = (): void => {
+            purging ??= postgres
+              .purgeExpired()
+              .then(
+                () => undefined,
+                (e: unknown) => {
+                  onError(e, 'vault-purge');
+                },
+              )
+              .finally(() => {
+                purging = undefined;
+              });
+          };
+          purge();
+          purgeTimer = setInterval(purge, interval * 1000).unref();
+        }
+      }
     } else {
-      throw new ConfigError('PII_SERVICE_VAULT_STORE must be "memory" or "redis".');
+      throw new ConfigError('PII_SERVICE_VAULT_STORE must be "memory", "redis" or "postgres".');
     }
     const vaultTtl = integer(get('PII_SERVICE_VAULT_TTL'), 'PII_SERVICE_VAULT_TTL', ServiceApi.DEFAULT_VAULT_TTL);
 
@@ -114,14 +230,17 @@ export async function serviceFromEnv(
       notes.push('Learned types: in memory; set PII_SERVICE_LEARNED_TYPES to keep them.');
     } else if (learnedStore === 'redis') {
       store = new KeyValueCustomEntityStore(await connectRedis());
+    } else if (learnedStore === 'postgres') {
+      const { PostgresCustomEntityStore } = await import('../postgres/index.js');
+      store = new PostgresCustomEntityStore({ query: await connectPostgres() });
     } else {
-      throw new ConfigError('PII_SERVICE_LEARNED_STORE must be "file", "memory" or "redis".');
+      throw new ConfigError('PII_SERVICE_LEARNED_STORE must be "file", "memory", "redis" or "postgres".');
     }
     let learner: EntityLearner;
     try {
       learner = await EntityLearner.create({ store });
     } catch (e) {
-      throw new ConfigError(`The learned types cannot be read: ${e instanceof Error ? e.message : String(e)}`);
+      throw new ConfigError(`The learned types cannot be read: ${safeMessage(e)}`);
     }
 
     // Model
@@ -191,14 +310,21 @@ export async function serviceFromEnv(
       port: integer(get('PII_SERVICE_PORT'), 'PII_SERVICE_PORT', 8088, 0),
       notes,
       close: async () => {
-        await redis?.quit();
+        clearInterval(purgeTimer);
+        await purging;
+        await Promise.all([redis?.quit(), pool?.end()]);
       },
     };
   } catch (e) {
-    await redis?.quit().catch(() => undefined);
+    clearInterval(purgeTimer);
+    await purging;
+    await Promise.all([redis?.quit().catch(() => undefined), pool?.end().catch(() => undefined)]);
     throw e;
   }
 }
+
+/** Seconds between two purges of expired vault rows (Postgres). */
+export const DEFAULT_PURGE_INTERVAL = 300;
 
 function integer(value: string | undefined, name: string, fallback: number, min = 1): number {
   if (value === undefined) {
