@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-21
+
+No changes to the library code. First release through the release workflow: staged on npm with Trusted Publishing and a provenance attestation, approved with 2FA (0.1.0 was published by hand without provenance).
+
+### Changed
+
+- Releases are staged with `npm stage publish` and need a 2FA approval on npmjs.com (`docs/RELEASING.md`).
+
 ## [0.1.0] - 2026-11-20
 
 First release: a TypeScript port of [`clarifile/pii-shield`](https://github.com/massiveart/clarifile/tree/main/packages/pii-shield) (PHP), wire-compatible with it. Intended differences are listed in [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
@@ -25,5 +33,6 @@ Privacy and crash bugs of the PHP package are fixed rather than reproduced: name
 - `@waswrongassembled/pii-shield/mcp` (peer `@modelcontextprotocol/sdk`): the MCP tools `redact_text`, `restore_text`, `mask_text`, `learn_entity_type` and `list_entity_types` over STDIO and Streamable HTTP.
 - `pii-shield` CLI: `pii-shield serve`, `pii-shield mcp [--http]`, configured with PHP's environment variables.
 
-[Unreleased]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/waswrongassembled/pii-shield-js/releases/tag/v0.1.0
