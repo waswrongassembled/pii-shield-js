@@ -184,17 +184,72 @@ describe('PiiShield.redact', () => {
     expect(custom.redact('VN-1 X-2').mapping).toEqual({ '⟦INSURANCE_NUMBER_1⟧': 'VN-1', '⟦OTHER_1⟧': 'X-2' });
   });
 
-  it('returns frozen results whose mapping serializes as a plain object', () => {
+  it('returns frozen results whose mapping serializes as a plain object when asked for', () => {
     const result = shield.redact('SVNR 4568 150392');
 
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.mapping)).toBe(true);
-    expect(JSON.parse(JSON.stringify(result))).toEqual({
-      redactedText: 'SVNR ⟦SVNR_1⟧',
-      mapping: { '⟦SVNR_1⟧': '4568 150392' },
-      entities: [{ type: 'SVNR', value: '4568 150392', offset: 5, confidence: 1, detector: 'at_svnr' }],
+    expect(Object.isFrozen(result.entities)).toBe(true);
+    expect(JSON.parse(JSON.stringify(result.mapping))).toStrictEqual({ '⟦SVNR_1⟧': '4568 150392' });
+    expect(JSON.parse(JSON.stringify(result.entities))).toStrictEqual([
+      { type: 'SVNR', value: '4568 150392', offset: 5, confidence: 1, detector: 'at_svnr' },
+    ]);
+  });
+
+  describe('keeps original values out of serialization', () => {
+    const SVNR = '4568 150392';
+    const result = shield.redact(`SVNR ${SVNR}`);
+
+    it('JSON.stringify gives redactedText and entityCount only', () => {
+      expect(JSON.stringify(result)).toBe('{"redactedText":"SVNR ⟦SVNR_1⟧","entityCount":1}');
     });
-    expect({ ...result }.mapping).toBe(result.mapping);
+
+    it('nested in a log record or an error, as pino, winston and Sentry serialize them', () => {
+      const error = Object.assign(new Error('Upstream failed'), { result });
+      // pino's err serializer copies the enumerable properties of an error, then the record is stringified
+      const copied: Record<string, unknown> = { message: error.message };
+      for (const key in error) {
+        copied[key] = (error as unknown as Record<string, unknown>)[key];
+      }
+      const record = JSON.stringify({ level: 30, msg: 'redacted', result, err: copied, list: [result] });
+
+      expect(record).not.toContain('150392');
+      expect(record).toContain('"entityCount":1');
+    });
+
+    it('a serializer that walks enumerable keys and ignores toJSON sees no originals', () => {
+      const walk = (value: unknown): unknown =>
+        typeof value === 'object' && value !== null
+          ? Object.fromEntries(Object.keys(value).map((k) => [k, walk((value as Record<string, unknown>)[k])]))
+          : value;
+
+      expect(walk({ result })).toStrictEqual({ result: { redactedText: 'SVNR ⟦SVNR_1⟧' } });
+    });
+
+    it('spread, Object.keys and structuredClone copy redactedText only', () => {
+      expect({ ...result }).toStrictEqual({ redactedText: 'SVNR ⟦SVNR_1⟧' });
+      expect(Object.keys(result)).toStrictEqual(['redactedText']);
+      expect(structuredClone(result)).toStrictEqual({ redactedText: 'SVNR ⟦SVNR_1⟧' });
+    });
+
+    it('mapping and entities stay readable, also by destructuring', () => {
+      const { mapping, entities } = result;
+
+      expect(mapping).toStrictEqual({ '⟦SVNR_1⟧': SVNR });
+      expect(entities.map((e) => e.value)).toStrictEqual([SVNR]);
+      expect('mapping' in result).toBe(true);
+    });
+
+    it('restore() rejects a copy that lost its mapping instead of restoring nothing', () => {
+      const copy = JSON.parse(JSON.stringify(result)) as RedactionResult;
+
+      expect(() => shield.restore('⟦SVNR_1⟧', copy)).toThrow(TypeError);
+      // TypeScript types the spread as a RedactionResult, so only the run-time check catches it.
+      expect(() => shield.restore('⟦SVNR_1⟧', { ...result })).toThrow(
+        'This redaction result has no mapping (JSON, structuredClone() and spread leave it out): pass result.mapping, or use the vault.',
+      );
+      expect(shield.restore('⟦SVNR_1⟧', result.mapping).text).toBe(SVNR);
+    });
   });
 
   it('hides original values from util.inspect / console.log (like PHP __debugInfo)', () => {
@@ -277,7 +332,9 @@ describe('NullPiiShield', () => {
 
     const redaction = shield.redact(text);
 
-    expect(redaction).toEqual({ redactedText: text, mapping: {}, entities: [] });
+    expect(redaction.redactedText).toBe(text);
+    expect(redaction.mapping).toStrictEqual({});
+    expect(redaction.entities).toStrictEqual([]);
     expect(shield.restore(redaction.redactedText, redaction)).toEqual({
       text,
       unknownPlaceholders: [],

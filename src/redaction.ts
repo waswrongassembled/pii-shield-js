@@ -13,8 +13,15 @@ export type PlaceholderMapping = Readonly<Record<string, string>>;
  * Result of a redaction. Holds the original values: never log it, persist it or send it to a model provider
  * (send `redactedText` only).
  *
- * A frozen plain object. `JSON.stringify` includes the mapping (it is the data you restore from);
- * only `util.inspect` / `console.log` in Node hide it, like PHP's `__debugInfo()`.
+ * A frozen object whose `mapping` and `entities` are readable but not enumerable, so what loggers and
+ * error reporters do with an object never reaches the original values:
+ * - `JSON.stringify()` (pino, winston, Sentry, ...) calls `toJSON()`: `{ redactedText, entityCount }`
+ *   (plus `vaultId`); `util.inspect()` / `console.log()` show `mapping: '[hidden]'`, like PHP's `__debugInfo()`.
+ * - Spread (`{ ...result }`), `Object.keys()`, `Object.entries()` and `structuredClone()` (`postMessage()`)
+ *   copy only `redactedText` (and `vaultId`). To keep or pass on the mapping, use `result.mapping`
+ *   explicitly (a plain object, serialized like the JSON PHP stores in its vault), or the vault.
+ *
+ * Results of your own Redactor implementation are whatever objects it returns.
  *
  * `PiiShield.redactToVault()` returns a VaultRedactionResult, which adds the `vaultId`.
  */
@@ -31,6 +38,11 @@ export interface VaultRedactionResult extends RedactionResult {
   readonly vaultId: string;
 }
 
+/**
+ * Result of a restore: a frozen plain object that serializes in full. `text` is the restored text with the
+ * original values, the output you asked for, so treat it like the original text; the placeholder lists
+ * hold no personal data.
+ */
 export interface RestoreResult {
   readonly text: string;
   /** Placeholders found in the text that are not in the mapping (the model invented them), in order of appearance. */
@@ -79,30 +91,48 @@ export function createRedactionResult(
   mapping: Record<string, string>,
   entities: Entity[],
 ): RedactionResult {
-  const result = { redactedText, mapping: Object.freeze(mapping), entities: Object.freeze(entities) };
-  Object.defineProperty(result, INSPECT, {
-    value: () => ({ redactedText, mapping: '[hidden]', entityCount: entities.length }),
-  });
-
-  return Object.freeze(result);
+  return hideOriginals({ redactedText }, Object.freeze(mapping), Object.freeze(entities));
 }
 
 /** @internal */
 export function withVaultId(result: RedactionResult, vaultId: string): VaultRedactionResult {
-  const { redactedText, mapping, entities } = result;
-  const withId = { redactedText, mapping, entities, vaultId };
-  Object.defineProperty(withId, INSPECT, {
-    value: () => ({ redactedText, mapping: '[hidden]', entityCount: entities.length, vaultId }),
+  return hideOriginals({ redactedText: result.redactedText, vaultId }, result.mapping, result.entities);
+}
+
+/**
+ * Adds `mapping` and `entities` as readable, non-enumerable properties, a `toJSON()` and a `util.inspect`
+ * view without them, and freezes the result (see RedactionResult).
+ */
+function hideOriginals<T extends { readonly redactedText: string; readonly vaultId?: string }>(
+  visible: T,
+  mapping: PlaceholderMapping,
+  entities: readonly Entity[],
+): T & RedactionResult {
+  const { redactedText, vaultId } = visible;
+  const withId = vaultId === undefined ? {} : { vaultId };
+  Object.defineProperties(visible, {
+    mapping: { value: mapping },
+    entities: { value: entities },
+    toJSON: { value: () => ({ redactedText, entityCount: entities.length, ...withId }) },
+    [INSPECT]: { value: () => ({ redactedText, mapping: '[hidden]', entityCount: entities.length, ...withId }) },
   });
 
-  return Object.freeze(withId);
+  return Object.freeze(visible as T & RedactionResult);
 }
 
 /**
  * Replaces placeholders (tolerant to model mangling, see replacePlaceholders()) with their original values.
  * Placeholders that are not in the mapping stay as they were found.
+ *
+ * @throws TypeError for a copy of a RedactionResult without its mapping (JSON, `structuredClone()`, spread)
  */
 export function restorePlaceholders(text: string, source: RedactionResult | PlaceholderMapping): RestoreResult {
+  if (!isRedactionResult(source) && typeof (source as { redactedText?: unknown }).redactedText === 'string') {
+    // Placeholders never are "redactedText", so this is a result copy that lost its mapping.
+    throw new TypeError(
+      'This redaction result has no mapping (JSON, structuredClone() and spread leave it out): pass result.mapping, or use the vault.',
+    );
+  }
   const mapping = isRedactionResult(source) ? source.mapping : source;
   const seen = new Set<string>();
   const unknown = new Set<string>();
