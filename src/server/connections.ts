@@ -12,7 +12,9 @@ export interface RedisLike {
   del(key: string): Promise<number>;
   ping(): Promise<unknown>;
   quit(): Promise<unknown>;
+  connect(): Promise<unknown>;
   disconnect(): void;
+  on(event: 'error', listener: (error: Error) => void): unknown;
 }
 
 /** The part of a `pg` Pool the service uses. */
@@ -60,14 +62,29 @@ export function connections(get: EnvGetter, options: ConnectionOptions): Connect
         } catch {
           throw new ConfigError('The redis store needs the package "ioredis" (npm install ioredis).');
         }
-        redis = options.failFast
-          ? new Redis(url, {
-              lazyConnect: true,
-              maxRetriesPerRequest: 0,
-              connectTimeout: 5000,
-              retryStrategy: () => null,
-            })
-          : new Redis(url);
+        if (options.failFast === true) {
+          const client = new Redis(url, {
+            lazyConnect: true,
+            maxRetriesPerRequest: 0,
+            connectTimeout: 5000,
+            retryStrategy: () => null,
+          });
+          // connect() rejects with the error; without a listener ioredis also prints it.
+          let cause: unknown;
+          client.on('error', (e) => {
+            cause ??= e;
+          });
+          try {
+            await client.connect();
+          } catch (e) {
+            client.disconnect();
+            // connect() only says "Connection is closed."; the error event has the reason (ECONNREFUSED).
+            throw cause ?? e;
+          }
+          redis = client;
+        } else {
+          redis = new Redis(url);
+        }
       }
 
       return redis;

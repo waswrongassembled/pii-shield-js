@@ -149,6 +149,10 @@ The middleware redacts and restores object keys in tool call inputs and JSON too
 
 File, reasoning-file and custom parts of assistant messages cannot be redacted. PHP passes non-text assistant content through; the middleware rejects them (fail closed), including part types of later AI SDK versions it does not know. `allowOpaqueAssistantParts: true` passes them through for histories whose files come from the model itself.
 
+## Configuration check: `pii-shield doctor` (Node only)
+
+PHP has no such command. `pii-shield doctor` and `checkServiceConfig()` (`/server`) check the service's environment variables with the same readers as `serve` (same messages for configuration errors) and add recommendations of their own (token, bind address, TTL, TLS to PostgreSQL and Redis, kept examples, external model providers); `--connect` reads the tables and the role's rights. Findings never contain values of secrets.
+
 ## HTTP service and MCP server
 
 Same endpoints, JSON shapes, status codes and messages as PHP's `ServiceApi`, `RequestGuard` and `PiiShieldTools` (`docs/openapi.yaml`, contract test). Differences:

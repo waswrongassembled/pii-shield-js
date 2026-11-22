@@ -298,7 +298,7 @@ PII_SERVICE_TOKEN=$(openssl rand -hex 24) PII_SERVICE_VAULT_KEY=... \
   npx @waswrongassembled/pii-shield serve --host 0.0.0.0 --port 8080
 ```
 
-Without a token only local peers are answered. Configuration (environment variables, Redis, model provider), programmatic use (`startServer()`, `ServiceApi`) and a Docker image: [docs/server.md](docs/server.md).
+Without a token only local peers are answered. `pii-shield doctor` checks the configuration before you deploy (exit code 1 on errors, `--connect` also tries Redis and PostgreSQL, never prints secrets). Configuration (environment variables, Redis, model provider), programmatic use (`startServer()`, `ServiceApi`) and a Docker image: [docs/server.md](docs/server.md).
 
 ## MCP server
 
