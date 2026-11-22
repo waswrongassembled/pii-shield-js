@@ -14,6 +14,13 @@ export {
   type ServerOptions,
   startServer,
 } from './http-server.js';
+export {
+  checkServiceConfig,
+  type CheckServiceConfigOptions,
+  type ConfigFinding,
+  type FindingSeverity,
+  formatFindings,
+} from './doctor.js';
 export { type JsonBody, parseJsonBody, type ParsedBody } from '../service/json-body.js';
 export { defaultGateway, localPeerMatcher, splitList } from '../service/local-peer.js';
 export {

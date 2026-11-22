@@ -11,6 +11,13 @@ export {
   isAsyncDetector,
   type Validator,
 } from './detector.js';
+export {
+  type BackgroundTask,
+  createPiiShield,
+  type CreatePiiShieldOptions,
+  type ManagedPiiShield,
+  type VaultSetup,
+} from './create-pii-shield.js';
 export { AtSvnrDetector } from './detectors/at-svnr.js';
 export { BirthDateDetector } from './detectors/birth-date.js';
 export { EmailDetector, type ContactDetectorOptions } from './detectors/email.js';

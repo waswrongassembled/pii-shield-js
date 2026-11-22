@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto';
 import { PiiShieldError, VaultError } from '../errors.js';
 import { type CustomEntityType, customEntityTypeFromJSON } from '../learning/custom-entity-type.js';
 import { type CustomEntityStore, sortByName } from '../learning/store.js';
+import type { VaultSetup } from '../create-pii-shield.js';
 import { assertTtl, type VaultStorage } from '../vault/vault.js';
 
 /** What a query function resolves to: the result rows as objects keyed by column name. */
@@ -111,6 +112,29 @@ export class PostgresVaultStorage implements VaultStorage {
 
     return Number.isFinite(deleted) ? deleted : 0;
   }
+}
+
+export interface PostgresVaultOptions extends PostgresStoreOptions {
+  /** 32 raw bytes, e.g. `vaultKeyFromEnv()`. Required: the rows outlive the process. */
+  key: Uint8Array;
+  /** Keys of earlier rotations, only for reading, e.g. `previousVaultKeysFromEnv()`. */
+  previousKeys?: readonly Uint8Array[] | undefined;
+}
+
+/**
+ * The vault of createPiiShield() on PostgreSQL: a PostgresVaultStorage behind an EncryptedVault with your
+ * key, whose expired rows createPiiShield() purges on its timer (`purgeExpired()`).
+ *
+ * ```ts
+ * const shield = await createPiiShield({
+ *   vault: postgresVault({ query: pool.query.bind(pool), key: vaultKeyFromEnv() }),
+ * });
+ * ```
+ */
+export function postgresVault(options: PostgresVaultOptions): VaultSetup & { storage: PostgresVaultStorage } {
+  const { key, previousKeys, ...store } = options;
+
+  return { storage: new PostgresVaultStorage(store), key, previousKeys };
 }
 
 /**

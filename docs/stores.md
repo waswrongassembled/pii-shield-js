@@ -74,6 +74,54 @@ The suites write ids and names of their own. Vault ids are random per run, so a 
 
 Values always go in as parameters. Table names are configurable and validated: a plain identifier (`[A-Za-z_][A-Za-z0-9_]*`, at most 48 characters), optionally schema-qualified (`app.pii_vault`). They are always double-quoted, so their case is kept.
 
+### With createPiiShield()
+
+The short path: `postgresVault()` bundles the storage with your keys, and `createPiiShield()` puts an `EncryptedVault` in front, includes the learned types in detection and purges expired rows on a timer.
+
+```ts
+import pg from 'pg';
+import { createPiiShield, previousVaultKeysFromEnv, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
+import { PostgresCustomEntityStore, postgresVault } from '@waswrongassembled/pii-shield/postgres';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const query = pool.query.bind(pool);
+
+const shield = await createPiiShield({
+  vault: postgresVault({
+    query,
+    table: 'app.pii_vault', // default pii_shield_vault
+    key: vaultKeyFromEnv(),
+    previousKeys: previousVaultKeysFromEnv(),
+  }),
+  learnedTypes: new PostgresCustomEntityStore({ query, table: 'app.learned_types' }),
+  purgeInterval: 300, // the default; 0 if pg_cron deletes expired rows
+  onError: (error, task) => {
+    // name and code only: a pg error's detail can quote row values
+    const { name, code } = error as { name?: string; code?: string };
+    console.error(`pii-shield ${task} failed`, name, code);
+  },
+});
+
+// On shutdown, before pool.end():
+await shield.close();
+```
+
+Defaults and why:
+
+| Option          | Default                  | Why                                                                                                                                         |
+| --------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vaultTtl`      | 900 s                    | Long enough for a model's answer, short enough that a leaked `vaultId` or a copy of the table is soon worthless. `new PiiShield()`: 3600 s. |
+| `purgeInterval` | 300 s, and once at start | Expired rows are personal data past their storage period (Art. 5(1)(e) GDPR). The timer is unref'd; `close()` and `await using` stop it.    |
+| `keepExamples`  | `false`                  | Data minimisation (Art. 5(1)(c) GDPR). Model-only types (no pattern) are refused; `EntityLearner` on its own still defaults to `true`.      |
+| `onError`       | name and code to stderr  | A driver error's message or `detail` can quote values.                                                                                      |
+| `vault`         | memory, random key       | Process-local only; noted in `shield.notes`. A storage always needs `key`: a generated key could not read the rows after a restart.         |
+
+At start `createPiiShield()` reads the vault table once and loads the learned types, so a missing table, missing rights or a wrong connection fail there (the driver's error, unchanged) and not in the first request. `close()` stops only the timer: the pool is yours. `learnedTypes` also takes an `EntityLearner` you built (then `keepExamples` is its own setting); with several instances call `shield.learner.refresh()` per request or on a timer ([below](#several-instances-and-learned-types)).
+
+The core package does not import the Postgres code: `postgresVault()` returns a plain `VaultSetup` (`{ storage, key, previousKeys?, purge? }`). Without `purge`, `createPiiShield()` uses the storage's own `purgeExpired()` if it has one, so `{ storage: new PostgresVaultStorage({ query }), key }` is purged too; `purge: false` turns it off for that storage.
+
+### By hand
+
 ```ts
 import pg from 'pg';
 import { EncryptedVault, EntityLearner, PiiShield, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
@@ -153,7 +201,7 @@ CREATE TABLE IF NOT EXISTS "pii_shield_learned_types" (
 
 ### Purging expired vault rows
 
-`get()` ignores expired rows, but they stay in the table until `purgeExpired()` deletes them. The method returns the number of deleted rows. It locks with `SKIP LOCKED`, so several servers can purge at the same time without waiting for each other. Call it on a timer, from a cron job or with `pg_cron`. The HTTP service does it at start and every `PII_SERVICE_VAULT_PURGE_INTERVAL` seconds (default 300).
+`get()` ignores expired rows, but they stay in the table until `purgeExpired()` deletes them. The method returns the number of deleted rows. It locks with `SKIP LOCKED`, so several servers can purge at the same time without waiting for each other. Call it on a timer, from a cron job or with `pg_cron`. `createPiiShield()` does it at start and every `purgeInterval` seconds (default 300), the HTTP service does it at start and every `PII_SERVICE_VAULT_PURGE_INTERVAL` seconds (default 300).
 
 ### Several instances and learned types
 
@@ -163,7 +211,7 @@ CREATE TABLE IF NOT EXISTS "pii_shield_learned_types" (
 
 - **Vault: ciphertext only.** `EncryptedVault` encrypts the mapping before it reaches the storage, and the key stays outside the database. Never use a `VaultStorage` on its own for mappings. Ids are stored as SHA-256 hashes, so the table does not reveal the `vaultId` a client holds. Rotate the key with `previousKeys` (see [Key rotation](../README.md#key-rotation)).
 - **Learned types are plaintext.** `examples` and `counterExamples` are stored as they were learned and can contain real personal data. Treat the table like any other store of personal data: restrict access, include it in your records of processing, and handle backups accordingly. Prefer synthetic or anonymised examples.
-- **Store no examples (data minimisation, Art. 5(1)(c) GDPR).** `new EntityLearner({ store, keepExamples: false })` (service: `PII_SERVICE_LEARNED_KEEP_EXAMPLES=false`) checks the pattern against the examples and then stores only name, description and pattern. `learner.dropExamples()` strips types stored before; deleted values stay in backups and, for PostgreSQL, until `VACUUM` (see Erasure). The price: plain words without a pattern (model-only types) are refused, since only their examples let the model find them, and `dropExamples()` keeps theirs; the model knows the other types by name and description only; a type cannot be derived again from stored examples; PHP cannot read a store with types without examples (its `fromArray()` requires one). Stores need no change: `customEntityTypeFromJSON()` reads such types, and `verifyCustomEntityStore()` checks it.
+- **Store no examples (data minimisation, Art. 5(1)(c) GDPR).** `new EntityLearner({ store, keepExamples: false })` (the default of `createPiiShield()`; service: `PII_SERVICE_LEARNED_KEEP_EXAMPLES=false`) checks the pattern against the examples and then stores only name, description and pattern. `learner.dropExamples()` strips types stored before; deleted values stay in backups and, for PostgreSQL, until `VACUUM` (see Erasure). The price: plain words without a pattern (model-only types) are refused, since only their examples let the model find them, and `dropExamples()` keeps theirs; the model knows the other types by name and description only; a type cannot be derived again from stored examples; PHP cannot read a store with types without examples (its `fromArray()` requires one). Stores need no change: `customEntityTypeFromJSON()` reads such types, and `verifyCustomEntityStore()` checks it.
 - **Erasure (Art. 17 GDPR).** `learner.forget(name)` deletes the row. PostgreSQL keeps the deleted tuple in the table file until `VACUUM`, and in WAL archives and backups until they rotate. Account for this in your retention periods, and run `VACUUM` (autovacuum does it eventually) where prompt removal matters.
 - **Storage limitation (Art. 5(1)(e) GDPR).** Expired vault rows must really be deleted, not just hidden by the read filter: run `purgeExpired()` regularly.
 - **Least privilege.** The application's role needs only `SELECT, INSERT, UPDATE, DELETE` on the two tables. Migrations run with another role:

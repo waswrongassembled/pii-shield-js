@@ -10,6 +10,7 @@ pii-shield mcp                                      # MCP over STDIO
 pii-shield mcp --http [--port] [--host]             # MCP over Streamable HTTP only (/mcp)
 pii-shield db-schema                                # SQL for the Postgres tables, to stdout
 pii-shield generate-key                             # a new vault key (32 bytes, base64), to stdout
+pii-shield doctor [--connect] [--json] [--host]     # checks the configuration, see below
 ```
 
 `SIGINT`/`SIGTERM` stop the server gracefully (running requests finish, at most 10 s). Log lines go to stderr and never contain request text or secrets.
@@ -59,6 +60,34 @@ import { EntityLearner, JsonFileCustomEntityStore } from '@waswrongassembled/pii
 const learner = new EntityLearner({ store: new JsonFileCustomEntityStore(process.env.PII_SERVICE_LEARNED_TYPES) });
 console.log(await learner.dropExamples()); // { stripped: [...], kept: [...] } (type names; model-only types keep theirs)
 ```
+
+## Checking the configuration: `pii-shield doctor`
+
+`pii-shield doctor` reads the same environment variables as `serve` and checks them with the same rules, plus security recommendations. Each finding has a severity (`error`, `warning`, `info`, `ok`), a check id and a message. The exit code is 1 when there is an error, else 0, so it fits a deployment pipeline or a container health check before start. Findings name variables, never their values: no token, vault key, database or Redis URL, password or provider key is printed, only whether it is set and valid, so the output can go into a ticket.
+
+```sh
+PII_SERVICE_VAULT_STORE=postgres PII_SERVICE_VAULT_KEY=... PII_SERVICE_DATABASE_URL=... npx @waswrongassembled/pii-shield doctor
+# ok      vault-key               PII_SERVICE_VAULT_KEY is set and valid.
+# warning token                   PII_SERVICE_TOKEN is not set: only local peers are answered ...
+# error   database-tls            The database is not on this machine and PII_SERVICE_DATABASE_URL has no sslmode: ...
+#
+# 1 error(s), 1 warning(s), 3 note(s), 5 ok
+```
+
+What it checks:
+
+| Area          | Error                                                                                                                                 | Warning                                                                                                                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vault         | key or previous keys invalid; no key for `redis`/`postgres`; TTL or purge interval invalid                                            | TTL above one hour; purge interval `0` with Postgres; the current key among the previous keys                                                                                                           |
+| Access        | `PII_SERVICE_ONLY=1` without `PII_SERVICE_TOKEN` (every request gets 503); port or body limit invalid                                 | no token; a token shorter than 32 characters; listening on a non-loopback address (`0.0.0.0`, `::`, ...) without a token                                                                                |
+| PostgreSQL    | URL missing or not `postgres://`; a remote database without `sslmode` or with `disable`/`allow`/`prefer` (also read from `PGSSLMODE`) | `sslmode=require`, `verify-ca` or `no-verify` (recommended: `verify-full`). A database on this machine (loopback, socket) needs no TLS                                                                  |
+| Redis         | URL missing                                                                                                                           | a remote Redis without TLS (`redis://` instead of `rediss://`)                                                                                                                                          |
+| Learned types | store invalid; file store: the file is not readable and writable, or it is missing and its directory is not writable                  | examples are kept (`PII_SERVICE_LEARNED_KEEP_EXAMPLES` not `false`) in a persistent store                                                                                                               |
+| Model         | provider invalid, key or URL missing; an external provider without `PII_SERVICE_ACKNOWLEDGE_EXTERNAL=true`                            | an external provider with acknowledgement: legal basis (Art. 6 GDPR), data processing agreement (Art. 28) and third-country transfers (Art. 44 ff.) are yours; an on-premise model over plain `http://` |
+
+`--connect` also connects to the configured Redis and PostgreSQL (5 s timeout, nothing is written): the server answers, the connection to a remote database is encrypted, both tables exist and are readable, the role has `SELECT, INSERT, UPDATE, DELETE` on them, stored learned types are valid (and, with `PII_SERVICE_LEARNED_KEEP_EXAMPLES=false`, how many still hold examples), and with purging off how many expired vault rows wait. Without `--connect` the check is static; it only looks at the learned types file. Driver messages are shown with the URL and password removed. `--json` prints `{ "ok": boolean, "findings": [...] }`; `--host` checks the address you pass to `serve --host`.
+
+Programmatically, `checkServiceConfig(env, { connect })` from `@waswrongassembled/pii-shield/server` returns the findings (`formatFindings()` gives the text).
 
 ## Key rotation
 

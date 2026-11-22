@@ -101,6 +101,10 @@ PHP always stores examples and counter-examples, and its `CustomEntityType` requ
 
 `new PiiShield({ learner })` (also `PiiMasker`, `EntityExtractor`) adds `learner.detector()` after the default or given detectors, unless it is already among them; `detector()` returns the same instance on every call. PHP's Symfony bundle registers the learned-types detector after the built-in ones, in the same order.
 
+## createPiiShield() (Node only)
+
+PHP wires vault, storage and learned types in its Symfony bundle configuration. `createPiiShield()` does it in one call with defaults of its own that differ from the building blocks: vault TTL 900 s (`PiiShield`: 3600 s, as PHP), learned types stored without examples (`keepExamples: false`; `EntityLearner` and PHP keep them, and PHP cannot read such a store), a timer that deletes expired vault entries (PHP leaves this to the cache pool or a cron job), and a start-up read of the vault and the learned types. Helpers: `postgresVault()` (`/postgres`), `redisVault()` (`/vault-redis`); `MemoryVaultStorage.purgeExpired()` is new. Payloads, placeholders and the learned-type JSON are unchanged.
+
 ## Model-based detection is async
 
 PHP's `ModelDetector` is a synchronous `DetectorInterface`. Model calls are async in Node, so `ModelDetector` is an `AsyncDetector` (`async: true`, `detect(text, { signal })` returns a Promise). `EntityExtractor.extractAsync()`, `PiiShield.redactAsync()`, `PiiShield.redactToVault()` and `PiiMasker.maskAsync()` run it next to the synchronous detectors (same results for the same findings); `extract()`, `redact()` and `mask()` throw a `TypeError` when an async detector is configured, before anything is sent. `redactToVault()` uses the async extraction for every detector set.
@@ -144,6 +148,10 @@ PHP decides whether a finding follows a legal citation with a regex that can bac
 The middleware redacts and restores object keys in tool call inputs and JSON tool outputs too, not only string values (PHP's `StructuredRestorer` keeps keys): a key like `{"Maria Musterfrau": 3}` would otherwise reach the provider. If two keys of one object map to the same key, the call is rejected with `UnsupportedContentError`.
 
 File, reasoning-file and custom parts of assistant messages cannot be redacted. PHP passes non-text assistant content through; the middleware rejects them (fail closed), including part types of later AI SDK versions it does not know. `allowOpaqueAssistantParts: true` passes them through for histories whose files come from the model itself.
+
+## Configuration check: `pii-shield doctor` (Node only)
+
+PHP has no such command. `pii-shield doctor` and `checkServiceConfig()` (`/server`) check the service's environment variables with the same readers as `serve` (same messages for configuration errors) and add recommendations of their own (token, bind address, TTL, TLS to PostgreSQL and Redis, kept examples, external model providers); `--connect` reads the tables and the role's rights. Findings never contain values of secrets.
 
 ## HTTP service and MCP server
 

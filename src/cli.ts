@@ -1,11 +1,13 @@
 /**
- * The `pii-shield` command: the HTTP service (`serve`) and the MCP server (`mcp`), configured from
- * environment variables (docs/server.md).
+ * The `pii-shield` command: the HTTP service (`serve`), the MCP server (`mcp`) and the configuration check
+ * (`doctor`), configured from environment variables (docs/server.md).
  */
 import { parseArgs } from 'node:util';
 
+import { reportToStderr } from './internal/background.js';
 import { postgresSchema } from './postgres/index.js';
 import { ConfigError, serviceFromEnv } from './server/config.js';
+import { checkServiceConfig, formatFindings } from './server/doctor.js';
 import { type McpHttpHandler, startServer } from './server/http-server.js';
 import type { ServiceApi } from './service/service-api.js';
 import { generateVaultKey } from './vault/encrypted-vault.js';
@@ -16,6 +18,7 @@ const USAGE = `Usage:
   pii-shield mcp --http [--port <port>] [--host <host>]   MCP server over Streamable HTTP (/mcp)
   pii-shield db-schema                                SQL for the Postgres tables (stdout), e.g. | psql "$DATABASE_URL"
   pii-shield generate-key                             A new vault key (32 bytes, base64) to stdout
+  pii-shield doctor [--connect] [--json] [--host <host>]   Checks the configuration; exit code 1 on errors
 
 Configuration: environment variables (PII_SERVICE_TOKEN, PII_SERVICE_VAULT_KEY, ...), see
 https://github.com/waswrongassembled/pii-shield-js/blob/main/docs/server.md`;
@@ -34,6 +37,8 @@ export async function main(
         port: { type: 'string', short: 'p' },
         host: { type: 'string' },
         http: { type: 'boolean' },
+        connect: { type: 'boolean' },
+        json: { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
       },
     });
@@ -65,10 +70,23 @@ export async function main(
 
     return 0;
   }
+  if (command === 'doctor' && positionals.length === 1 && values.http === undefined && values.port === undefined) {
+    // Findings name variables, never their values: safe to paste into a ticket.
+    const findings = await checkServiceConfig(env, { connect: values.connect === true, host: values.host });
+    process.stdout.write(
+      values.json === true
+        ? `${JSON.stringify({ ok: !findings.some((f) => f.severity === 'error'), findings }, null, 2)}\n`
+        : formatFindings(findings),
+    );
+
+    return findings.some((f) => f.severity === 'error') ? 1 : 0;
+  }
   if (
     positionals.length > 1 ||
     (command !== 'serve' && command !== 'mcp') ||
-    (command === 'serve' && values.http === true)
+    (command === 'serve' && values.http === true) ||
+    values.connect !== undefined ||
+    values.json !== undefined
   ) {
     process.stderr.write(`${USAGE}\n`);
 
@@ -97,8 +115,7 @@ export async function main(
   }
   const onError = (error: unknown) => {
     // Name and code only: messages of provider errors may quote the request text.
-    const { name = 'Error', code } = (error ?? {}) as { name?: string; code?: unknown };
-    process.stderr.write(`pii-shield: request failed (${name}${typeof code === 'string' ? ` ${code}` : ''})\n`);
+    reportToStderr(error, 'request');
   };
 
   if (command === 'mcp' && values.http !== true) {

@@ -3,6 +3,7 @@
  */
 import { createHash } from 'node:crypto';
 
+import type { VaultSetup } from '../create-pii-shield.js';
 import { assertTtl, type VaultStorage } from '../vault/vault.js';
 
 /**
@@ -59,4 +60,21 @@ export class RedisVaultStorage implements VaultStorage {
   #key(id: string): string {
     return this.#prefix + createHash('sha256').update(id, 'utf8').digest('hex');
   }
+}
+
+export interface RedisVaultOptions extends RedisVaultStorageOptions {
+  /** 32 raw bytes, e.g. `vaultKeyFromEnv()`, the same in every process. Required: entries outlive the process. */
+  key: Uint8Array;
+  /** Keys of earlier rotations, only for reading, e.g. `previousVaultKeysFromEnv()`. */
+  previousKeys?: readonly Uint8Array[] | undefined;
+}
+
+/**
+ * The vault of createPiiShield() on Redis: a RedisVaultStorage behind an EncryptedVault with your key.
+ * Redis expires entries itself (`SET … EX`), so nothing needs purging. The client stays yours to quit.
+ */
+export function redisVault(options: RedisVaultOptions): VaultSetup & { storage: RedisVaultStorage } {
+  const { key, previousKeys, ...store } = options;
+
+  return { storage: new RedisVaultStorage(store), key, previousKeys };
 }

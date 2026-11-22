@@ -77,6 +77,51 @@ The key is 32 random bytes, base64-encoded. Create it once and keep it in your s
 npx @waswrongassembled/pii-shield generate-key   # or: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
+`createPiiShield()` sets up vault and learned types in one call, with safe defaults. With PostgreSQL (tables from `pii-shield db-schema`, see [docs/stores.md](docs/stores.md#postgresql)):
+
+```ts
+import pg from 'pg';
+import { createPiiShield, previousVaultKeysFromEnv, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
+import { PostgresCustomEntityStore, postgresVault } from '@waswrongassembled/pii-shield/postgres';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const query = pool.query.bind(pool);
+
+const shield = await createPiiShield({
+  // PII_SHIELD_VAULT_KEY, PII_SHIELD_VAULT_PREVIOUS_KEYS; a clear error (without the value) if invalid
+  vault: postgresVault({ query, key: vaultKeyFromEnv(), previousKeys: previousVaultKeysFromEnv() }),
+  learnedTypes: new PostgresCustomEntityStore({ query }),
+});
+for (const note of shield.notes) console.warn(note);
+
+const { redactedText, vaultId } = await shield.redactToVault('Herrn\nJohann Beispielmann\nSVNR 4568 150392');
+// ... later, in any process with the same key and database:
+const { text } = await shield.restoreFromVault(redactedText, vaultId);
+await shield.forget(vaultId);
+
+await shield.learner.learn({
+  name: 'INSURANCE_NUMBER',
+  description: 'Polizzennummer',
+  examples: ['VN-2026-000417', 'VN-2025-123456'],
+});
+
+// On shutdown: stops the purge timer (and waits for a running purge); the pool stays yours.
+await shield.close();
+await pool.end();
+```
+
+What it does for you:
+
+- **Short TTL:** mappings live 900 s (`vaultTtl`; `new PiiShield()` defaults to 3600 s), enough for a model's answer.
+- **Expired entries are deleted**, not only hidden: at start and every 300 s (`purgeInterval`, `0` = off) on an unref'd timer. Errors go to `onError(error, 'vault-purge')`; the default logs `pii-shield: vault-purge failed (<name> <code>)`, never a message or a value.
+- **Learned types are detected** (PiiShield's `learner` option) and **stored without examples** (`keepExamples: false`, data minimisation). Types without a pattern (model-only, e.g. pet names) are then refused with a `LearningError`: give a pattern by hand, or pass `keepExamples: true`. `EntityLearner` on its own keeps its default (`true`).
+- **No generated keys:** a vault on a storage needs `key`. Only without `vault` it is in memory with a random key per process: mappings are lost on restart and not shared between processes (`shield.notes` says so).
+- **Fails at start** when a table is missing or the connection does not work.
+
+Other backends: `redisVault({ client, key })` from `/vault-redis` (Redis expires entries itself), `{ storage, key }` for any `VaultStorage`, a ready `Vault`, or `vault: false` (plain `redact()`/`restore()` only). `learnedTypes` takes any `CustomEntityStore` (`JsonFileCustomEntityStore`, ...) or an `EntityLearner`. The result is a `PiiShield`, so `piiShieldMiddleware(shield)` takes it.
+
+The building blocks, for full control:
+
 ```ts
 import { EncryptedVault, MemoryVaultStorage, PiiShield, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
 
@@ -165,7 +210,7 @@ The trade-off: plain words without a pattern (model-only types such as pet names
 
 ## Stores: PostgreSQL and your own
 
-A product that already runs PostgreSQL can keep the vault and the learned types in its own database, in its own pool and, where it wants, in its own transactions. `@waswrongassembled/pii-shield/postgres` takes a `query(text, params)` function (a `pg` `Pool` or `PoolClient` fits) and never runs DDL: put `postgresSchema()` (or `pii-shield db-schema`) into your migrations.
+A product that already runs PostgreSQL can keep the vault and the learned types in its own database, in its own pool and, where it wants, in its own transactions. `@waswrongassembled/pii-shield/postgres` takes a `query(text, params)` function (a `pg` `Pool` or `PoolClient` fits) and never runs DDL: put `postgresSchema()` (or `pii-shield db-schema`) into your migrations. `createPiiShield()` with `postgresVault()` ([above](#vault-restore-in-a-later-request)) wires the stores up and purges for you; by hand:
 
 ```ts
 import pg from 'pg';
@@ -253,7 +298,7 @@ PII_SERVICE_TOKEN=$(openssl rand -hex 24) PII_SERVICE_VAULT_KEY=... \
   npx @waswrongassembled/pii-shield serve --host 0.0.0.0 --port 8080
 ```
 
-Without a token only local peers are answered. Configuration (environment variables, Redis, model provider), programmatic use (`startServer()`, `ServiceApi`) and a Docker image: [docs/server.md](docs/server.md).
+Without a token only local peers are answered. `pii-shield doctor` checks the configuration before you deploy (exit code 1 on errors, `--connect` also tries Redis and PostgreSQL, never prints secrets). Configuration (environment variables, Redis, model provider), programmatic use (`startServer()`, `ServiceApi`) and a Docker image: [docs/server.md](docs/server.md).
 
 ## MCP server
 
