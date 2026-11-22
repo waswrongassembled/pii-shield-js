@@ -44,7 +44,11 @@ result.mapping; // { '⟦PERSON_1⟧': 'Johann Beispielmann', '⟦SVNR_1⟧': '4
 const restored = shield.restore('Antwort an ⟦PERSON_1⟧ zu ⟦SVNR_1⟧', result);
 restored.text; // 'Antwort an Johann Beispielmann zu 4568 150392'
 restored.unknownPlaceholders; // placeholders the model invented: []
+
+JSON.stringify(result); // '{"redactedText":"Sehr geehrter Herr ⟦PERSON_1⟧, …","entityCount":3}'
 ```
+
+`result.mapping` and `result.entities` hold the original values. They are readable but not enumerable, so a result that ends up in a log line, an error report or a spread copy carries no personal data: `JSON.stringify()` (pino, winston, Sentry) gives `{ redactedText, entityCount }` (plus `vaultId`), `console.log()` shows `mapping: '[hidden]'`, and spread, `Object.keys()` and `structuredClone()` copy only `redactedText`. To pass the mapping on (to a worker, a store), take `result.mapping` explicitly, or use the vault. `restore()` throws a `TypeError` when it gets such a copy instead of the result.
 
 Detected types: `PERSON`, `EMAIL`, `PHONE`, `IBAN`, `SVNR`, `TAX_ID`, `FILE_NUMBER`, `BIRTH_DATE`, `LICENSE_PLATE`, `ADDRESS` (see `EntityType`), plus your learned types. Choose detectors with `new PiiShield({ detectors: [...] })` (default: `defaultDetectors()`).
 
@@ -67,12 +71,18 @@ masker.mask('E-Mail j.beispielmann@example.com, IBAN AT61 1904 3002 3457 3201');
 
 The mapping stays on your side, encrypted (XChaCha20-Poly1305) with a TTL; the client only keeps the `vaultId`. Payloads are byte-compatible with PHP's `EncryptedVault`.
 
+The key is 32 random bytes, base64-encoded. Create it once and keep it in your secret store, never in code:
+
+```sh
+npx @waswrongassembled/pii-shield generate-key   # or: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
 ```ts
-import { EncryptedVault, MemoryVaultStorage, parseVaultKey, PiiShield } from '@waswrongassembled/pii-shield';
+import { EncryptedVault, MemoryVaultStorage, PiiShield, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
 
 const shield = new PiiShield({
-  // 32 bytes, base64; generateVaultKey() creates one
-  vault: new EncryptedVault({ storage: new MemoryVaultStorage(), key: parseVaultKey(process.env.VAULT_KEY ?? '') }),
+  // reads PII_SHIELD_VAULT_KEY; throws a clear error (without the value) if it is missing or invalid
+  vault: new EncryptedVault({ storage: new MemoryVaultStorage(), key: vaultKeyFromEnv() }),
   vaultTtl: 900,
 });
 
@@ -86,14 +96,37 @@ For several processes use Redis:
 
 ```ts
 import { Redis } from 'ioredis';
-import { EncryptedVault, generateVaultKey } from '@waswrongassembled/pii-shield';
+import { EncryptedVault, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
 import { RedisVaultStorage } from '@waswrongassembled/pii-shield/vault-redis';
 
 const vault = new EncryptedVault({
   storage: new RedisVaultStorage({ client: new Redis('redis://127.0.0.1:6379') }),
-  key: generateVaultKey(), // use the same configured key in every process
+  key: vaultKeyFromEnv(), // the same key in every process
 });
 ```
+
+`generateVaultKey()` exists for tools that create a key; a key generated at run time cannot read the entries after a restart or in another process.
+
+### Key rotation
+
+`previousKeys` keeps entries readable that were written before a key change; new entries always use `key`. Payloads stay PHP's format (PHP has no rotation: it reads only entries of its own key).
+
+```ts
+import {
+  EncryptedVault,
+  MemoryVaultStorage,
+  previousVaultKeysFromEnv,
+  vaultKeyFromEnv,
+} from '@waswrongassembled/pii-shield';
+
+const vault = new EncryptedVault({
+  storage: new MemoryVaultStorage(),
+  key: vaultKeyFromEnv(), // PII_SHIELD_VAULT_KEY: the new key
+  previousKeys: previousVaultKeysFromEnv(), // PII_SHIELD_VAULT_PREVIOUS_KEYS: old keys, comma-separated
+});
+```
+
+Procedure: create a new key, deploy it as `PII_SHIELD_VAULT_KEY` with the old one in `PII_SHIELD_VAULT_PREVIOUS_KEYS`, wait the longest vault TTL after the last process switched, then remove the old key. To avoid a window in which processes that still run the old configuration cannot read new entries, add the new key as a previous key everywhere first. A leaked key is not kept as a previous key: delete its entries instead. The service reads `PII_SERVICE_VAULT_PREVIOUS_KEYS` ([docs/server.md](docs/server.md#key-rotation)).
 
 ## Learned entity types
 
@@ -136,12 +169,12 @@ A product that already runs PostgreSQL can keep the vault and the learned types 
 
 ```ts
 import pg from 'pg';
-import { EncryptedVault, generateVaultKey } from '@waswrongassembled/pii-shield';
+import { EncryptedVault, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
 import { PostgresCustomEntityStore, PostgresVaultStorage } from '@waswrongassembled/pii-shield/postgres';
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const storage = new PostgresVaultStorage({ query: pool.query.bind(pool) });
-const vault = new EncryptedVault({ storage, key: generateVaultKey() }); // the database only sees ciphertext
+const vault = new EncryptedVault({ storage, key: vaultKeyFromEnv() }); // the database only sees ciphertext
 const store = new PostgresCustomEntityStore({ query: pool.query.bind(pool) });
 await storage.purgeExpired(); // run regularly: expired rows must really be deleted
 ```
@@ -234,15 +267,15 @@ claude mcp add pii-shield -- npx @waswrongassembled/pii-shield mcp
 import {
   EncryptedVault,
   EntityLearner,
-  generateVaultKey,
   InMemoryCustomEntityStore,
   MemoryVaultStorage,
+  vaultKeyFromEnv,
 } from '@waswrongassembled/pii-shield';
 import { serveStdio } from '@waswrongassembled/pii-shield/mcp';
 import { ServiceApi } from '@waswrongassembled/pii-shield/server';
 
 const api = new ServiceApi({
-  vault: new EncryptedVault({ storage: new MemoryVaultStorage(), key: generateVaultKey() }),
+  vault: new EncryptedVault({ storage: new MemoryVaultStorage(), key: vaultKeyFromEnv() }),
   learner: await EntityLearner.create({ store: new InMemoryCustomEntityStore() }),
 });
 await serveStdio(api); // log to stderr only: stdout belongs to the protocol
@@ -264,8 +297,8 @@ Not shared: `Entity.offset` is a UTF-16 index (`text.slice(offset, offset + valu
 ## Limits and security
 
 - Detection is heuristic. Patterns and checksums find structured data reliably, names and addresses only with context (salutations, letter layout) or with the model detector. Check results on your own (synthetic) data before relying on them, and never test with real personal data.
-- A `RedactionResult` contains the original values (`mapping`, `entities`). Never log it, put it in error reports or send it to the model; send only `redactedText`. Error messages of this package never contain values.
-- The mapping is the key to the data: keep it in your process or in the encrypted vault, keep the vault key out of code and logs, and use a short TTL.
+- A `RedactionResult` contains the original values (`mapping`, `entities`). Serializing it leaves them out (see [Redact and restore](#redact-and-restore)), but `result.mapping`, `result.entities` and entity `value`s serialize in full: never log them, put them in error reports or send them to the model; send only `redactedText`. A `RestoreResult`'s `text` is the restored text with the original values. Error messages of this package never contain values.
+- The mapping is the key to the data: keep it in your process or in the encrypted vault, keep the vault key out of code and logs (`vaultKeyFromEnv()`), rotate it with `previousKeys`, and use a short TTL.
 - `ModelDetector` sends the unredacted text to its model. Prefer `local` or `on_premise`; an `external` provider needs `acknowledgeExternalTransfer: true` and, under the GDPR, a legal basis and a data processing agreement.
 - The HTTP service speaks plain HTTP: in production put TLS in front and set `PII_SERVICE_TOKEN` (see [docs/server.md](docs/server.md#security)).
 

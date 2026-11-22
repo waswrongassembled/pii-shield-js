@@ -9,6 +9,7 @@ pii-shield serve [--port 8088] [--host 127.0.0.1]   # /v1, plus /mcp when @model
 pii-shield mcp                                      # MCP over STDIO
 pii-shield mcp --http [--port] [--host]             # MCP over Streamable HTTP only (/mcp)
 pii-shield db-schema                                # SQL for the Postgres tables, to stdout
+pii-shield generate-key                             # a new vault key (32 bytes, base64), to stdout
 ```
 
 `SIGINT`/`SIGTERM` stop the server gracefully (running requests finish, at most 10 s). Log lines go to stderr and never contain request text or secrets.
@@ -32,7 +33,8 @@ MCP clients: `claude mcp add pii-shield -- npx @waswrongassembled/pii-shield mcp
 | `PII_LOCAL_PEERS`                                                                                          | Addresses treated like localhost (IPs or CIDRs, comma-separated); `gateway` = the container's default gateway (Docker port bound to the host's 127.0.0.1 only).                                                                                                        |
 | `PII_SERVICE_HOST`, `PII_SERVICE_PORT`                                                                     | Listen address, default `127.0.0.1:8088` (`--host`/`--port` win).                                                                                                                                                                                                      |
 | `PII_SERVICE_MAX_BODY_BYTES`                                                                               | Largest request body, default 2 MiB (413 above).                                                                                                                                                                                                                       |
-| `PII_SERVICE_VAULT_KEY`                                                                                    | Vault key, 32 bytes base64 (`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`). Default: a random key per process. Required for Redis and Postgres.                                                                                        |
+| `PII_SERVICE_VAULT_KEY`                                                                                    | Vault key, 32 bytes base64 (create one with `npx @waswrongassembled/pii-shield generate-key`). Default: a random key per process. Required for Redis and Postgres.                                                                                                     |
+| `PII_SERVICE_VAULT_PREVIOUS_KEYS`                                                                          | Earlier vault keys (comma-separated, base64), only to read entries written before a [key rotation](#key-rotation). Needs `PII_SERVICE_VAULT_KEY`.                                                                                                                      |
 | `PII_SERVICE_VAULT_STORE`                                                                                  | `memory` (default), `redis` or `postgres`.                                                                                                                                                                                                                             |
 | `PII_SERVICE_VAULT_TTL`                                                                                    | Seconds a mapping lives, default 900.                                                                                                                                                                                                                                  |
 | `PII_SERVICE_LEARNED_TYPES`                                                                                | JSON file of learned types (same format as PHP's `JsonFileCustomEntityStore`).                                                                                                                                                                                         |
@@ -57,6 +59,17 @@ import { EntityLearner, JsonFileCustomEntityStore } from '@waswrongassembled/pii
 const learner = new EntityLearner({ store: new JsonFileCustomEntityStore(process.env.PII_SERVICE_LEARNED_TYPES) });
 console.log(await learner.dropExamples()); // { stripped: [...], kept: [...] } (type names; model-only types keep theirs)
 ```
+
+## Key rotation
+
+The vault key encrypts every new entry; `PII_SERVICE_VAULT_PREVIOUS_KEYS` keeps older entries readable after the key changed. Entries are not re-encrypted: they expire with their TTL. To rotate (e.g. after staff changes, or on a schedule):
+
+1. Create a new key: `npx @waswrongassembled/pii-shield generate-key`.
+2. Deploy every instance with the new key in `PII_SERVICE_VAULT_KEY` and the old one in `PII_SERVICE_VAULT_PREVIOUS_KEYS`. New entries use the new key; entries of the old key still restore. Until all instances run the new configuration, an instance with only the old key cannot read entries the new ones wrote, so roll out quickly, or first add the new key as a previous key everywhere and swap afterwards.
+3. Wait the longest TTL the vault used (`PII_SERVICE_VAULT_TTL`, default 900 s) after the last instance switched; then no entry of the old key is left (Postgres rows past their TTL are unreadable, the purge deletes them).
+4. Remove the old key from `PII_SERVICE_VAULT_PREVIOUS_KEYS` and from your secret store.
+
+If a key leaked, do not keep it as a previous key: entries written with it then answer 404 ("Unknown or expired vault id. Redact the text again."). Whoever has the leaked key and the storage can still read those entries until they are gone, so also delete them (for Postgres: `DELETE FROM pii_shield_vault`; for Redis: the keys with the vault prefix). PHP's `EncryptedVault` has a single key: a PHP process sharing the storage reads only entries of its own key.
 
 ## PostgreSQL
 
@@ -100,13 +113,13 @@ import {
   EntityLearner,
   InMemoryCustomEntityStore,
   MemoryVaultStorage,
-  parseVaultKey,
+  vaultKeyFromEnv,
 } from '@waswrongassembled/pii-shield';
 import { ServiceApi, startServer } from '@waswrongassembled/pii-shield/server';
 import { createMcpHttpHandler, serveStdio } from '@waswrongassembled/pii-shield/mcp';
 
 const api = new ServiceApi({
-  vault: new EncryptedVault({ storage: new MemoryVaultStorage(), key: parseVaultKey(process.env.KEY!) }),
+  vault: new EncryptedVault({ storage: new MemoryVaultStorage(), key: vaultKeyFromEnv() }),
   learner: await EntityLearner.create({ store: new InMemoryCustomEntityStore() }),
   token: process.env.PII_SERVICE_TOKEN,
   // modelDetector: () => new ModelDetector({ model, location: 'local' }),

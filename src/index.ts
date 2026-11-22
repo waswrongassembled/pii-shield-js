@@ -91,6 +91,8 @@ export {
   type EncryptedVaultOptions,
   generateVaultKey,
   parseVaultKey,
+  previousVaultKeysFromEnv,
+  vaultKeyFromEnv,
 } from './vault/encrypted-vault.js';
 export { InMemoryVault, type InMemoryVaultOptions } from './vault/in-memory-vault.js';
 export { MemoryVaultStorage, type MemoryVaultStorageOptions } from './vault/memory-vault-storage.js';

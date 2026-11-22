@@ -161,6 +161,19 @@ describe('PiiShield with a vault', () => {
     expect(dump).not.toContain('Maria Musterfrau');
     expect(dump).toContain(result.vaultId);
   });
+
+  it('serializes to redactedText, entityCount and vaultId only', async () => {
+    const result = await new PiiShield({ vault: new InMemoryVault() }).redactToVault(LETTER);
+
+    expect(JSON.parse(JSON.stringify(result))).toStrictEqual({
+      redactedText: result.redactedText,
+      entityCount: result.entities.length,
+      vaultId: result.vaultId,
+    });
+    expect(structuredClone(result)).toStrictEqual({ redactedText: result.redactedText, vaultId: result.vaultId });
+    expect(Object.keys(result)).toStrictEqual(['redactedText', 'vaultId']);
+    expect(result.mapping['⟦PERSON_1⟧']).toBe('Maria Musterfrau');
+  });
 });
 
 describe('NullPiiShield', () => {

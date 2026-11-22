@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { main } from '../src/cli.js';
-import { generateVaultKey, ModelLocation, type ModelPrompt } from '../src/index.js';
+import { generateVaultKey, ModelLocation, type ModelPrompt, parseVaultKey } from '../src/index.js';
 import { postgresSchema } from '../src/postgres/index.js';
 import { ConfigError, serviceFromEnv } from '../src/server/config.js';
 import { providerModel, validEndpoint } from '../src/server/model-providers.js';
@@ -59,6 +59,18 @@ describe('serviceFromEnv', () => {
     expect(local.api.checkAccess(undefined, '172.31.88.7')?.status).toBe(401);
   });
 
+  it('accepts previous vault keys for a rotation', async () => {
+    const previous = Buffer.from(generateVaultKey()).toString('base64');
+    const service = await serviceFromEnv({
+      PII_SERVICE_VAULT_KEY: KEY,
+      PII_SERVICE_VAULT_PREVIOUS_KEYS: ` ${previous} ,`,
+    });
+
+    const redacted = (await service.api.operation('redact', { text: 'SVNR 4568 150392' })).body ?? {};
+    const restored = await service.api.operation('restore', { text: '⟦SVNR_1⟧', vaultId: redacted['vaultId'] });
+    expect(restored.body).toMatchObject({ text: '4568 150392' });
+  });
+
   it('keeps learned types in a JSON file', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'pii-shield-cli-'));
     try {
@@ -78,6 +90,14 @@ describe('serviceFromEnv', () => {
 
   it.each([
     [{ PII_SERVICE_VAULT_KEY: 'too short' }, 'PII_SERVICE_VAULT_KEY must be 32 bytes, base64-encoded.'],
+    [
+      { PII_SERVICE_VAULT_PREVIOUS_KEYS: KEY },
+      'PII_SERVICE_VAULT_PREVIOUS_KEYS needs PII_SERVICE_VAULT_KEY (the current key).',
+    ],
+    [
+      { PII_SERVICE_VAULT_KEY: KEY, PII_SERVICE_VAULT_PREVIOUS_KEYS: `${KEY}, c2VjcmV0` },
+      'PII_SERVICE_VAULT_PREVIOUS_KEYS must be a comma-separated list of vault keys (32 bytes, base64-encoded); entry 2 is not.',
+    ],
     [{ PII_SERVICE_VAULT_STORE: 'filesystem' }, 'PII_SERVICE_VAULT_STORE must be "memory", "redis" or "postgres".'],
     [
       { PII_SERVICE_VAULT_STORE: 'redis' },
@@ -342,6 +362,22 @@ describe('pii-shield CLI', () => {
 
     expect(await main(['db-schema'], {})).toBe(0);
     expect(stdout.join('')).toBe(postgresSchema());
+  });
+
+  it('generates a vault key', async () => {
+    const stdout: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      stdout.push(String(chunk));
+
+      return true;
+    });
+
+    expect(await main(['generate-key'], {})).toBe(0);
+    expect(await main(['generate-key'], {})).toBe(0);
+    const [first = '', second = ''] = stdout;
+    expect(first).toMatch(/^[A-Za-z0-9+/]{43}=\n$/);
+    expect(parseVaultKey(first)).toHaveLength(32);
+    expect(second).not.toBe(first);
   });
 
   it('prints help', async () => {

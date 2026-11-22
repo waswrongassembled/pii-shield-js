@@ -76,7 +76,7 @@ Values always go in as parameters. Table names are configurable and validated: a
 
 ```ts
 import pg from 'pg';
-import { EncryptedVault, EntityLearner, parseVaultKey, PiiShield } from '@waswrongassembled/pii-shield';
+import { EncryptedVault, EntityLearner, PiiShield, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
 import { PostgresCustomEntityStore, PostgresVaultStorage } from '@waswrongassembled/pii-shield/postgres';
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -84,7 +84,7 @@ const query = pool.query.bind(pool);
 
 const storage = new PostgresVaultStorage({ query }); // table pii_shield_vault
 const shield = new PiiShield({
-  vault: new EncryptedVault({ storage, key: parseVaultKey(process.env.VAULT_KEY ?? '') }),
+  vault: new EncryptedVault({ storage, key: vaultKeyFromEnv() }),
   vaultTtl: 900,
 });
 const learner = await EntityLearner.create({
@@ -101,7 +101,7 @@ The stores never send `BEGIN` or `COMMIT`. Each method is one statement on the f
 
 ```ts
 import pg from 'pg';
-import { EncryptedVault, parseVaultKey, PiiShield } from '@waswrongassembled/pii-shield';
+import { EncryptedVault, PiiShield, vaultKeyFromEnv } from '@waswrongassembled/pii-shield';
 import { PostgresVaultStorage } from '@waswrongassembled/pii-shield/postgres';
 
 declare const pool: pg.Pool;
@@ -112,7 +112,7 @@ try {
   const shield = new PiiShield({
     vault: new EncryptedVault({
       storage: new PostgresVaultStorage({ query: client.query.bind(client) }),
-      key: parseVaultKey(process.env.VAULT_KEY ?? ''),
+      key: vaultKeyFromEnv(),
     }),
   });
   const { redactedText, vaultId } = await shield.redactToVault('Herrn\nJohann Beispielmann\nSVNR 4568 150392');
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS "pii_shield_learned_types" (
 
 ## Data protection
 
-- **Vault: ciphertext only.** `EncryptedVault` encrypts the mapping before it reaches the storage, and the key stays outside the database. Never use a `VaultStorage` on its own for mappings. Ids are stored as SHA-256 hashes, so the table does not reveal the `vaultId` a client holds.
+- **Vault: ciphertext only.** `EncryptedVault` encrypts the mapping before it reaches the storage, and the key stays outside the database. Never use a `VaultStorage` on its own for mappings. Ids are stored as SHA-256 hashes, so the table does not reveal the `vaultId` a client holds. Rotate the key with `previousKeys` (see [Key rotation](../README.md#key-rotation)).
 - **Learned types are plaintext.** `examples` and `counterExamples` are stored as they were learned and can contain real personal data. Treat the table like any other store of personal data: restrict access, include it in your records of processing, and handle backups accordingly. Prefer synthetic or anonymised examples.
 - **Store no examples (data minimisation, Art. 5(1)(c) GDPR).** `new EntityLearner({ store, keepExamples: false })` (service: `PII_SERVICE_LEARNED_KEEP_EXAMPLES=false`) checks the pattern against the examples and then stores only name, description and pattern. `learner.dropExamples()` strips types stored before; deleted values stay in backups and, for PostgreSQL, until `VACUUM` (see Erasure). The price: plain words without a pattern (model-only types) are refused, since only their examples let the model find them, and `dropExamples()` keeps theirs; the model knows the other types by name and description only; a type cannot be derived again from stored examples; PHP cannot read a store with types without examples (its `fromArray()` requires one). Stores need no change: `customEntityTypeFromJSON()` reads such types, and `verifyCustomEntityStore()` checks it.
 - **Erasure (Art. 17 GDPR).** `learner.forget(name)` deletes the row. PostgreSQL keeps the deleted tuple in the table file until `VACUUM`, and in WAL archives and backups until they rotate. Account for this in your retention periods, and run `VACUUM` (autovacuum does it eventually) where prompt removal matters.

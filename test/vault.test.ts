@@ -1,5 +1,5 @@
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   EncryptedVault,
@@ -8,7 +8,9 @@ import {
   MemoryVaultStorage,
   parseVaultKey,
   PiiShieldError,
+  previousVaultKeysFromEnv,
   VaultError,
+  vaultKeyFromEnv,
   type VaultStorage,
 } from '../src/index.js';
 import { encodePhpJson } from '../src/internal/php-json.js';
@@ -257,6 +259,94 @@ describe('EncryptedVault', () => {
     expect(JSON.stringify(vault)).toBe('{}');
   });
 
+  describe('key rotation', () => {
+    const OLD = new Uint8Array(32).fill(2);
+    const OLDER = new Uint8Array(32).fill(3);
+
+    it('reads entries of previous keys and writes with the current key', async () => {
+      const { storage } = setup();
+      await new EncryptedVault({ storage, key: OLDER }).store('id-older', MAPPING, 60);
+      await new EncryptedVault({ storage, key: OLD }).store('id-old', MAPPING, 60);
+      const rotated = new EncryptedVault({ storage, key: KEY, previousKeys: [OLD, OLDER] });
+
+      expect(await rotated.fetch('id-older')).toEqual(MAPPING);
+      expect(await rotated.fetch('id-old')).toEqual(MAPPING);
+
+      await rotated.store('id-new', MAPPING, 60);
+      expect(await new EncryptedVault({ storage, key: KEY }).fetch('id-new')).toEqual(MAPPING);
+      await expect(new EncryptedVault({ storage, key: OLD }).fetch('id-new')).rejects.toThrow(VaultError);
+    });
+
+    it('writes PHP payloads with the current key only', async () => {
+      const { storage } = setup();
+      await new EncryptedVault({ storage, key: KEY, previousKeys: [OLD] }).store('id-1', MAPPING, 60);
+      const payload = (await storage.get('id-1')) ?? new Uint8Array();
+
+      const plaintext = xchacha20poly1305(KEY, payload.subarray(0, 24), new TextEncoder().encode('id-1')).decrypt(
+        payload.subarray(24),
+      );
+
+      expect(new TextDecoder().decode(plaintext)).toBe(encodePhpJson(MAPPING));
+    });
+
+    it('fails like a single wrong key when no key fits, without telling which key failed', async () => {
+      const { storage } = setup();
+      await new EncryptedVault({ storage, key: generateVaultKey() }).store('id-1', MAPPING, 60);
+      await storage.put('id-short', new Uint8Array(24), 60);
+      const vault = new EncryptedVault({ storage, key: KEY, previousKeys: [OLD, OLDER] });
+
+      for (const id of ['id-1', 'id-short']) {
+        const error = await vault.fetch(id).catch((e: unknown) => e);
+        expect(error).toBeInstanceOf(VaultError);
+        expect(error).toMatchObject({
+          message: 'Vault entry cannot be decrypted (wrong key or tampered data).',
+          code: 'VAULT_DECRYPTION_FAILED',
+        });
+        expect((error as Error).cause).toBeUndefined();
+      }
+    });
+
+    it('keeps the id binding for previous keys', async () => {
+      const { storage } = setup();
+      await new EncryptedVault({ storage, key: OLD }).store('id-1', MAPPING, 60);
+      await storage.put('id-2', (await storage.get('id-1')) ?? new Uint8Array(), 60);
+
+      await expect(new EncryptedVault({ storage, key: KEY, previousKeys: [OLD] }).fetch('id-2')).rejects.toThrow(
+        VaultError,
+      );
+    });
+
+    it('copies the previous keys', async () => {
+      const { storage } = setup();
+      await new EncryptedVault({ storage, key: OLD }).store('id-1', MAPPING, 60);
+      const previous = OLD.slice();
+      const vault = new EncryptedVault({ storage, key: KEY, previousKeys: [previous] });
+      previous.fill(0);
+
+      expect(await vault.fetch('id-1')).toEqual(MAPPING);
+      expect(JSON.stringify(vault)).toBe('{}');
+    });
+
+    it.each([
+      ['a short key', [OLD, new Uint8Array(31)], new RangeError('Previous key 2 must be 32 bytes long.')],
+      [
+        'a string',
+        ['obi5jfaIIYizG5L9SsLwZcKiTq8T66coeawtjD63KD8='],
+        new TypeError('Previous key 1 must be a Uint8Array of 32 raw bytes, see parseVaultKey().'),
+      ],
+      ['no array', OLD, new TypeError('The previous keys must be an array of keys.')],
+    ])('rejects %s', (_, previousKeys, error) => {
+      expect(
+        () =>
+          new EncryptedVault({
+            storage: setup().storage,
+            key: KEY,
+            previousKeys: previousKeys as unknown as Uint8Array[],
+          }),
+      ).toThrow(error);
+    });
+  });
+
   it('generates random keys', () => {
     expect(generateVaultKey()).toHaveLength(32);
     expect(generateVaultKey()).not.toEqual(generateVaultKey());
@@ -396,6 +486,88 @@ describe('parseVaultKey', () => {
     }
 
     expect(performance.now() - start).toBeLessThan(1000);
+  });
+});
+
+describe('vaultKeyFromEnv / previousVaultKeysFromEnv', () => {
+  const B64 = Buffer.from(KEY).toString('base64');
+  const OTHER = Buffer.alloc(32, 7).toString('base64');
+
+  it('reads PII_SHIELD_VAULT_KEY by default, or a named variable', () => {
+    expect(vaultKeyFromEnv(undefined, { PII_SHIELD_VAULT_KEY: `${B64}\n` })).toEqual(KEY);
+    expect(vaultKeyFromEnv('APP_VAULT_KEY', { APP_VAULT_KEY: B64 })).toEqual(KEY);
+  });
+
+  it('reads process.env when no environment is given', () => {
+    vi.stubEnv('PII_SHIELD_VAULT_KEY', B64);
+    vi.stubEnv('PII_SHIELD_VAULT_PREVIOUS_KEYS', OTHER);
+    try {
+      expect(vaultKeyFromEnv()).toEqual(KEY);
+      expect(previousVaultKeysFromEnv()).toEqual([new Uint8Array(32).fill(7)]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it.each([
+    ['missing', {}],
+    ['empty', { PII_SHIELD_VAULT_KEY: '' }],
+    ['blank', { PII_SHIELD_VAULT_KEY: ' \n' }],
+  ])('throws when the variable is %s', (_, env) => {
+    expect(() => vaultKeyFromEnv(undefined, env)).toThrow(
+      new TypeError(
+        'PII_SHIELD_VAULT_KEY is not set. Set it to a vault key (32 bytes, base64), e.g. from "npx @waswrongassembled/pii-shield generate-key".',
+      ),
+    );
+  });
+
+  it.each([
+    ['too short', 'c2VjcmV0LXZhbHVl'],
+    ['not base64', 's3cret value!'],
+  ])('throws without quoting a value that is %s', (_, value) => {
+    const error = (() => {
+      try {
+        vaultKeyFromEnv('APP_VAULT_KEY', { APP_VAULT_KEY: value });
+      } catch (e) {
+        return e as Error;
+      }
+    })();
+
+    expect(error).toEqual(new TypeError('APP_VAULT_KEY must be a vault key of 32 bytes, base64-encoded.'));
+    expect(error?.cause).toBeUndefined();
+    expect(error?.stack).not.toContain(value);
+  });
+
+  it('reads comma-separated previous keys, ignoring blanks; none when unset', () => {
+    expect(previousVaultKeysFromEnv(undefined, {})).toEqual([]);
+    expect(previousVaultKeysFromEnv(undefined, { PII_SHIELD_VAULT_PREVIOUS_KEYS: '' })).toEqual([]);
+    expect(
+      previousVaultKeysFromEnv('OLD_KEYS', { OLD_KEYS: ` ${OTHER} ,${B64}, ` }).map((k) =>
+        Buffer.from(k).toString('base64'),
+      ),
+    ).toEqual([OTHER, B64]);
+  });
+
+  it('names the bad entry by position, never by value', () => {
+    expect(() => previousVaultKeysFromEnv(undefined, { PII_SHIELD_VAULT_PREVIOUS_KEYS: `${B64},c2VjcmV0` })).toThrow(
+      new TypeError(
+        'PII_SHIELD_VAULT_PREVIOUS_KEYS must be a comma-separated list of vault keys (32 bytes, base64-encoded); entry 2 is not.',
+      ),
+    );
+  });
+
+  it('feeds a rotated EncryptedVault', async () => {
+    const storage = new MemoryVaultStorage();
+    const env = { PII_SHIELD_VAULT_KEY: OTHER, PII_SHIELD_VAULT_PREVIOUS_KEYS: B64 };
+    await new EncryptedVault({ storage, key: KEY }).store('id-1', MAPPING, 60);
+
+    const vault = new EncryptedVault({
+      storage,
+      key: vaultKeyFromEnv(undefined, env),
+      previousKeys: previousVaultKeysFromEnv(undefined, env),
+    });
+
+    expect(await vault.fetch('id-1')).toEqual(MAPPING);
   });
 });
 

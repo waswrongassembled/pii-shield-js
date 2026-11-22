@@ -11,8 +11,17 @@ const NONCE_BYTES = 24;
 export interface EncryptedVaultOptions {
   /** Where the ciphertext goes; it never sees clear text. */
   storage: VaultStorage;
-  /** 32 raw bytes, see generateVaultKey() and parseVaultKey(). The vault keeps its own copy. */
+  /**
+   * 32 raw bytes, see vaultKeyFromEnv() and parseVaultKey(). Encrypts every new entry and decrypts.
+   * The vault keeps its own copy.
+   */
   key: Uint8Array;
+  /**
+   * Keys of earlier rotations (32 raw bytes each, see previousVaultKeysFromEnv()): only for reading
+   * entries written before the rotation, tried in order after `key`. Drop a key once the longest TTL
+   * since the rotation has passed. The vault keeps its own copies. Node only, PHP has a single key.
+   */
+  previousKeys?: readonly Uint8Array[] | undefined;
 }
 
 /**
@@ -22,21 +31,32 @@ export interface EncryptedVaultOptions {
  *
  * The vault id is bound as associated data, so a ciphertext copied to another id fails to decrypt.
  * This is the only supported way to persist mappings.
+ *
+ * Key rotation (Node only): pass the new `key` and the old one in `previousKeys`. New entries are
+ * encrypted with `key`; reading tries `key`, then each previous key. Payloads stay PHP's format, so PHP
+ * reads every entry written with the key it has.
  */
 export class EncryptedVault implements Vault {
   readonly #storage: VaultStorage;
   readonly #key: Uint8Array;
+  /** `key` first, then the previous keys. */
+  readonly #decryptionKeys: readonly Uint8Array[];
 
   constructor(options: EncryptedVaultOptions) {
     const { storage, key } = options;
-    if (!(key instanceof Uint8Array)) {
-      throw new TypeError('The key must be a Uint8Array of 32 raw bytes, see parseVaultKey().');
+    const previousKeys: unknown = options.previousKeys ?? [];
+    assertKey(key, 'The key');
+    if (!Array.isArray(previousKeys)) {
+      throw new TypeError('The previous keys must be an array of keys.');
     }
-    if (key.length !== KEY_BYTES) {
-      throw new RangeError(`The key must be ${String(KEY_BYTES)} bytes long.`);
+    const previous: Uint8Array[] = [];
+    for (const [i, candidate] of (previousKeys as unknown[]).entries()) {
+      assertKey(candidate, `Previous key ${String(i + 1)}`);
+      previous.push(candidate);
     }
     this.#storage = storage;
     this.#key = key.slice();
+    this.#decryptionKeys = Object.freeze([this.#key, ...previous.map((k) => k.slice())]);
   }
 
   async store(id: string, mapping: PlaceholderMapping, ttlSeconds: number): Promise<void> {
@@ -52,15 +72,9 @@ export class EncryptedVault implements Vault {
       return null;
     }
 
-    let plaintext: Uint8Array;
-    try {
-      if (payload.length <= NONCE_BYTES) {
-        throw new RangeError('payload too short');
-      }
-      plaintext = xchacha20poly1305(this.#key, payload.subarray(0, NONCE_BYTES), utf8(id)).decrypt(
-        payload.subarray(NONCE_BYTES),
-      );
-    } catch {
+    const plaintext = decryptWithAny(this.#decryptionKeys, id, payload);
+    if (plaintext === null) {
+      // Same error whichever key failed, without a cause: nothing about the keys leaves the vault.
       throw new VaultError('Vault entry cannot be decrypted (wrong key or tampered data).', 'VAULT_DECRYPTION_FAILED');
     }
 
@@ -76,7 +90,39 @@ export class EncryptedVault implements Vault {
   }
 }
 
-/** A new random key (32 raw bytes). Store it base64-encoded as a secret; read it back with parseVaultKey(). */
+/** The plaintext, or null if no key authenticates the payload (or it is too short). */
+function decryptWithAny(keys: readonly Uint8Array[], id: string, payload: Uint8Array): Uint8Array | null {
+  if (payload.length <= NONCE_BYTES) {
+    return null;
+  }
+  const nonce = payload.subarray(0, NONCE_BYTES);
+  const ciphertext = payload.subarray(NONCE_BYTES);
+  const associatedData = utf8(id);
+  for (const key of keys) {
+    try {
+      return xchacha20poly1305(key, nonce, associatedData).decrypt(ciphertext);
+    } catch {
+      // wrong key or tampered data: try the next key
+    }
+  }
+
+  return null;
+}
+
+function assertKey(key: unknown, what: string): asserts key is Uint8Array {
+  if (!(key instanceof Uint8Array)) {
+    throw new TypeError(`${what} must be a Uint8Array of 32 raw bytes, see parseVaultKey().`);
+  }
+  if (key.length !== KEY_BYTES) {
+    throw new RangeError(`${what} must be ${String(KEY_BYTES)} bytes long.`);
+  }
+}
+
+/**
+ * A new random key (32 raw bytes), for creating a key once (`npx @waswrongassembled/pii-shield generate-key`
+ * prints one base64-encoded). Keep it as a secret and read it with vaultKeyFromEnv() or parseVaultKey(); a
+ * key generated at run time cannot read entries after a restart or in another process.
+ */
 export function generateVaultKey(): Uint8Array {
   return globalThis.crypto.getRandomValues(new Uint8Array(KEY_BYTES));
 }
@@ -102,6 +148,63 @@ export function parseVaultKey(base64: string): Uint8Array {
   }
 
   return key;
+}
+
+type Env = Readonly<Record<string, string | undefined>>;
+
+/**
+ * Reads the vault key (32 bytes, base64) from an environment variable, default `PII_SHIELD_VAULT_KEY`
+ * (the service reads `PII_SERVICE_VAULT_KEY`). Create a key once with
+ * `npx @waswrongassembled/pii-shield generate-key`.
+ *
+ * @throws TypeError if the variable is missing, empty or not a 32-byte base64 key; the message names the
+ *   variable, never its value
+ */
+export function vaultKeyFromEnv(name = 'PII_SHIELD_VAULT_KEY', env: Env = process.env): Uint8Array {
+  const value = env[name];
+  if (value === undefined || value.trim() === '') {
+    throw new TypeError(
+      `${name} is not set. Set it to a vault key (32 bytes, base64), e.g. from "npx @waswrongassembled/pii-shield generate-key".`,
+    );
+  }
+  try {
+    return parseVaultKey(value);
+  } catch {
+    throw new TypeError(`${name} must be a vault key of 32 bytes, base64-encoded.`);
+  }
+}
+
+/**
+ * Reads the keys of earlier rotations (comma-separated, each 32 bytes base64) for
+ * `EncryptedVault`'s `previousKeys`, default variable `PII_SHIELD_VAULT_PREVIOUS_KEYS`. Missing or empty
+ * gives `[]`.
+ *
+ * @throws TypeError if an entry is not a 32-byte base64 key; the message names the variable and the
+ *   entry's position, never a value
+ */
+export function previousVaultKeysFromEnv(
+  name = 'PII_SHIELD_VAULT_PREVIOUS_KEYS',
+  env: Env = process.env,
+): Uint8Array[] {
+  const entries = (env[name] ?? '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry !== '');
+  const keys: Uint8Array[] = [];
+  for (const [i, entry] of entries.entries()) {
+    try {
+      keys.push(parseVaultKey(entry));
+    } catch {
+      for (const key of keys) {
+        key.fill(0);
+      }
+      throw new TypeError(
+        `${name} must be a comma-separated list of vault keys (32 bytes, base64-encoded); entry ${String(i + 1)} is not.`,
+      );
+    }
+  }
+
+  return keys;
 }
 
 /**
