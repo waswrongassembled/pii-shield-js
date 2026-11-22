@@ -85,6 +85,14 @@ PHP's `runsInBoundedTime()` limits each start position (`pcre.backtrack_limit`),
 
 PHP has only PSR-6 cache and file stores. The port adds `PostgresVaultStorage` and `PostgresCustomEntityStore` (`@waswrongassembled/pii-shield/postgres`). They take a driver-agnostic `query(text, params)` function, never run DDL (`postgresSchema()` returns it) and work inside the caller's transaction. Vault expiry uses the database clock, and `purgeExpired()` deletes expired rows. Learned types are stored one row per type in `jsonb`, so concurrent writes of different names never conflict. PHP cannot read these tables. The service supports them with `PII_SERVICE_VAULT_STORE=postgres`, `PII_SERVICE_LEARNED_STORE=postgres` and `PII_SERVICE_DATABASE_URL`, and prints the DDL with `pii-shield db-schema`. `@waswrongassembled/pii-shield/testing` (`verifyVaultStorage()`, `verifyCustomEntityStore()`) checks any store against the contracts in [stores.md](stores.md).
 
+## Learned types without examples (Node only)
+
+PHP always stores examples and counter-examples, and its `CustomEntityType` requires at least one example. `EntityLearner` takes `keepExamples: false` (service: `PII_SERVICE_LEARNED_KEEP_EXAMPLES=false`) to store only name, description and pattern, and `dropExamples()` strips types stored before; `withoutExamples(type)` does it for one type. Types without a pattern are refused (`LearningError`) or keep their examples, since only the examples let the model find them. `customEntityTypeFromJSON()` and with it every store reads a type with a pattern and no examples, where PHP's `fromArray()` throws "At least one example is needed.": PHP cannot read a file that holds such a type. `defineCustomEntityType()` still requires an example, as in PHP. With the default `keepExamples: true`, behaviour and file format are unchanged.
+
+## Learned types as a PiiShield option (Node only)
+
+`new PiiShield({ learner })` (also `PiiMasker`, `EntityExtractor`) adds `learner.detector()` after the default or given detectors, unless it is already among them; `detector()` returns the same instance on every call. PHP's Symfony bundle registers the learned-types detector after the built-in ones, in the same order.
+
 ## Model-based detection is async
 
 PHP's `ModelDetector` is a synchronous `DetectorInterface`. Model calls are async in Node, so `ModelDetector` is an `AsyncDetector` (`async: true`, `detect(text, { signal })` returns a Promise). `EntityExtractor.extractAsync()`, `PiiShield.redactAsync()`, `PiiShield.redactToVault()` and `PiiMasker.maskAsync()` run it next to the synchronous detectors (same results for the same findings); `extract()`, `redact()` and `mask()` throw a `TypeError` when an async detector is configured, before anything is sent. `redactToVault()` uses the async extraction for every detector set.

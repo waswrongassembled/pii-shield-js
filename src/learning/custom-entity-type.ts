@@ -17,15 +17,16 @@ export const CUSTOM_ENTITY_TYPE_LIMITS = Object.freeze({
  *
  * Validated, frozen data; its JSON form is exactly PHP's `CustomEntityType::toArray()`, so
  * `JSON.stringify(type)` gives the stored shape. Create it with `defineCustomEntityType()` or
- * `customEntityTypeFromJSON()`. Examples are stored, so they must be synthetic or anonymised.
+ * `customEntityTypeFromJSON()`. Examples are stored, so they must be synthetic or anonymised; a type
+ * with a pattern can drop them (`withoutExamples()`, `EntityLearner` option `keepExamples: false`).
  */
 export interface CustomEntityType {
   /** UPPER_SNAKE_CASE, becomes the placeholder name (⟦NAME_1⟧). */
   readonly name: string;
   readonly description: string;
-  /** Values that are this type. */
+  /** Values that are this type; empty only for a type with a pattern whose examples were dropped. */
   readonly examples: readonly string[];
-  /** Similar values that are not. */
+  /** Similar values that are not (empty when the examples were dropped). */
   readonly counterExamples: readonly string[];
   /** Regular expression in PCRE syntax without delimiters (see PatternGrammar), or null for model-only types. */
   readonly pattern: string | null;
@@ -47,6 +48,28 @@ const compiledPatterns = new WeakMap<CustomEntityType, LearnedPattern | null>();
  * @throws LearningError
  */
 export function defineCustomEntityType(init: CustomEntityTypeInit): CustomEntityType {
+  return buildType(init, true);
+}
+
+/**
+ * The type without its examples and counter-examples, so that only name, description and pattern are
+ * stored (data minimisation). Detection by the pattern is unchanged; model-based detection then knows the
+ * type only by name and description. PHP cannot read such a type (its `fromArray()` requires an example).
+ *
+ * @throws LearningError when the type has no pattern: a model-only type is found only through its examples
+ */
+export function withoutExamples(type: CustomEntityType): CustomEntityType {
+  if (type.pattern === null) {
+    throw new LearningError(
+      `"${type.name}" has no pattern, so only model-based detection finds it, and it needs the examples for that. Keep its examples or give it a pattern.`,
+    );
+  }
+
+  return buildType({ ...type, examples: [], counterExamples: [] }, false);
+}
+
+/** Without `requireExamples`, a type with a pattern may have none (stored after withoutExamples()). */
+function buildType(init: CustomEntityTypeInit, requireExamples: boolean): CustomEntityType {
   const { name, description, examples, counterExamples = [], pattern = null } = init;
   // PHP's pattern has no /u and no D modifier: $ also matches before a final "\n".
   if (!/^[A-Z][A-Z0-9_]{1,39}\n?$/.test(name)) {
@@ -55,7 +78,7 @@ export function defineCustomEntityType(init: CustomEntityTypeInit): CustomEntity
   if (isEntityType(name)) {
     throw new LearningError(`"${name}" is a built-in type. Choose another name.`);
   }
-  if (examples.length === 0) {
+  if (examples.length === 0 && (requireExamples || pattern === null)) {
     throw new LearningError('At least one example is needed.');
   }
   // Description and examples reach the detection model: keep them short, single-line data.
@@ -88,7 +111,8 @@ export function defineCustomEntityType(init: CustomEntityTypeInit): CustomEntity
 /**
  * Builds a type from stored data (JSON file, key-value store) like PHP's `fromArray()`: non-string
  * fields become empty, non-string list entries are dropped, unknown keys are ignored, an empty pattern
- * means model-only. Every field is then validated.
+ * means model-only. Every field is then validated. Unlike PHP, a type with a pattern may have no
+ * examples (see withoutExamples()).
  *
  * @throws LearningError
  */
@@ -98,20 +122,23 @@ export function customEntityTypeFromJSON(data: unknown): CustomEntityType {
     isPhpArray(list) ? Object.values(list).filter((v): v is string => typeof v === 'string') : [];
   const { name, description, examples, counterExamples, pattern } = record;
 
-  return defineCustomEntityType({
-    name: typeof name === 'string' ? name : '',
-    description: typeof description === 'string' ? description : '',
-    examples: strings(examples),
-    counterExamples: strings(counterExamples),
-    pattern: typeof pattern === 'string' && pattern !== '' ? pattern : null,
-  });
+  return buildType(
+    {
+      name: typeof name === 'string' ? name : '',
+      description: typeof description === 'string' ? description : '',
+      examples: strings(examples),
+      counterExamples: strings(counterExamples),
+      pattern: typeof pattern === 'string' && pattern !== '' ? pattern : null,
+    },
+    false,
+  );
 }
 
 /** The compiled pattern of a type (validating it first if it did not come from defineCustomEntityType()). */
 export function compiledPattern(type: CustomEntityType): LearnedPattern | null {
   let compiled = compiledPatterns.get(type);
   if (compiled === undefined) {
-    compiled = compiledPatterns.get(defineCustomEntityType(type)) ?? null;
+    compiled = compiledPatterns.get(buildType(type, false)) ?? null;
     compiledPatterns.set(type, compiled);
   }
 

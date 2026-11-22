@@ -167,7 +167,10 @@ paths:
         pattern; they are learned as model-only types and reach the model as few-shot examples.
         Learned types take effect immediately for `/v1/redact` and `/v1/mask`.
 
-        Examples are stored: use synthetic or anonymised values only. Hand-written patterns follow a
+        Examples are stored unless the service runs with `PII_SERVICE_LEARNED_KEEP_EXAMPLES=false`:
+        use synthetic or anonymised values only. Without stored examples, the returned type has empty
+        `examples` and `counterExamples`, and plain words without a pattern are refused with 422 (only
+        their examples would let the model find them); give a `pattern` instead. Hand-written patterns follow a
         restricted grammar (no repeated groups, anchors, backreferences or lookarounds) to rule out
         catastrophic backtracking.
       operationId: learn
@@ -381,7 +384,10 @@ components:
       properties:
         name: { $ref: '#/components/schemas/TypeName' }
         description: { type: string }
-        examples: { type: array, items: { type: string } }
+        examples:
+          type: array
+          items: { type: string }
+          description: Empty for a type with a pattern whose examples are not kept (PII_SERVICE_LEARNED_KEEP_EXAMPLES=false).
         counterExamples: { type: array, items: { type: string } }
         pattern: { type: [string, 'null'], description: null for model-only types }
 

@@ -18,6 +18,7 @@ import { TaxNumberDetector } from './detectors/tax-number.js';
 import { createEntity, type Entity, typeName } from './entity.js';
 import { EntityType } from './entity-type.js';
 import { codePointLength, phpTrim, SPACE } from './internal/pcre.js';
+import type { EntityLearner } from './learning/entity-learner.js';
 
 const MIN_PROPAGATION_LENGTH = 3;
 
@@ -33,6 +34,12 @@ export interface EntityExtractorOptions {
    * with the async APIs (extractAsync(), redactAsync(), redactToVault(), maskAsync()).
    */
   detectors?: Iterable<Detector | DetectorFunction | AsyncDetector>;
+  /**
+   * Also detect the patterns of these learned types: adds `learner.detector()` after the detectors
+   * (unless it is already among them). It reads the learner's snapshot, which learn() and forget()
+   * update; call `learner.refresh()` to pick up types other processes learned.
+   */
+  learner?: Pick<EntityLearner, 'detector'>;
   /** Values that are never treated as PII (exact match). */
   allowlist?: Iterable<string>;
 }
@@ -87,7 +94,12 @@ export class EntityExtractor {
   readonly #allowlist: ReadonlySet<string>;
 
   constructor(options: EntityExtractorOptions = {}) {
-    this.#detectors = [...(options.detectors ?? defaultDetectors())];
+    const detectors = [...(options.detectors ?? defaultDetectors())];
+    const learned = options.learner?.detector();
+    if (learned !== undefined && !detectors.includes(learned)) {
+      detectors.push(learned);
+    }
+    this.#detectors = detectors;
     this.#allowlist = new Set(options.allowlist);
   }
 

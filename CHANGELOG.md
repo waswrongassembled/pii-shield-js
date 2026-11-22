@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `new PiiShield({ learner })`, also for `PiiMasker` and `EntityExtractor`: adds the learned types to the default (or given) detectors, so they can no longer be left out by accident. A learner's detector is not registered twice.
+- `EntityLearner` option `keepExamples: false`: learned types are stored with name, description and pattern only, after the pattern was checked against the examples. Model-only types (no pattern) are refused in this mode. `learner.dropExamples()` strips types stored before (model-only types keep theirs), `withoutExamples(type)` strips one type. Service: `PII_SERVICE_LEARNED_KEEP_EXAMPLES=false`. PHP cannot read a store that holds types without examples; the default stays `true`.
+
+### Changed
+
+- `customEntityTypeFromJSON()` and therefore all stores accept a stored type with a pattern and no examples. `verifyCustomEntityStore()` checks that a store returns such a type unchanged.
+- `EntityLearner.detector()` returns the same detector instance on every call.
+
 ## [0.2.0] - 2026-11-21
 
 ### Added

@@ -236,11 +236,18 @@ export async function serviceFromEnv(
     } else {
       throw new ConfigError('PII_SERVICE_LEARNED_STORE must be "file", "memory", "redis" or "postgres".');
     }
+    const keepExamples = get('PII_SERVICE_LEARNED_KEEP_EXAMPLES') ?? 'true';
+    if (keepExamples !== 'true' && keepExamples !== 'false') {
+      throw new ConfigError('PII_SERVICE_LEARNED_KEEP_EXAMPLES must be "true" or "false".');
+    }
     let learner: EntityLearner;
     try {
-      learner = await EntityLearner.create({ store });
+      learner = await EntityLearner.create({ store, keepExamples: keepExamples === 'true' });
     } catch (e) {
       throw new ConfigError(`The learned types cannot be read: ${safeMessage(e)}`);
+    }
+    if (!learner.keepExamples && learner.snapshot.some((t) => t.pattern !== null && t.examples.length > 0)) {
+      notes.push('Learned types: types learned before still hold examples; EntityLearner.dropExamples() removes them.');
     }
 
     // Model
