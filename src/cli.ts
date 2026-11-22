@@ -4,6 +4,7 @@
  */
 import { parseArgs } from 'node:util';
 
+import { reportToStderr } from './internal/background.js';
 import { postgresSchema } from './postgres/index.js';
 import { ConfigError, serviceFromEnv } from './server/config.js';
 import { type McpHttpHandler, startServer } from './server/http-server.js';
@@ -97,8 +98,7 @@ export async function main(
   }
   const onError = (error: unknown) => {
     // Name and code only: messages of provider errors may quote the request text.
-    const { name = 'Error', code } = (error ?? {}) as { name?: string; code?: unknown };
-    process.stderr.write(`pii-shield: request failed (${name}${typeof code === 'string' ? ` ${code}` : ''})\n`);
+    reportToStderr(error, 'request');
   };
 
   if (command === 'mcp' && values.http !== true) {
