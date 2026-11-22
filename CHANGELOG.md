@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-22
+
 ### Added
 
 - `createPiiShield(options)`: a `PiiShield` with safe defaults in one call. Vault entries live 900 s and expired ones are deleted at start and every 300 s on an unref'd timer (`purgeInterval`, errors to `onError`, by default name and code only); learned types are included in detection and stored without examples (`keepExamples: false`, so model-only types are refused); a vault key is never generated for a storage; the vault and the learned types are read once at start. The result also has `learner`, `notes` and `close()` / `Symbol.asyncDispose`. Without `vault` the mappings are kept in memory with a random per-process key (noted); `vault: false` turns the vault off.
@@ -64,7 +66,8 @@ Privacy and crash bugs of the PHP package are fixed rather than reproduced: name
 - `@waswrongassembled/pii-shield/mcp` (peer `@modelcontextprotocol/sdk`): the MCP tools `redact_text`, `restore_text`, `mask_text`, `learn_entity_type` and `list_entity_types` over STDIO and Streamable HTTP.
 - `pii-shield` CLI: `pii-shield serve`, `pii-shield mcp [--http]`, configured with PHP's environment variables.
 
-[Unreleased]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/waswrongassembled/pii-shield-js/releases/tag/v0.1.0
