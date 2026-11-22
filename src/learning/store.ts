@@ -8,14 +8,16 @@ import { type CustomEntityType, customEntityTypeFromJSON } from './custom-entity
  * `@waswrongassembled/pii-shield/testing`.
  *
  * Examples and counter-examples are stored in plain text and may be personal data: treat the backend
- * like any other store of personal data (access rights, backups, deletion through `remove()`).
+ * like any other store of personal data (access rights, backups, deletion through `remove()`), or store
+ * none (EntityLearner option `keepExamples: false`).
  *
  * Contract every implementation keeps:
  * - `all()` is sorted by name in byte order (sortByName(), PHP's strcmp()), independent of a
  *   database collation.
  * - `get()` of an unknown name gives `null`; `save()` replaces a type with the same name; `remove()` of
  *   an unknown name is a no-op.
- * - Types read back are validated (customEntityTypeFromJSON()) and equal to what was saved.
+ * - Types read back are validated (customEntityTypeFromJSON()) and equal to what was saved, also types
+ *   with a pattern and no examples (withoutExamples()).
  * - Concurrent `save()`/`remove()` calls for different names must not lose each other's writes.
  *   KeyValueCustomEntityStore keeps this only for writes through one instance: its read-modify-write
  *   of the whole list loses writes across processes unless you serialise them yourself.

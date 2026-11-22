@@ -100,7 +100,7 @@ const vault = new EncryptedVault({
 Teach a type from examples; a pattern is derived and checked against the counter-examples. Stores: `JsonFileCustomEntityStore` (same file format as PHP), `InMemoryCustomEntityStore`, `KeyValueCustomEntityStore`, `PostgresCustomEntityStore` (see [docs/stores.md](docs/stores.md)).
 
 ```ts
-import { defaultDetectors, EntityLearner, JsonFileCustomEntityStore, PiiShield } from '@waswrongassembled/pii-shield';
+import { EntityLearner, JsonFileCustomEntityStore, PiiShield } from '@waswrongassembled/pii-shield';
 
 const learner = await EntityLearner.create({ store: new JsonFileCustomEntityStore('var/learned-types.json') });
 const { type } = await learner.learn({
@@ -110,9 +110,25 @@ const { type } = await learner.learn({
 });
 type.pattern; // 'VN-\\d{4}-\\d{6}'
 
-const shield = new PiiShield({ detectors: [...defaultDetectors(), learner.detector()] });
+const shield = new PiiShield({ learner }); // the default detectors plus the learned types
 shield.redact('Polizze VN-2026-000999').redactedText; // 'Polizze ⟦INSURANCE_NUMBER_1⟧'
 ```
+
+`learner` works the same in `PiiMasker` and `EntityExtractor`, and next to your own `detectors`. Detection reads the learner's snapshot: `learn()` and `forget()` update it at once, types that other processes learned appear after `learner.refresh()` (per request or on a timer, see [docs/stores.md](docs/stores.md#several-instances-and-learned-types)).
+
+Examples and counter-examples are stored in plain text and may be personal data. With `keepExamples: false` the learner checks the pattern against them and then stores only name, description and pattern:
+
+```ts
+import { EntityLearner, JsonFileCustomEntityStore } from '@waswrongassembled/pii-shield';
+
+const learner = await EntityLearner.create({
+  store: new JsonFileCustomEntityStore('var/learned-types.json'),
+  keepExamples: false,
+});
+await learner.dropExamples(); // once: strips types stored before, returns { stripped, kept }
+```
+
+The trade-off: plain words without a pattern (model-only types such as pet names) are then refused, because only their examples let the model find them; give a pattern by hand instead. Model-based detection knows the other types by name and description only. A type cannot be derived again from its stored examples. PHP cannot read a store that holds types without examples. `dropExamples()` keeps the examples of model-only types.
 
 ## Stores: PostgreSQL and your own
 

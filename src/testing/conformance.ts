@@ -2,7 +2,7 @@ import assert, { AssertionError } from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import { type CustomEntityType, defineCustomEntityType } from '../learning/custom-entity-type.js';
+import { type CustomEntityType, defineCustomEntityType, withoutExamples } from '../learning/custom-entity-type.js';
 import type { CustomEntityStore } from '../learning/store.js';
 import type { VaultStorage } from '../vault/vault.js';
 
@@ -274,10 +274,15 @@ export async function verifyCustomEntityStore<S extends CustomEntityStore>(
       },
     },
     {
-      name: 'save() then get() and all() give the type back unchanged',
+      name: 'save() then get() and all() give the type back unchanged (also without examples)',
       run: async () => {
         const store = await factory();
-        const types = [syntheticType('TEST_CODE'), richType()];
+        // A type stored without examples (EntityLearner option keepExamples: false) must load as well.
+        const types = [
+          syntheticType('TEST_CODE'),
+          richType(),
+          withoutExamples({ ...richType(), name: 'BARE_TEST_CODE' }),
+        ];
         for (const type of types) {
           await store.save(type);
         }

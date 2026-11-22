@@ -40,8 +40,14 @@ export {
   customEntityTypeFromJSON,
   type CustomEntityTypeInit,
   defineCustomEntityType,
+  withoutExamples,
 } from './learning/custom-entity-type.js';
-export { EntityLearner, type EntityLearnerOptions, type LearningResult } from './learning/entity-learner.js';
+export {
+  type DropExamplesResult,
+  EntityLearner,
+  type EntityLearnerOptions,
+  type LearningResult,
+} from './learning/entity-learner.js';
 export { JsonFileCustomEntityStore, type JsonFileCustomEntityStoreOptions } from './learning/json-file-store.js';
 export { patternViolation } from './learning/pattern-grammar.js';
 export { learnPattern } from './learning/pattern-learner.js';
