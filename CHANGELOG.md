@@ -7,11 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Vault key rotation: `EncryptedVault` takes `previousKeys`, keys that only decrypt (tried in order after `key`); new entries are always written with `key`, in PHP's payload format. The service reads them from `PII_SERVICE_VAULT_PREVIOUS_KEYS` (comma-separated base64). Procedure in docs/server.md.
+- `vaultKeyFromEnv(name = 'PII_SHIELD_VAULT_KEY', env = process.env)` and `previousVaultKeysFromEnv(name = 'PII_SHIELD_VAULT_PREVIOUS_KEYS', env)` read keys from the environment and throw a `TypeError` naming the variable, never the value, if one is missing or invalid.
+- `pii-shield generate-key` prints a new vault key (base64). Examples now read the key with `vaultKeyFromEnv()` instead of generating one at run time.
 - `new PiiShield({ learner })`, also for `PiiMasker` and `EntityExtractor`: adds the learned types to the default (or given) detectors, so they can no longer be left out by accident. A learner's detector is not registered twice.
 - `EntityLearner` option `keepExamples: false`: learned types are stored with name, description and pattern only, after the pattern was checked against the examples. Model-only types (no pattern) are refused in this mode. `learner.dropExamples()` strips types stored before (model-only types keep theirs), `withoutExamples(type)` strips one type. Service: `PII_SERVICE_LEARNED_KEEP_EXAMPLES=false`. PHP cannot read a store that holds types without examples; the default stays `true`.
 
 ### Changed
 
+- **Redaction results no longer serialize their original values.** `mapping` and `entities` of a `RedactionResult` / `VaultRedactionResult` are still readable properties but no longer enumerable, and `toJSON()` returns `{ redactedText, entityCount }` (plus `vaultId`). A result that reaches `JSON.stringify()` (pino, winston, Sentry, an error report) carries no personal data. Before, `JSON.stringify(result)` contained the mapping and the entities with all values. Breaking for code that relied on that: spread (`{ ...result }`), `Object.keys()`, `structuredClone()` / `postMessage()` and `toEqual()` against a literal no longer see `mapping` and `entities`; use `result.mapping` / `result.entities` explicitly. `restore()` throws a `TypeError` when it gets such a copy instead of silently restoring nothing. HTTP and MCP responses are unchanged.
 - `customEntityTypeFromJSON()` and therefore all stores accept a stored type with a pattern and no examples. `verifyCustomEntityStore()` checks that a store returns such a type unchanged.
 - `EntityLearner.detector()` returns the same detector instance on every call.
 
