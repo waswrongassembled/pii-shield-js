@@ -4,7 +4,7 @@ import { JsonFileCustomEntityStore } from '../learning/json-file-store.js';
 import { type CustomEntityStore, InMemoryCustomEntityStore, KeyValueCustomEntityStore } from '../learning/store.js';
 import { localPeerMatcher, splitList } from '../service/local-peer.js';
 import { ServiceApi } from '../service/service-api.js';
-import { EncryptedVault, generateVaultKey, parseVaultKey } from '../vault/encrypted-vault.js';
+import { EncryptedVault, generateVaultKey, parseVaultKey, previousVaultKeysFromEnv } from '../vault/encrypted-vault.js';
 import { MemoryVaultStorage } from '../vault/memory-vault-storage.js';
 import type { VaultStorage } from '../vault/vault.js';
 import type { PostgresQuery } from '../postgres/index.js';
@@ -142,6 +142,8 @@ export async function serviceFromEnv(
   };
   let purgeTimer: NodeJS.Timeout | undefined;
   let purging: Promise<void> | undefined;
+  /** Decoded keys, wiped when this function returns (the vault keeps its own copies). */
+  const keyMaterial: Uint8Array[] = [];
 
   try {
     // Vault
@@ -155,6 +157,20 @@ export async function serviceFromEnv(
       } catch {
         throw new ConfigError('PII_SERVICE_VAULT_KEY must be 32 bytes, base64-encoded.');
       }
+    }
+    keyMaterial.push(key);
+    let previousKeys: Uint8Array[] = [];
+    if (get('PII_SERVICE_VAULT_PREVIOUS_KEYS') !== undefined) {
+      if (keyBase64 === undefined) {
+        throw new ConfigError('PII_SERVICE_VAULT_PREVIOUS_KEYS needs PII_SERVICE_VAULT_KEY (the current key).');
+      }
+      try {
+        previousKeys = previousVaultKeysFromEnv('PII_SERVICE_VAULT_PREVIOUS_KEYS', env);
+      } catch (e) {
+        // The message names the variable and the entry's position, never a key.
+        throw new ConfigError(e instanceof Error ? e.message : String(e));
+      }
+      keyMaterial.push(...previousKeys);
     }
     const vaultStore = get('PII_SERVICE_VAULT_STORE') ?? 'memory';
     let storage: VaultStorage;
@@ -299,7 +315,7 @@ export async function serviceFromEnv(
     }
 
     const api = new ServiceApi({
-      vault: new EncryptedVault({ storage, key }),
+      vault: new EncryptedVault({ storage, key, previousKeys }), // copies the keys
       learner,
       modelDetector,
       token: get('PII_SERVICE_TOKEN'),
@@ -307,7 +323,6 @@ export async function serviceFromEnv(
       requireToken: get('PII_SERVICE_ONLY') === '1',
       isLocalPeer: localPeerMatcher(splitList(get('PII_LOCAL_PEERS'))),
     });
-    key.fill(0);
 
     return {
       api,
@@ -327,6 +342,10 @@ export async function serviceFromEnv(
     await purging;
     await Promise.all([redis?.quit().catch(() => undefined), pool?.end().catch(() => undefined)]);
     throw e;
+  } finally {
+    for (const material of keyMaterial) {
+      material.fill(0);
+    }
   }
 }
 
