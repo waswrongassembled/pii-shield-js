@@ -1,6 +1,6 @@
 {
   "name": "@waswrongassembled/pii-shield",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Reversible PII redaction for LLM applications with DACH recognizers (AT SVNR, IBAN, tax numbers) and checksum validation. Wire-compatible port of clarifile/pii-shield.",
   "license": "MIT",
   "author": {
