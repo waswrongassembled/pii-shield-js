@@ -317,6 +317,21 @@ components:
           type: array
           items: { type: string }
           description: Values that are never redacted (exact match), e.g. the authority's own reference.
+        knownValues:
+          type: array
+          maxItems: 500
+          description: |
+            Values the caller knows to be personal data (e.g. the account holder's name), redacted wherever
+            they occur as whole words: case-insensitive, umlauts in either spelling (ü/ue, ß/ss), any
+            whitespace between words. They apply even when `types` leaves out their type and win over
+            `allowlist`. Used for this request only: never stored, learned or logged; error messages never
+            contain them. Node service only (not in the PHP package).
+          items:
+            type: object
+            required: [value, type]
+            properties:
+              value: { type: string, minLength: 2, maxLength: 200 }
+              type: { $ref: '#/components/schemas/EntityType' }
         keepAuthorityContacts:
           type: boolean
           default: true

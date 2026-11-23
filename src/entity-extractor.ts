@@ -10,6 +10,7 @@ import { BirthDateDetector } from './detectors/birth-date.js';
 import { EmailDetector } from './detectors/email.js';
 import { FileNumberDetector } from './detectors/file-number.js';
 import { IbanDetector } from './detectors/iban.js';
+import { KNOWN_VALUES_DETECTOR, type KnownValue, KnownValuesDetector } from './detectors/known-values.js';
 import { LicensePlateDetector } from './detectors/license-plate.js';
 import { PhoneDetector } from './detectors/phone.js';
 import { PostalAddressDetector } from './detectors/postal-address.js';
@@ -40,8 +41,16 @@ export interface EntityExtractorOptions {
    * update; call `learner.refresh()` to pick up types other processes learned.
    */
   learner?: Pick<EntityLearner, 'detector'>;
-  /** Values that are never treated as PII (exact match). */
+  /** Values that are never treated as PII (exact match). Known values are exempt. */
   allowlist?: Iterable<string>;
+  /**
+   * Values known to be personal data (e.g. the account holder's name), found case-insensitively, in
+   * either umlaut spelling and only as whole words; see KnownValuesDetector. They win over the allowlist.
+   * Held only by this instance, never stored or learned.
+   *
+   * @throws TypeError (from the constructor) on invalid values; the message never contains a value
+   */
+  knownValues?: Iterable<KnownValue>;
 }
 
 /**
@@ -98,6 +107,9 @@ export class EntityExtractor {
     const learned = options.learner?.detector();
     if (learned !== undefined && !detectors.includes(learned)) {
       detectors.push(learned);
+    }
+    if (options.knownValues !== undefined) {
+      detectors.push(new KnownValuesDetector(options.knownValues));
     }
     this.#detectors = detectors;
     this.#allowlist = new Set(options.allowlist);
@@ -178,7 +190,9 @@ export class EntityExtractor {
   }
 
   #withoutAllowed(entities: Entity[]): Entity[] {
-    return this.#allowlist.size === 0 ? entities : entities.filter((e) => !this.#allowlist.has(e.value));
+    return this.#allowlist.size === 0
+      ? entities
+      : entities.filter((e) => e.detector === KNOWN_VALUES_DETECTOR || !this.#allowlist.has(e.value));
   }
 }
 

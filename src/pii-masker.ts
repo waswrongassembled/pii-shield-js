@@ -34,10 +34,11 @@ export class PiiMasker implements Masker {
   readonly #fallback: MaskingFunction;
 
   constructor(options: PiiMaskerOptions = {}) {
-    const { detectors, allowlist, learner, strategies = {}, fallback = new TypeLabelMask() } = options;
+    const { detectors, allowlist, knownValues, learner, strategies = {}, fallback = new TypeLabelMask() } = options;
     this.#extractor = new EntityExtractor({
       ...(detectors === undefined ? {} : { detectors }),
       ...(allowlist === undefined ? {} : { allowlist }),
+      ...(knownValues === undefined ? {} : { knownValues }),
       ...(learner === undefined ? {} : { learner }),
     });
     const merged = new Map<string, MaskingFunction>();

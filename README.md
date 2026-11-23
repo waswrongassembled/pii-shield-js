@@ -52,6 +52,24 @@ JSON.stringify(result); // '{"redactedText":"Sehr geehrter Herr ⟦PERSON_1⟧, 
 
 Detected types: `PERSON`, `EMAIL`, `PHONE`, `IBAN`, `SVNR`, `TAX_ID`, `FILE_NUMBER`, `BIRTH_DATE`, `LICENSE_PLATE`, `ADDRESS` (see `EntityType`), plus your learned types. Choose detectors with `new PiiShield({ detectors: [...] })` (default: `defaultDetectors()`).
 
+### Known values
+
+When you already know whose data a text is about, pass those values per call. They are found wherever they occur as whole words, case-insensitively and with umlauts in either spelling, even where no detector would find them:
+
+```ts
+import { EntityType, PiiShield } from '@waswrongassembled/pii-shield';
+
+const shield = new PiiShield({
+  knownValues: [
+    { value: 'Jürgen Müller', type: EntityType.Person },
+    { value: 'KD-99812', type: EntityType.FileNumber },
+  ],
+});
+shield.redact('JUERGEN MUELLER, Kundennr. KD-99812').redactedText; // '⟦PERSON_1⟧, Kundennr. ⟦FILE_NUMBER_1⟧'
+```
+
+A short value never matches inside a longer word (`Ali` not in `Alibi`), known values win over the `allowlist`, and they are only held by that instance: never stored, learned or logged. The HTTP service takes the same list as `knownValues` in the body of `/v1/redact` and `/v1/mask`, for that request only. Limits: 500 values of 2–200 characters.
+
 ## Masking
 
 Irreversible replacement, for logs or analytics. IBANs and phone numbers stay partly visible by default.

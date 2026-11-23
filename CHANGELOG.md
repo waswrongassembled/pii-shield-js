@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Known values per call: `knownValues: [{ value, type }]` for `PiiShield`, `PiiMasker` and `EntityExtractor`, and in the bodies of `POST /v1/redact` and `POST /v1/mask`. Each value is found wherever it occurs as a whole word, case-insensitively, with umlauts in either spelling (`Müller` / `Mueller` / decomposed, `ß` / `ss`) and any whitespace between its words; a short value never matches inside a longer word (`Ali` not in `Alibi`). Known values win over the allowlist and, in the service, apply regardless of `types`. Overlaps with rule findings are resolved like any other (longer span first), so placeholders never nest. The values are held only for the call: never stored, learned or logged, validation errors (`TypeError`, HTTP 400) never contain them, and the detector serializes as `{ name, count }`. Limits: 500 values, 2–200 characters each. `KnownValuesDetector` is exported. Without `knownValues` nothing changes.
+
 ## [0.3.0] - 2026-11-22
 
 ### Added
