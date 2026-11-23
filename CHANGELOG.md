@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-23
+
 ### Added
 
 - Known values per call: `knownValues: [{ value, type }]` for `PiiShield`, `PiiMasker` and `EntityExtractor`, and in the bodies of `POST /v1/redact` and `POST /v1/mask`. Each value is found wherever it occurs as a whole word, case-insensitively, with umlauts in either spelling (`Müller` / `Mueller` / decomposed, `ß` / `ss`) and any whitespace between its words; a short value never matches inside a longer word (`Ali` not in `Alibi`). Known values win over the allowlist and, in the service, apply regardless of `types`. Overlaps with rule findings are resolved like any other (longer span first), so placeholders never nest. The values are held only for the call: never stored, learned or logged, validation errors (`TypeError`, HTTP 400) never contain them, and the detector serializes as `{ name, count }`. Limits: 500 values, 2–200 characters each. `KnownValuesDetector` is exported. Without `knownValues` nothing changes.
@@ -70,7 +72,8 @@ Privacy and crash bugs of the PHP package are fixed rather than reproduced: name
 - `@waswrongassembled/pii-shield/mcp` (peer `@modelcontextprotocol/sdk`): the MCP tools `redact_text`, `restore_text`, `mask_text`, `learn_entity_type` and `list_entity_types` over STDIO and Streamable HTTP.
 - `pii-shield` CLI: `pii-shield serve`, `pii-shield mcp [--http]`, configured with PHP's environment variables.
 
-[Unreleased]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/waswrongassembled/pii-shield-js/compare/v0.1.0...v0.1.1
