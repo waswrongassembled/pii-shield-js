@@ -23,6 +23,7 @@ export { BirthDateDetector } from './detectors/birth-date.js';
 export { EmailDetector, type ContactDetectorOptions } from './detectors/email.js';
 export { FileNumberDetector } from './detectors/file-number.js';
 export { IbanDetector } from './detectors/iban.js';
+export { KNOWN_VALUES_DETECTOR, KnownValuesDetector, type KnownValue } from './detectors/known-values.js';
 export { LicensePlateDetector } from './detectors/license-plate.js';
 export { PhoneDetector } from './detectors/phone.js';
 export { PostalAddressDetector } from './detectors/postal-address.js';

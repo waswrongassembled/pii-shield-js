@@ -105,6 +105,10 @@ PHP always stores examples and counter-examples, and its `CustomEntityType` requ
 
 PHP wires vault, storage and learned types in its Symfony bundle configuration. `createPiiShield()` does it in one call with defaults of its own that differ from the building blocks: vault TTL 900 s (`PiiShield`: 3600 s, as PHP), learned types stored without examples (`keepExamples: false`; `EntityLearner` and PHP keep them, and PHP cannot read such a store), a timer that deletes expired vault entries (PHP leaves this to the cache pool or a cron job), and a start-up read of the vault and the learned types. Helpers: `postgresVault()` (`/postgres`), `redisVault()` (`/vault-redis`); `MemoryVaultStorage.purgeExpired()` is new. Payloads, placeholders and the learned-type JSON are unchanged.
 
+## Known values per call (Node only)
+
+`knownValues` (options of `PiiShield`, `PiiMasker`, `EntityExtractor`; body field of `/v1/redact` and `/v1/mask`) has no PHP counterpart. Like the other request options it is not offered by the MCP tools (#19).
+
 ## Model-based detection is async
 
 PHP's `ModelDetector` is a synchronous `DetectorInterface`. Model calls are async in Node, so `ModelDetector` is an `AsyncDetector` (`async: true`, `detect(text, { signal })` returns a Promise). `EntityExtractor.extractAsync()`, `PiiShield.redactAsync()`, `PiiShield.redactToVault()` and `PiiMasker.maskAsync()` run it next to the synchronous detectors (same results for the same findings); `extract()`, `redact()` and `mask()` throw a `TypeError` when an async detector is configured, before anything is sent. `redactToVault()` uses the async extraction for every detector set.

@@ -2,10 +2,11 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 
 import { type AsyncDetector, type DetectOptions, type Detector, isAsyncDetector } from '../detector.js';
 import { EmailDetector } from '../detectors/email.js';
+import { KnownValuesDetector } from '../detectors/known-values.js';
 import { PhoneDetector } from '../detectors/phone.js';
 import type { Entity } from '../entity.js';
 import { defaultDetectors } from '../entity-extractor.js';
-import { isEntityType } from '../entity-type.js';
+import { type EntityType, isEntityType } from '../entity-type.js';
 import { DetectionError, LearningError, PiiShieldError, VaultError } from '../errors.js';
 import { codePointLength } from '../internal/pcre.js';
 import type { EntityLearner } from '../learning/entity-learner.js';
@@ -224,6 +225,7 @@ export class ServiceApi {
   async #redact(body: JsonBody, options: DetectOptions): Promise<ServiceResponse> {
     const detectors = await this.#detectors(body);
     const allowlist = strings(body, 'allowlist');
+    detectors.push(...knownValues(body));
     const text = textOf(body);
     const shield = new PiiShield({ detectors, vault: this.#vault, vaultTtl: this.#vaultTtl, allowlist });
     const redaction = await shield.redactToVault(text, options);
@@ -265,6 +267,7 @@ export class ServiceApi {
   async #mask(body: JsonBody, options: DetectOptions): Promise<ServiceResponse> {
     const detectors = await this.#detectors(body);
     const allowlist = strings(body, 'allowlist');
+    detectors.push(...knownValues(body));
     const text = textOf(body);
 
     return ok({ text: await new PiiMasker({ detectors, allowlist }).maskAsync(text, options) });
@@ -386,6 +389,28 @@ function strings(body: JsonBody, key: string): string[] {
   }
 
   return items;
+}
+
+/**
+ * The detector for `knownValues` ([{ value, type }]), or none. Added after the `types` filter, so known
+ * values always apply. Messages never contain a value.
+ */
+function knownValues(body: JsonBody): KnownValuesDetector[] {
+  const list = field(body, 'knownValues');
+  if (list === undefined) {
+    return [];
+  }
+  if (!Array.isArray(list)) {
+    throw new BadRequest('"knownValues" must be a list of {"value", "type"} objects.');
+  }
+  try {
+    return [new KnownValuesDetector(list as { value: string; type: EntityType }[])];
+  } catch (e) {
+    if (e instanceof TypeError) {
+      throw new BadRequest(`"knownValues": ${e.message}`);
+    }
+    throw e;
+  }
 }
 
 function constantTimeEquals(expected: string, actual: string): boolean {

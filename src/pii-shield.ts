@@ -40,13 +40,14 @@ export class PiiShield implements VaultRedactor {
   readonly #vaultTtl: number;
 
   constructor(options: PiiShieldOptions = {}) {
-    const { detectors, allowlist, learner, vault, vaultTtl = PiiShield.DEFAULT_VAULT_TTL } = options;
+    const { detectors, allowlist, knownValues, learner, vault, vaultTtl = PiiShield.DEFAULT_VAULT_TTL } = options;
     assertTtl(vaultTtl, 'The vault TTL must be positive.');
     this.#vault = vault;
     this.#vaultTtl = vaultTtl;
     this.#extractor = new EntityExtractor({
       ...(detectors === undefined ? {} : { detectors }),
       ...(allowlist === undefined ? {} : { allowlist }),
+      ...(knownValues === undefined ? {} : { knownValues }),
       ...(learner === undefined ? {} : { learner }),
     });
   }
